@@ -1,24 +1,25 @@
 /**
  * Open Tool — Tool Registry
  * Sistema central de registro e roteamento de ferramentas plugáveis
- * @version v.2.0.0
+ * @version v.2.0.1
  */
 
 import { APP_CONFIG } from './config.js';
 
 const STORAGE_KEY_ACTIVE_TOOL = 'opentool_active_tool';
 
+// Resolve base URL do registry para imports absolutos (evita falha em serve estático)
+const _registryBase = new URL('.', import.meta.url).href;
+
 /**
  * Catálogo de ferramentas disponíveis na plataforma.
- * Cada entrada declara: id, label, description, icon SVG e
- * o caminho para o módulo da ferramenta (carregado via import() lazy).
  */
 export const TOOL_CATALOG = [
   {
     id: 'doc2md',
     label: 'Doc → MD',
     description: 'Converta documentos, planilhas, PDFs e código para Markdown estruturado',
-    modulePath: './tools/doc2md/tool.js',
+    modulePath: _registryBase + 'tools/doc2md/tool.js',
     icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
       <polyline points="14 2 14 8 20 8"/>
@@ -30,7 +31,7 @@ export const TOOL_CATALOG = [
     id: 'qrcode',
     label: 'QR Code',
     description: 'Gere QR Codes a partir de links e texto — 100% local, sem servidores',
-    modulePath: './tools/qrcode/tool.js',
+    modulePath: _registryBase + 'tools/qrcode/tool.js',
     icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
       <rect x="3" y="3" width="7" height="7" rx="1"/>
       <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -46,28 +47,24 @@ export const TOOL_CATALOG = [
   }
 ];
 
-// Módulo da ferramenta atualmente ativa
+// Estado interno
 let _activeModule = null;
 let _activeToolId = null;
 let _viewport = null;
 
 /**
  * Inicializa o registry. Deve ser chamado uma vez no bootstrap.
- * @param {HTMLElement} viewport - Container onde o HTML de cada ferramenta será injetado
+ * @param {HTMLElement} viewport
  */
 export async function initRegistry(viewport) {
   _viewport = viewport;
-
-  // Determina qual ferramenta ativar (última salva ou a primeira do catálogo)
   const savedTool = localStorage.getItem(STORAGE_KEY_ACTIVE_TOOL);
   const initialTool = TOOL_CATALOG.find(t => t.id === savedTool) || TOOL_CATALOG[0];
-
   await activateTool(initialTool.id);
 }
 
 /**
  * Ativa uma ferramenta pelo seu id.
- * Faz unmount da ferramenta anterior, carrega o módulo novo e executa render+mount.
  * @param {string} toolId
  */
 export async function activateTool(toolId) {
@@ -86,33 +83,32 @@ export async function activateTool(toolId) {
 
   // Transição de saída
   _viewport.classList.add('tool-viewport--transitioning');
+  _viewport.style.minHeight = _viewport.offsetHeight + 'px';
 
-  // Carregamento lazy do módulo
   try {
     const mod = await import(toolMeta.modulePath);
     _activeModule = mod.default;
     _activeToolId = toolId;
-
-    // Aguarda o frame para aplicar fade suave
-    await new Promise(r => requestAnimationFrame(r));
 
     // Renderiza o HTML da ferramenta no viewport
     if (typeof _activeModule.render === 'function') {
       _activeModule.render(_viewport);
     }
 
+    // Remove o min-height fixo após renderização
+    _viewport.style.minHeight = '';
+
+    // Pequeno delay para o browser processar o novo HTML antes de montar
+    await new Promise(r => setTimeout(r, 20));
+
     // Monta a lógica e os event listeners
     if (typeof _activeModule.mount === 'function') {
       await _activeModule.mount(_viewport);
     }
 
-    // Persiste a ferramenta ativa
     localStorage.setItem(STORAGE_KEY_ACTIVE_TOOL, toolId);
-
-    // Atualiza estado visual da navbar
     _updateNavbar(toolId);
 
-    // Remove a classe de transição
     requestAnimationFrame(() => {
       _viewport.classList.remove('tool-viewport--transitioning');
     });
@@ -120,15 +116,19 @@ export async function activateTool(toolId) {
   } catch (err) {
     console.error(`[ToolRegistry] Falha ao carregar ferramenta "${toolId}":`, err);
     _viewport.classList.remove('tool-viewport--transitioning');
+    _viewport.style.minHeight = '';
     _viewport.innerHTML = `<div class="tool-error-state">
-      <p>Falha ao carregar a ferramenta <strong>${toolMeta.label}</strong>.</p>
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--error-color);opacity:.6">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <p>Falha ao carregar <strong>${toolMeta.label}</strong></p>
       <p class="tool-error-detail">${err.message}</p>
     </div>`;
   }
 }
 
 /**
- * Renderiza a toolbar de navegação entre ferramentas no elemento alvo.
+ * Renderiza a toolbar de navegação entre ferramentas.
  * @param {HTMLElement} container
  */
 export function renderToolbar(container) {
@@ -137,10 +137,10 @@ export function renderToolbar(container) {
       <div class="tool-navbar-inner">
         ${TOOL_CATALOG.map(tool => `
           <button
-            class="tool-nav-btn${tool === TOOL_CATALOG[0] ? ' tool-nav-btn--active' : ''}"
+            class="tool-nav-btn"
             data-tool-id="${tool.id}"
             role="tab"
-            aria-selected="${tool === TOOL_CATALOG[0]}"
+            aria-selected="false"
             title="${tool.description}"
             id="tool-tab-${tool.id}"
           >
@@ -152,22 +152,15 @@ export function renderToolbar(container) {
     </nav>
   `;
 
-  // Registra eventos de clique
   container.querySelectorAll('.tool-nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activateTool(btn.dataset.toolId);
-    });
+    btn.addEventListener('click', () => activateTool(btn.dataset.toolId));
   });
 }
 
-/**
- * Atualiza o estado visual (active) dos botões da toolbar.
- * @param {string} activeToolId
- */
 function _updateNavbar(activeToolId) {
   document.querySelectorAll('.tool-nav-btn').forEach(btn => {
     const isActive = btn.dataset.toolId === activeToolId;
     btn.classList.toggle('tool-nav-btn--active', isActive);
-    btn.setAttribute('aria-selected', isActive);
+    btn.setAttribute('aria-selected', String(isActive));
   });
 }

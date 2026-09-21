@@ -154,6 +154,47 @@ const elements = typeof document !== 'undefined' ? {
   consolidationStatusText: document.getElementById('consolidation-status-text')
 } : {};
 
+/**
+ * Reinicializa as referências DOM do app.js após injeção dinâmica do HTML.
+ * Chamado pelo app-doc2md.js após tool.render() colocar o HTML no viewport.
+ */
+export function reinitElements() {
+  const el = (id) => (typeof document !== 'undefined' ? document.getElementById(id) : null);
+  Object.assign(elements, {
+    themeToggle:              el('theme-toggle'),
+    themeIconSun:             el('theme-icon-sun'),
+    themeIconMoon:            el('theme-icon-moon'),
+    headerVersion:            el('header-version'),
+    footerVersion:            el('footer-version') || document.querySelector('.footer-version'),
+    dropzone:                 el('dropzone'),
+    fileInput:                el('file-input'),
+    btnBrowse:                el('btn-browse'),
+    debugStatus:              el('debug-status'),
+    fileQueueSection:         el('file-queue-section'),
+    fileQueueList:            el('file-queue-list'),
+    queueCounter:             el('queue-counter'),
+    btnQueueClear:            el('btn-queue-clear'),
+    btnQueueDownloadAll:      el('btn-queue-download-all'),
+    toggleMergeMarkdown:      el('toggle-merge-markdown'),
+    btnSortFiles:             el('btn-sort-files'),
+    sortFilesLabel:           el('sort-files-label'),
+    btnQueueDownloadMerged:   el('btn-download-unified') || el('btn-queue-download-merged'),
+    btnDownloadUnified:       el('btn-download-unified') || el('btn-queue-download-merged'),
+    unifiedActionRow:         el('unified-action-row') || el('unified-download-container'),
+    unifiedDownloadContainer: el('unified-action-row') || el('unified-download-container'),
+    batchGlobalProgress:      el('batch-global-progress'),
+    globalProgressCounter:    el('global-progress-counter'),
+    globalProgressFill:       el('global-progress-fill'),
+    queueTotalBytesCard:      el('queue-total-bytes-card'),
+    liveTotalBytesCounter:    el('live-total-bytes-counter'),
+    liveTotalFormattedUnit:   el('live-total-formatted-unit'),
+    consolidationProgress:    el('consolidation-progress'),
+    consolidationCounter:     el('consolidation-counter'),
+    consolidationFill:        el('consolidation-fill'),
+    consolidationStatusText:  el('consolidation-status-text'),
+  });
+}
+
 /* ==========================================================================
    SemVer & Inicialização de Metadados
    ========================================================================== */
