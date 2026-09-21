@@ -11,18 +11,6 @@
     if (typeof require !== "undefined") return require.apply(this, arguments);
     throw Error('Dynamic require of "' + x + '" is not supported');
   });
-  var __esm = (fn, res, err) => function __init() {
-    if (err) throw err[0];
-    try {
-      return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-    } catch (e) {
-      throw err = [e], e;
-    }
-  };
-  var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
-  };
   var __copyProps = (to, from, except, desc) => {
     if (from && typeof from === "object" || typeof from === "function") {
       for (let key of __getOwnPropNames(from))
@@ -41,6 +29,376 @@
   ));
 
   // js/config.js
+  var CODE_EXTENSIONS_MAP = {
+    // Web & Frontend
+    "js": "javascript",
+    "mjs": "javascript",
+    "cjs": "javascript",
+    "ts": "typescript",
+    "tsx": "tsx",
+    "jsx": "jsx",
+    "html": "html",
+    "htm": "html",
+    "xhtml": "html",
+    "css": "css",
+    "scss": "scss",
+    "sass": "sass",
+    "less": "less",
+    "styl": "stylus",
+    "vue": "vue",
+    "svelte": "svelte",
+    "astro": "astro",
+    // Computação Científica, Numérica & Estatística
+    "m": "matlab",
+    "matlab": "matlab",
+    "octave": "matlab",
+    "r": "r",
+    "rmd": "r",
+    "jl": "julia",
+    "f": "fortran",
+    "for": "fortran",
+    "f90": "fortran",
+    "f95": "fortran",
+    "nb": "mathematica",
+    "wl": "wolfram",
+    // Scripts, Embeds, Jogos & Automação
+    "lua": "lua",
+    "py": "python",
+    "pyw": "python",
+    "ipynb": "json",
+    "rb": "ruby",
+    "rake": "ruby",
+    "gemspec": "ruby",
+    "php": "php",
+    "phtml": "php",
+    "pl": "perl",
+    "pm": "perl",
+    "t": "perl",
+    "tcl": "tcl",
+    "awk": "awk",
+    "sed": "sed",
+    // Sistemas, Baixo Nível & Alta Performance
+    "c": "c",
+    "h": "c",
+    "cpp": "cpp",
+    "hpp": "cpp",
+    "cc": "cpp",
+    "cxx": "cpp",
+    "hxx": "cpp",
+    "rs": "rust",
+    "go": "go",
+    "zig": "zig",
+    "nim": "nim",
+    "d": "d",
+    "pas": "pascal",
+    "pp": "pascal",
+    "inc": "pascal",
+    "ada": "ada",
+    "adb": "ada",
+    "ads": "ada",
+    "asm": "assembly",
+    "s": "assembly",
+    "nasm": "assembly",
+    // JVM & .NET
+    "java": "java",
+    "class": "text",
+    "kt": "kotlin",
+    "kts": "kotlin",
+    "scala": "scala",
+    "sc": "scala",
+    "groovy": "groovy",
+    "gvy": "groovy",
+    "cs": "csharp",
+    "csx": "csharp",
+    "fs": "fsharp",
+    "fsi": "fsharp",
+    "fsx": "fsharp",
+    "vb": "vbnet",
+    "vbs": "vbscript",
+    // Funcionais, Lisp & Concorrência
+    "hs": "haskell",
+    "lhs": "haskell",
+    "ex": "elixir",
+    "exs": "elixir",
+    "erl": "erlang",
+    "hrl": "erlang",
+    "clj": "clojure",
+    "cljs": "clojure",
+    "edn": "clojure",
+    "ml": "ocaml",
+    "mli": "ocaml",
+    "lisp": "lisp",
+    "lsp": "lisp",
+    "cl": "lisp",
+    "scm": "scheme",
+    "ss": "scheme",
+    "rkt": "racket",
+    "elm": "elm",
+    "purs": "purescript",
+    "gleam": "gleam",
+    // Mobile & Multiplataforma
+    "swift": "swift",
+    "dart": "dart",
+    // Shell, DevOps, Infra & Contêineres
+    "sh": "bash",
+    "bash": "bash",
+    "zsh": "bash",
+    "fish": "fish",
+    "ps1": "powershell",
+    "psm1": "powershell",
+    "bat": "bat",
+    "cmd": "bat",
+    "dockerfile": "dockerfile",
+    "containerfile": "dockerfile",
+    "makefile": "makefile",
+    "mk": "makefile",
+    "cmake": "cmake",
+    "tf": "terraform",
+    "hcl": "hcl",
+    "nix": "nix",
+    // Bancos de Dados & Consultas
+    "sql": "sql",
+    "psql": "sql",
+    "plsql": "sql",
+    "tsql": "sql",
+    "cql": "cql",
+    "prisma": "prisma",
+    "graphql": "graphql",
+    "gql": "graphql",
+    // Hardware, Shaders & Web3
+    "v": "verilog",
+    "sv": "systemverilog",
+    "vhd": "vhdl",
+    "vhdl": "vhdl",
+    "glsl": "glsl",
+    "vert": "glsl",
+    "frag": "glsl",
+    "hlsl": "hlsl",
+    "wgsl": "wgsl",
+    "sol": "solidity",
+    // Linguagens Históricas
+    "cob": "cobol",
+    "cbl": "cobol",
+    "fth": "forth",
+    "forth": "forth",
+    "bas": "basic",
+    // Serialização, Configuração & Metadados
+    "json": "json",
+    "json5": "json5",
+    "jsonc": "jsonc",
+    "yaml": "yaml",
+    "yml": "yaml",
+    "toml": "toml",
+    "ini": "ini",
+    "cfg": "ini",
+    "conf": "ini",
+    "xml": "xml",
+    "xsd": "xml",
+    "xsl": "xml",
+    "svg": "xml",
+    "proto": "protobuf",
+    "env": "bash"
+  };
+  var SUPPORTED_EXTENSIONS = {
+    // Documentos
+    "docx": { category: "document", label: "Word (.docx)", parser: "docx" },
+    "odt": { category: "document", label: "OpenDocument (.odt)", parser: "docx" },
+    "rtf": { category: "text", label: "Rich Text (.rtf)", parser: "text", lang: "plaintext" },
+    // Planilhas & Matrizes
+    "xlsx": { category: "spreadsheet", label: "Excel (.xlsx)", parser: "xlsx" },
+    "xls": { category: "spreadsheet", label: "Excel 97-2004 (.xls)", parser: "xlsx" },
+    "csv": { category: "spreadsheet", label: "CSV (.csv)", parser: "xlsx" },
+    "tsv": { category: "spreadsheet", label: "TSV (.tsv)", parser: "xlsx" },
+    "ods": { category: "spreadsheet", label: "OpenDocument (.ods)", parser: "xlsx" },
+    // Apresentações
+    "pptx": { category: "presentation", label: "PowerPoint (.pptx)", parser: "pptx" },
+    "odp": { category: "presentation", label: "OpenDocument (.odp)", parser: "pptx" },
+    // Documentos Fechados
+    "pdf": { category: "pdf", label: "PDF (.pdf)", parser: "pdf" },
+    // Serialização, Configuração & Dados
+    "yaml": { category: "code", label: "YAML", parser: "text", lang: "yaml" },
+    "yml": { category: "code", label: "YAML", parser: "text", lang: "yaml" },
+    "json": { category: "text", label: "JSON", parser: "text", lang: "json" },
+    "json5": { category: "text", label: "JSON5", parser: "text", lang: "json" },
+    "jsonc": { category: "text", label: "JSON with Comments", parser: "text", lang: "json" },
+    "xml": { category: "text", label: "XML", parser: "text", lang: "xml" },
+    "toml": { category: "code", label: "TOML", parser: "code", lang: "toml" },
+    "ini": { category: "code", label: "INI", parser: "code", lang: "ini" },
+    "cfg": { category: "code", label: "Config", parser: "code", lang: "ini" },
+    "conf": { category: "code", label: "Config", parser: "code", lang: "ini" },
+    // Texto & Marcação
+    "html": { category: "text", label: "HTML", parser: "text", lang: "html" },
+    "htm": { category: "text", label: "HTML", parser: "text", lang: "html" },
+    "xhtml": { category: "text", label: "XHTML", parser: "text", lang: "html" },
+    "md": { category: "text", label: "Markdown", parser: "text", lang: "markdown" },
+    "markdown": { category: "text", label: "Markdown", parser: "text", lang: "markdown" },
+    "txt": { category: "text", label: "Texto Puro", parser: "text", lang: "plaintext" },
+    "log": { category: "text", label: "Log", parser: "text", lang: "plaintext" }
+  };
+  var MIME_TYPE_MAP = {
+    "application/x-yaml": "yaml",
+    "text/yaml": "yaml",
+    "text/x-yaml": "yaml",
+    "application/yaml": "yaml",
+    "application/json": "json",
+    "text/html": "html",
+    "text/plain": "txt",
+    "text/markdown": "md",
+    "text/x-markdown": "md",
+    "text/xml": "xml",
+    "application/xml": "xml",
+    "application/rtf": "rtf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+    "application/vnd.ms-excel": "xls",
+    "text/csv": "csv",
+    "text/tab-separated-values": "tsv",
+    "application/vnd.oasis.opendocument.spreadsheet": "ods",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
+    "application/pdf": "pdf",
+    "application/javascript": "js",
+    "text/javascript": "js",
+    "application/typescript": "ts",
+    "text/x-python": "py",
+    "text/x-c": "c",
+    "text/x-c++": "cpp",
+    "text/x-shellscript": "sh",
+    "application/zip": "zip",
+    "application/x-zip-compressed": "zip",
+    "application/x-rar-compressed": "rar"
+  };
+  var APP_CONFIG = {
+    VERSION: "v.2.0.2",
+    APP_NAME: "Open Tool",
+    TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
+    REPO_URL: "https://github.com/mathmorato/open-tool",
+    // Limite máximo rígido de tamanho por arquivo (1,5 GB = 1.610.612.736 bytes)
+    MAX_FILE_SIZE_BYTES: 1.5 * 1024 * 1024 * 1024,
+    // 1.5 GB = 1.610.612.736 bytes
+    // Configurações de Concorrência do Pipeline de Lote
+    CONCURRENCY: {
+      DEFAULT: 4,
+      // Pool moderado para poucos arquivos (<= 20)
+      HIGH_VOLUME_THRESHOLD: 20,
+      // Ponto de corte para escalonamento automático
+      HIGH_VOLUME: 1e3
+      // Pool agressivo para alto volume e descompactação (até 1000 simultâneos)
+    },
+    // Chaves de persistência no LocalStorage
+    STORAGE_KEYS: {
+      THEME: "doc2md_theme",
+      // 'dark' | 'light' | 'system'
+      VIEW_MODE: "doc2md_view_mode",
+      // 'split' | 'raw' | 'preview'
+      LINE_WRAPPING: "doc2md_line_wrapping",
+      // true | false
+      PRESERVE_HEADING_IDS: "doc2md_preserve_headings",
+      MERGE_MARKDOWN: "doc2md_merge_markdown"
+    },
+    // CDN URLs para carregamento assíncrono sob demanda (Zero overhead inicial)
+    CDN: {
+      MAMMOTH: "https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js",
+      TURNDOWN: "https://cdnjs.cloudflare.com/ajax/libs/turndown/7.2.0/turndown.min.js",
+      TURNDOWN_GFM: "https://cdn.jsdelivr.net/npm/turndown-plugin-gfm@1.0.2/dist/turndown-plugin-gfm.min.js",
+      SHEETJS: "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js",
+      JSZIP: "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+      PDFJS: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+      PDFJS_WORKER: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
+      MARKED: "https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js",
+      DOMPURIFY: "https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"
+    },
+    // Pacotes compactados suportados para extração automática client-side em memória
+    ARCHIVE_EXTENSIONS: [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"],
+    // Formatos binários conhecidamente não suportados (rejeição rápida com orientação clara)
+    UNSUPPORTED_BINARY_EXTENSIONS: [
+      ".exe",
+      ".bin",
+      ".dll",
+      ".iso",
+      ".dmg",
+      ".apk",
+      ".app",
+      ".msi",
+      ".mp3",
+      ".wav",
+      ".ogg",
+      ".flac",
+      ".mp4",
+      ".avi",
+      ".mov",
+      ".mkv",
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".gif",
+      ".webp",
+      ".svg",
+      ".ico",
+      ".psd"
+    ],
+    // Formatos suportados e metadados
+    SUPPORTED_FORMATS: {
+      docx: {
+        ext: [".docx"],
+        mime: ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+        name: "Word (.docx)",
+        category: "document",
+        parser: "docx"
+      },
+      sheet: {
+        ext: [".xlsx", ".xls", ".csv", ".tsv", ".ods"],
+        mime: [
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-excel",
+          "text/csv",
+          "text/tab-separated-values",
+          "application/vnd.oasis.opendocument.spreadsheet"
+        ],
+        name: "Planilhas (.xlsx, .csv, .tsv, .ods)",
+        category: "spreadsheet",
+        parser: "xlsx"
+      },
+      presentation: {
+        ext: [".pptx"],
+        mime: ["application/vnd.openxmlformats-officedocument.presentationml.presentation"],
+        name: "Apresenta\xE7\xE3o (.pptx)",
+        category: "presentation",
+        parser: "pptx"
+      },
+      pdf: {
+        ext: [".pdf"],
+        mime: ["application/pdf"],
+        name: "PDF (.pdf)",
+        category: "pdf",
+        parser: "pdf"
+      },
+      text: {
+        ext: [".txt", ".json", ".html", ".htm", ".rtf", ".xml", ".md", ".markdown", ".log", ".yaml", ".yml"],
+        mime: [
+          "text/plain",
+          "application/json",
+          "text/html",
+          "application/rtf",
+          "text/xml",
+          "text/markdown",
+          "application/x-yaml",
+          "text/yaml",
+          "text/x-yaml",
+          "application/yaml"
+        ],
+        name: "Texto / YAML / Dados (.txt, .json, .html, .rtf, .md, .yaml, .yml)",
+        category: "text",
+        parser: "text"
+      },
+      code: {
+        ext: Object.keys(CODE_EXTENSIONS_MAP).map((ext) => "." + ext),
+        name: "C\xF3digo-Fonte / Scripts",
+        category: "code",
+        parser: "code"
+      }
+    }
+  };
+  var loadedScripts = /* @__PURE__ */ new Map();
   function loadScript(src) {
     if (typeof document === "undefined") {
       return Promise.resolve();
@@ -70,6 +428,15 @@
     loadedScripts.set(src, promise);
     return promise;
   }
+  var ERROR_CATALOG = {
+    FILE_TOO_LARGE: "Arquivo excede o limite m\xE1ximo permitido de 1,5 GB.",
+    EMPTY_FILE: "Arquivo vazio (0 bytes).",
+    PARSER_NOT_FOUND: "Formato n\xE3o suportado ou parser indispon\xEDvel.",
+    PARSING_FAILED: "Erro de convers\xE3o: falha na extra\xE7\xE3o de dados do documento.",
+    CORRUPTED_ARCHIVE: "Pacote compactado corrompido ou protegido por senha.",
+    TIMEOUT: "Tempo de processamento excedido.",
+    UNKNOWN: "Erro de convers\xE3o inesperado."
+  };
   function getDynamicConcurrency(queueOrLength) {
     const count = typeof queueOrLength === "number" ? queueOrLength : Array.isArray(queueOrLength) ? queueOrLength.length : 0;
     if (count > (APP_CONFIG.CONCURRENCY?.HIGH_VOLUME_THRESHOLD || 20)) {
@@ -77,392 +444,265 @@
     }
     return APP_CONFIG.CONCURRENCY?.DEFAULT || 4;
   }
-  var CODE_EXTENSIONS_MAP, SUPPORTED_EXTENSIONS, MIME_TYPE_MAP, APP_CONFIG, loadedScripts, ERROR_CATALOG;
-  var init_config = __esm({
-    "js/config.js"() {
-      CODE_EXTENSIONS_MAP = {
-        // Web & Frontend
-        "js": "javascript",
-        "mjs": "javascript",
-        "cjs": "javascript",
-        "ts": "typescript",
-        "tsx": "tsx",
-        "jsx": "jsx",
-        "html": "html",
-        "htm": "html",
-        "xhtml": "html",
-        "css": "css",
-        "scss": "scss",
-        "sass": "sass",
-        "less": "less",
-        "styl": "stylus",
-        "vue": "vue",
-        "svelte": "svelte",
-        "astro": "astro",
-        // Computação Científica, Numérica & Estatística
-        "m": "matlab",
-        "matlab": "matlab",
-        "octave": "matlab",
-        "r": "r",
-        "rmd": "r",
-        "jl": "julia",
-        "f": "fortran",
-        "for": "fortran",
-        "f90": "fortran",
-        "f95": "fortran",
-        "nb": "mathematica",
-        "wl": "wolfram",
-        // Scripts, Embeds, Jogos & Automação
-        "lua": "lua",
-        "py": "python",
-        "pyw": "python",
-        "ipynb": "json",
-        "rb": "ruby",
-        "rake": "ruby",
-        "gemspec": "ruby",
-        "php": "php",
-        "phtml": "php",
-        "pl": "perl",
-        "pm": "perl",
-        "t": "perl",
-        "tcl": "tcl",
-        "awk": "awk",
-        "sed": "sed",
-        // Sistemas, Baixo Nível & Alta Performance
-        "c": "c",
-        "h": "c",
-        "cpp": "cpp",
-        "hpp": "cpp",
-        "cc": "cpp",
-        "cxx": "cpp",
-        "hxx": "cpp",
-        "rs": "rust",
-        "go": "go",
-        "zig": "zig",
-        "nim": "nim",
-        "d": "d",
-        "pas": "pascal",
-        "pp": "pascal",
-        "inc": "pascal",
-        "ada": "ada",
-        "adb": "ada",
-        "ads": "ada",
-        "asm": "assembly",
-        "s": "assembly",
-        "nasm": "assembly",
-        // JVM & .NET
-        "java": "java",
-        "class": "text",
-        "kt": "kotlin",
-        "kts": "kotlin",
-        "scala": "scala",
-        "sc": "scala",
-        "groovy": "groovy",
-        "gvy": "groovy",
-        "cs": "csharp",
-        "csx": "csharp",
-        "fs": "fsharp",
-        "fsi": "fsharp",
-        "fsx": "fsharp",
-        "vb": "vbnet",
-        "vbs": "vbscript",
-        // Funcionais, Lisp & Concorrência
-        "hs": "haskell",
-        "lhs": "haskell",
-        "ex": "elixir",
-        "exs": "elixir",
-        "erl": "erlang",
-        "hrl": "erlang",
-        "clj": "clojure",
-        "cljs": "clojure",
-        "edn": "clojure",
-        "ml": "ocaml",
-        "mli": "ocaml",
-        "lisp": "lisp",
-        "lsp": "lisp",
-        "cl": "lisp",
-        "scm": "scheme",
-        "ss": "scheme",
-        "rkt": "racket",
-        "elm": "elm",
-        "purs": "purescript",
-        "gleam": "gleam",
-        // Mobile & Multiplataforma
-        "swift": "swift",
-        "dart": "dart",
-        // Shell, DevOps, Infra & Contêineres
-        "sh": "bash",
-        "bash": "bash",
-        "zsh": "bash",
-        "fish": "fish",
-        "ps1": "powershell",
-        "psm1": "powershell",
-        "bat": "bat",
-        "cmd": "bat",
-        "dockerfile": "dockerfile",
-        "containerfile": "dockerfile",
-        "makefile": "makefile",
-        "mk": "makefile",
-        "cmake": "cmake",
-        "tf": "terraform",
-        "hcl": "hcl",
-        "nix": "nix",
-        // Bancos de Dados & Consultas
-        "sql": "sql",
-        "psql": "sql",
-        "plsql": "sql",
-        "tsql": "sql",
-        "cql": "cql",
-        "prisma": "prisma",
-        "graphql": "graphql",
-        "gql": "graphql",
-        // Hardware, Shaders & Web3
-        "v": "verilog",
-        "sv": "systemverilog",
-        "vhd": "vhdl",
-        "vhdl": "vhdl",
-        "glsl": "glsl",
-        "vert": "glsl",
-        "frag": "glsl",
-        "hlsl": "hlsl",
-        "wgsl": "wgsl",
-        "sol": "solidity",
-        // Linguagens Históricas
-        "cob": "cobol",
-        "cbl": "cobol",
-        "fth": "forth",
-        "forth": "forth",
-        "bas": "basic",
-        // Serialização, Configuração & Metadados
-        "json": "json",
-        "json5": "json5",
-        "jsonc": "jsonc",
-        "yaml": "yaml",
-        "yml": "yaml",
-        "toml": "toml",
-        "ini": "ini",
-        "cfg": "ini",
-        "conf": "ini",
-        "xml": "xml",
-        "xsd": "xml",
-        "xsl": "xml",
-        "svg": "xml",
-        "proto": "protobuf",
-        "env": "bash"
-      };
-      SUPPORTED_EXTENSIONS = {
-        // Documentos
-        "docx": { category: "document", label: "Word (.docx)", parser: "docx" },
-        "odt": { category: "document", label: "OpenDocument (.odt)", parser: "docx" },
-        "rtf": { category: "text", label: "Rich Text (.rtf)", parser: "text", lang: "plaintext" },
-        // Planilhas & Matrizes
-        "xlsx": { category: "spreadsheet", label: "Excel (.xlsx)", parser: "xlsx" },
-        "xls": { category: "spreadsheet", label: "Excel 97-2004 (.xls)", parser: "xlsx" },
-        "csv": { category: "spreadsheet", label: "CSV (.csv)", parser: "xlsx" },
-        "tsv": { category: "spreadsheet", label: "TSV (.tsv)", parser: "xlsx" },
-        "ods": { category: "spreadsheet", label: "OpenDocument (.ods)", parser: "xlsx" },
-        // Apresentações
-        "pptx": { category: "presentation", label: "PowerPoint (.pptx)", parser: "pptx" },
-        "odp": { category: "presentation", label: "OpenDocument (.odp)", parser: "pptx" },
-        // Documentos Fechados
-        "pdf": { category: "pdf", label: "PDF (.pdf)", parser: "pdf" },
-        // Serialização, Configuração & Dados
-        "yaml": { category: "code", label: "YAML", parser: "text", lang: "yaml" },
-        "yml": { category: "code", label: "YAML", parser: "text", lang: "yaml" },
-        "json": { category: "text", label: "JSON", parser: "text", lang: "json" },
-        "json5": { category: "text", label: "JSON5", parser: "text", lang: "json" },
-        "jsonc": { category: "text", label: "JSON with Comments", parser: "text", lang: "json" },
-        "xml": { category: "text", label: "XML", parser: "text", lang: "xml" },
-        "toml": { category: "code", label: "TOML", parser: "code", lang: "toml" },
-        "ini": { category: "code", label: "INI", parser: "code", lang: "ini" },
-        "cfg": { category: "code", label: "Config", parser: "code", lang: "ini" },
-        "conf": { category: "code", label: "Config", parser: "code", lang: "ini" },
-        // Texto & Marcação
-        "html": { category: "text", label: "HTML", parser: "text", lang: "html" },
-        "htm": { category: "text", label: "HTML", parser: "text", lang: "html" },
-        "xhtml": { category: "text", label: "XHTML", parser: "text", lang: "html" },
-        "md": { category: "text", label: "Markdown", parser: "text", lang: "markdown" },
-        "markdown": { category: "text", label: "Markdown", parser: "text", lang: "markdown" },
-        "txt": { category: "text", label: "Texto Puro", parser: "text", lang: "plaintext" },
-        "log": { category: "text", label: "Log", parser: "text", lang: "plaintext" }
-      };
-      MIME_TYPE_MAP = {
-        "application/x-yaml": "yaml",
-        "text/yaml": "yaml",
-        "text/x-yaml": "yaml",
-        "application/yaml": "yaml",
-        "application/json": "json",
-        "text/html": "html",
-        "text/plain": "txt",
-        "text/markdown": "md",
-        "text/x-markdown": "md",
-        "text/xml": "xml",
-        "application/xml": "xml",
-        "application/rtf": "rtf",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
-        "application/vnd.ms-excel": "xls",
-        "text/csv": "csv",
-        "text/tab-separated-values": "tsv",
-        "application/vnd.oasis.opendocument.spreadsheet": "ods",
-        "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
-        "application/pdf": "pdf",
-        "application/javascript": "js",
-        "text/javascript": "js",
-        "application/typescript": "ts",
-        "text/x-python": "py",
-        "text/x-c": "c",
-        "text/x-c++": "cpp",
-        "text/x-shellscript": "sh",
-        "application/zip": "zip",
-        "application/x-zip-compressed": "zip",
-        "application/x-rar-compressed": "rar"
-      };
-      APP_CONFIG = {
-        VERSION: "v.2.0.1",
-        APP_NAME: "Open Tool",
-        TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
-        REPO_URL: "https://github.com/mathmorato/open-tool",
-        // Limite máximo rígido de tamanho por arquivo (1,5 GB = 1.610.612.736 bytes)
-        MAX_FILE_SIZE_BYTES: 1.5 * 1024 * 1024 * 1024,
-        // 1.5 GB = 1.610.612.736 bytes
-        // Configurações de Concorrência do Pipeline de Lote
-        CONCURRENCY: {
-          DEFAULT: 4,
-          // Pool moderado para poucos arquivos (<= 20)
-          HIGH_VOLUME_THRESHOLD: 20,
-          // Ponto de corte para escalonamento automático
-          HIGH_VOLUME: 1e3
-          // Pool agressivo para alto volume e descompactação (até 1000 simultâneos)
-        },
-        // Chaves de persistência no LocalStorage
-        STORAGE_KEYS: {
-          THEME: "doc2md_theme",
-          // 'dark' | 'light' | 'system'
-          VIEW_MODE: "doc2md_view_mode",
-          // 'split' | 'raw' | 'preview'
-          LINE_WRAPPING: "doc2md_line_wrapping",
-          // true | false
-          PRESERVE_HEADING_IDS: "doc2md_preserve_headings",
-          MERGE_MARKDOWN: "doc2md_merge_markdown"
-        },
-        // CDN URLs para carregamento assíncrono sob demanda (Zero overhead inicial)
-        CDN: {
-          MAMMOTH: "https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js",
-          TURNDOWN: "https://cdnjs.cloudflare.com/ajax/libs/turndown/7.2.0/turndown.min.js",
-          TURNDOWN_GFM: "https://cdn.jsdelivr.net/npm/turndown-plugin-gfm@1.0.2/dist/turndown-plugin-gfm.min.js",
-          SHEETJS: "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js",
-          JSZIP: "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
-          PDFJS: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
-          PDFJS_WORKER: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
-          MARKED: "https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js",
-          DOMPURIFY: "https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"
-        },
-        // Pacotes compactados suportados para extração automática client-side em memória
-        ARCHIVE_EXTENSIONS: [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"],
-        // Formatos binários conhecidamente não suportados (rejeição rápida com orientação clara)
-        UNSUPPORTED_BINARY_EXTENSIONS: [
-          ".exe",
-          ".bin",
-          ".dll",
-          ".iso",
-          ".dmg",
-          ".apk",
-          ".app",
-          ".msi",
-          ".mp3",
-          ".wav",
-          ".ogg",
-          ".flac",
-          ".mp4",
-          ".avi",
-          ".mov",
-          ".mkv",
-          ".png",
-          ".jpg",
-          ".jpeg",
-          ".gif",
-          ".webp",
-          ".svg",
-          ".ico",
-          ".psd"
-        ],
-        // Formatos suportados e metadados
-        SUPPORTED_FORMATS: {
-          docx: {
-            ext: [".docx"],
-            mime: ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
-            name: "Word (.docx)",
-            category: "document",
-            parser: "docx"
-          },
-          sheet: {
-            ext: [".xlsx", ".xls", ".csv", ".tsv", ".ods"],
-            mime: [
-              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              "application/vnd.ms-excel",
-              "text/csv",
-              "text/tab-separated-values",
-              "application/vnd.oasis.opendocument.spreadsheet"
-            ],
-            name: "Planilhas (.xlsx, .csv, .tsv, .ods)",
-            category: "spreadsheet",
-            parser: "xlsx"
-          },
-          presentation: {
-            ext: [".pptx"],
-            mime: ["application/vnd.openxmlformats-officedocument.presentationml.presentation"],
-            name: "Apresenta\xE7\xE3o (.pptx)",
-            category: "presentation",
-            parser: "pptx"
-          },
-          pdf: {
-            ext: [".pdf"],
-            mime: ["application/pdf"],
-            name: "PDF (.pdf)",
-            category: "pdf",
-            parser: "pdf"
-          },
-          text: {
-            ext: [".txt", ".json", ".html", ".htm", ".rtf", ".xml", ".md", ".markdown", ".log", ".yaml", ".yml"],
-            mime: [
-              "text/plain",
-              "application/json",
-              "text/html",
-              "application/rtf",
-              "text/xml",
-              "text/markdown",
-              "application/x-yaml",
-              "text/yaml",
-              "text/x-yaml",
-              "application/yaml"
-            ],
-            name: "Texto / YAML / Dados (.txt, .json, .html, .rtf, .md, .yaml, .yml)",
-            category: "text",
-            parser: "text"
-          },
-          code: {
-            ext: Object.keys(CODE_EXTENSIONS_MAP).map((ext) => "." + ext),
-            name: "C\xF3digo-Fonte / Scripts",
-            category: "code",
-            parser: "code"
-          }
-        }
-      };
-      loadedScripts = /* @__PURE__ */ new Map();
-      ERROR_CATALOG = {
-        FILE_TOO_LARGE: "Arquivo excede o limite m\xE1ximo permitido de 1,5 GB.",
-        EMPTY_FILE: "Arquivo vazio (0 bytes).",
-        PARSER_NOT_FOUND: "Formato n\xE3o suportado ou parser indispon\xEDvel.",
-        PARSING_FAILED: "Erro de convers\xE3o: falha na extra\xE7\xE3o de dados do documento.",
-        CORRUPTED_ARCHIVE: "Pacote compactado corrompido ou protegido por senha.",
-        TIMEOUT: "Tempo de processamento excedido.",
-        UNKNOWN: "Erro de convers\xE3o inesperado."
-      };
-    }
-  });
+
+  // js/tools/doc2md/ui.js
+  function getDoc2mdHTML() {
+    return `
+    <div class="doc2md-tool-root">
+
+      <!-- Se\xE7\xE3o de Apresenta\xE7\xE3o & Dropzone -->
+      <section class="hero-section">
+        <!-- Cabe\xE7alho Principal -->
+        <header class="hero-header">
+          <h2 class="hero-title">Conversor Universal &amp; Mesclador de Documentos para Markdown</h2>
+          <p class="hero-subtitle">
+            Converta, descompacte e unifique documentos, planilhas, apresenta\xE7\xF5es, PDFs e pacotes (.zip/.rar) diretamente no navegador. 100% privado, local e sem depend\xEAncia de servidores.
+          </p>
+        </header>
+
+        <!-- \xC1rea da Dropzone -->
+        <div class="dropzone-container">
+          <label for="file-input" class="dropzone" id="dropzone" tabindex="0">
+            <div class="dropzone-icon dropzone-icon-wrap" aria-hidden="true">
+              <svg class="upload-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            </div>
+
+            <p class="dropzone-main-text dropzone-prompt">
+              Arraste e solte seus arquivos ou pacotes (.zip, .rar) aqui, ou clique no bot\xE3o abaixo
+            </p>
+
+            <button type="button" id="btn-browse" class="btn btn-primary btn-browse">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              Selecionar Arquivo do Computador
+            </button>
+
+            <p class="dropzone-subtext dropzone-subprompt">
+              Suporta upload em lote, descompacta\xE7\xE3o autom\xE1tica e colagem de arquivos/texto (Ctrl+V)
+            </p>
+
+            <div class="format-badges-list format-tags">
+              <span class="format-badge format-tag">.docx</span>
+              <span class="format-badge format-tag">.xlsx</span>
+              <span class="format-badge format-tag">.csv</span>
+              <span class="format-badge format-tag">.ods</span>
+              <span class="format-badge format-tag">.pptx</span>
+              <span class="format-badge format-tag">.pdf</span>
+              <span class="format-badge format-tag">.txt</span>
+              <span class="format-badge format-tag">.json</span>
+              <span class="format-badge format-tag">.yml</span>
+              <span class="format-badge format-tag">.yaml</span>
+              <span class="format-badge format-tag">.html</span>
+              <span class="format-badge format-tag">.rtf</span>
+              <span class="format-badge format-tag">.js</span>
+              <span class="format-badge format-tag">.py</span>
+              <span class="format-badge format-tag">.m</span>
+              <span class="format-badge format-tag">.lua</span>
+              <span class="format-badge format-tag">.cpp</span>
+              <span class="format-badge format-tag">.rs</span>
+              <span class="format-badge format-tag">.sh</span>
+              <span class="format-badge format-tag">.zip</span>
+              <span class="format-badge format-tag">.rar</span>
+              <span class="format-badge format-tag highlight">+algumas linguagens de c\xF3digo</span>
+            </div>
+
+            <div class="limit-indicator limit-badge" title="Tamanho m\xE1ximo suportado por documento">
+              <span class="icon-info">\u24D8</span>
+              <span>Limite m\xE1ximo: <strong>1,5 GB</strong> por arquivo ou pacote compactado</span>
+            </div>
+
+            <input type="file" id="file-input" class="visually-hidden" multiple style="position: absolute; left: -9999px; opacity: 0;" aria-label="Selecionar arquivos" />
+          </label>
+        </div>
+
+        <!-- Telemetria e Diagn\xF3stico Visual T\xE9cnico (oculto por padr\xE3o) -->
+        <div id="debug-status" class="debug-status" aria-live="polite" style="display: none;"></div>
+      </section>
+
+      <!-- Fila de Documentos & Progresso em Lote (File Queue Section) -->
+      <section id="file-queue-section" class="file-queue-section" style="display: none;" aria-label="Fila de arquivos para convers\xE3o">
+        <div class="file-queue-card">
+          <div class="file-queue-header queue-header">
+            <!-- LINHA 1: BARRA SUPERIOR FIXA E IMUT\xC1VEL -->
+            <div class="queue-header-main">
+              <div class="file-queue-title-wrap queue-header-title">
+                <div class="file-queue-icon icon-queue" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                  </svg>
+                </div>
+                <h3 class="file-queue-title">
+                  Fila de Documentos
+                  <span class="file-queue-counter badge-count" id="queue-counter">0 arquivos</span>
+                </h3>
+              </div>
+
+              <div class="queue-header-actions queue-header-controls">
+                <label class="toggle-switch" for="toggle-merge-markdown" title="Compilar todos os arquivos convertidos em um \xFAnico documento Markdown consolidado">
+                  <input type="checkbox" id="toggle-merge-markdown">
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-label">Mesclar arquivos em um \xFAnico .md</span>
+                </label>
+
+                <div class="queue-buttons-group queue-static-buttons">
+                  <button type="button" id="btn-queue-download-all" class="btn btn-secondary btn-sm" title="Baixar todos os documentos convertidos em arquivo .zip">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Baixar Todos (.zip)
+                  </button>
+                  <button type="button" id="btn-queue-clear" class="btn btn-ghost btn-sm" title="Limpar todos os arquivos da fila">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 6h18"/>
+                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                    </svg>
+                    Limpar Todos
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- LINHA 2: \xC1REA EXCLUSIVA PARA DOWNLOAD UNIFICADO & ORDENA\xC7\xC3O (SURGE ABAIXO) -->
+            <div id="unified-action-row" class="unified-action-row unified-download-container" style="display: none;">
+              <div class="merge-sort-container">
+                <button type="button" id="btn-sort-files" class="btn-sort" title="Classificar arquivos por ordem alfab\xE9tica">
+                  <svg class="sort-icon icon-desc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                    <line x1="5" y1="4" x2="5" y2="20" />
+                    <polyline points="2 17 5 20 8 17" />
+                    <line x1="11" y1="5" x2="21" y2="5" />
+                    <line x1="11" y1="10" x2="18" y2="10" />
+                    <line x1="11" y1="15" x2="15" y2="15" />
+                    <line x1="11" y1="20" x2="13" y2="20" />
+                  </svg>
+                  <svg class="sort-icon icon-asc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="20" x2="5" y2="4" />
+                    <polyline points="2 7 5 4 8 7" />
+                    <line x1="11" y1="5" x2="13" y2="5" />
+                    <line x1="11" y1="10" x2="15" y2="10" />
+                    <line x1="11" y1="15" x2="18" y2="15" />
+                    <line x1="11" y1="20" x2="21" y2="20" />
+                  </svg>
+                  <span id="sort-files-label">Classificar A-Z</span>
+                </button>
+              </div>
+              <button type="button" id="btn-download-unified" class="btn btn-primary btn-sm btn-unified btn-unified-pulse btn-queue-download-merged" title="Baixar todos os documentos mesclados em um \xFAnico arquivo .md">
+                <span class="icon-merge">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="12" y1="18" x2="12" y2="12"/>
+                    <polyline points="9 15 12 18 15 15"/>
+                  </svg>
+                </span>
+                Baixar Markdown Unificado (.md)
+              </button>
+
+              <!-- CARD DE TELEMETRIA DE TOTAL DE BYTES DO MD -->
+              <div id="queue-total-bytes-card" class="queue-total-bytes-card">
+                <span class="total-bytes-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                  </svg>
+                </span>
+                <span class="total-bytes-label">Tamanho do MD:</span>
+                <span class="total-bytes-values">
+                  <strong id="live-total-bytes-counter" class="live-total-bytes-counter">0</strong>
+                  <span id="live-total-formatted-unit" class="live-total-formatted-unit">kB</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- BARRA DE PROGRESSO DE CONSOLIDA\xC7\xC3O & EXPORTA\xC7\xC3O ASS\xCDNCRONA -->
+            <div id="consolidation-progress" class="consolidation-progress-bar" style="display: none;">
+              <div class="consolidation-header">
+                <span class="consolidation-label">
+                  <span class="consolidation-spinner-icon" id="consolidation-spinner-icon" aria-hidden="true">
+                    <svg viewBox="0 0 100 100" class="radial-spinner-svg">
+                      <line x1="50" y1="14" x2="50" y2="28" stroke-width="8" stroke-linecap="round" class="ray ray-1" />
+                      <line x1="68" y1="18.8" x2="61" y2="30.9" stroke-width="8" stroke-linecap="round" class="ray ray-2" />
+                      <line x1="81.2" y1="32" x2="69.1" y2="39" stroke-width="8" stroke-linecap="round" class="ray ray-3" />
+                      <line x1="86" y1="50" x2="72" y2="50" stroke-width="8" stroke-linecap="round" class="ray ray-4" />
+                      <line x1="81.2" y1="68" x2="69.1" y2="61" stroke-width="8" stroke-linecap="round" class="ray ray-5" />
+                      <line x1="68" y1="81.2" x2="61" y2="69.1" stroke-width="8" stroke-linecap="round" class="ray ray-6" />
+                      <line x1="50" y1="86" x2="50" y2="72" stroke-width="8" stroke-linecap="round" class="ray ray-7" />
+                      <line x1="32" y1="81.2" x2="39" y2="69.1" stroke-width="8" stroke-linecap="round" class="ray ray-8" />
+                      <line x1="18.8" y1="68" x2="30.9" y2="61" stroke-width="8" stroke-linecap="round" class="ray ray-9" />
+                      <line x1="14" y1="50" x2="28" y2="50" stroke-width="8" stroke-linecap="round" class="ray ray-10" />
+                      <line x1="18.8" y1="32" x2="30.9" y2="39" stroke-width="8" stroke-linecap="round" class="ray ray-11" />
+                      <line x1="32" y1="18.8" x2="39" y2="30.9" stroke-width="8" stroke-linecap="round" class="ray ray-12" />
+                    </svg>
+                  </span>
+                  <span id="consolidation-status-text">Consolidando:</span>
+                </span>
+                <strong id="consolidation-counter" class="consolidation-counter">0 / 0 (0%)</strong>
+              </div>
+              <div class="consolidation-track">
+                <div id="consolidation-fill" class="consolidation-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BARRA DE CARREGAMENTO / PROGRESSO GLOBAL PARA LOTES (> 10 ARQUIVOS) -->
+          <div id="batch-global-progress" class="batch-global-progress" style="display: none;">
+            <div class="global-progress-header">
+              <span class="global-progress-label">
+                <span class="batch-spinner-icon" id="batch-spinner-icon" aria-hidden="true">
+                  <svg viewBox="0 0 100 100" class="radial-spinner-svg">
+                    <line x1="50" y1="14" x2="50" y2="28" stroke-width="8" stroke-linecap="round" class="ray ray-1" />
+                    <line x1="68" y1="18.8" x2="61" y2="30.9" stroke-width="8" stroke-linecap="round" class="ray ray-2" />
+                    <line x1="81.2" y1="32" x2="69.1" y2="39" stroke-width="8" stroke-linecap="round" class="ray ray-3" />
+                    <line x1="86" y1="50" x2="72" y2="50" stroke-width="8" stroke-linecap="round" class="ray ray-4" />
+                    <line x1="81.2" y1="68" x2="69.1" y2="61" stroke-width="8" stroke-linecap="round" class="ray ray-5" />
+                    <line x1="68" y1="81.2" x2="61" y2="69.1" stroke-width="8" stroke-linecap="round" class="ray ray-6" />
+                    <line x1="50" y1="86" x2="50" y2="72" stroke-width="8" stroke-linecap="round" class="ray ray-7" />
+                    <line x1="32" y1="81.2" x2="39" y2="69.1" stroke-width="8" stroke-linecap="round" class="ray ray-8" />
+                    <line x1="18.8" y1="68" x2="30.9" y2="61" stroke-width="8" stroke-linecap="round" class="ray ray-9" />
+                    <line x1="14" y1="50" x2="28" y2="50" stroke-width="8" stroke-linecap="round" class="ray ray-10" />
+                    <line x1="18.8" y1="32" x2="30.9" y2="39" stroke-width="8" stroke-linecap="round" class="ray ray-11" />
+                    <line x1="32" y1="18.8" x2="39" y2="30.9" stroke-width="8" stroke-linecap="round" class="ray ray-12" />
+                  </svg>
+                  <svg viewBox="0 0 24 24" class="batch-success-check-svg" style="display: none;" width="18" height="18" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+                Progresso do Lote
+              </span>
+              <span id="global-progress-counter" class="global-progress-counter">0 / 0 conclu\xEDdos (0%)</span>
+            </div>
+            <div class="global-progress-track">
+              <div id="global-progress-fill" class="global-progress-fill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <div id="file-queue-list" class="file-queue-list" role="list">
+            <!-- Itens da fila renderizados dinamicamente -->
+          </div>
+        </div>
+      </section>
+
+    </div>
+  `;
+  }
 
   // js/parsers/docx-parser.js
+  var turndownServiceInstance = null;
   function getTurndownService() {
     if (turndownServiceInstance) return turndownServiceInstance;
     const TurndownClass = typeof window !== "undefined" && window.TurndownService || globalThis.TurndownService;
@@ -537,13 +777,6 @@ ${markdown}`;
     }
     return markdown;
   }
-  var turndownServiceInstance;
-  var init_docx_parser = __esm({
-    "js/parsers/docx-parser.js"() {
-      init_config();
-      turndownServiceInstance = null;
-    }
-  });
 
   // js/parsers/xlsx-parser.js
   function matrixToMarkdownTable(matrix) {
@@ -605,11 +838,6 @@ ${markdown}`;
     }
     return markdownSections.join("\n\n").trim();
   }
-  var init_xlsx_parser = __esm({
-    "js/parsers/xlsx-parser.js"() {
-      init_config();
-    }
-  });
 
   // js/parsers/pptx-parser.js
   async function parsePptx(file, onProgress = null) {
@@ -728,11 +956,6 @@ ${markdown}`;
     }
     return markdownSlides.join("\n\n---\n\n").trim();
   }
-  var init_pptx_parser = __esm({
-    "js/parsers/pptx-parser.js"() {
-      init_config();
-    }
-  });
 
   // js/parsers/pdf-parser.js
   async function parsePdf(file, onProgress = null) {
@@ -852,11 +1075,6 @@ ${markdown}`;
     }
     return pagesMarkdown.join("\n\n").replace(/\n{3,}/g, "\n\n").trim();
   }
-  var init_pdf_parser = __esm({
-    "js/parsers/pdf-parser.js"() {
-      init_config();
-    }
-  });
 
   // js/parsers/text-parser.js
   function convertHtmlToMarkdown(htmlContent, docTitle = "Documento") {
@@ -1194,13 +1412,79 @@ ${textContent}
       }
     }
   }
-  var init_text_parser = __esm({
-    "js/parsers/text-parser.js"() {
-      init_config();
-    }
-  });
 
   // js/app.js
+  if (typeof window !== "undefined") {
+    window.onerror = function(message, source, lineno, colno, error) {
+      const debugEl = typeof document !== "undefined" ? document.getElementById("debug-status") : null;
+      const sourceFile = source ? source.split("/").pop() : "script";
+      const errText = `[Erro Fatal/Script]: ${message} (${sourceFile}:${lineno})`;
+      if (debugEl) {
+        debugEl.style.display = "block";
+        debugEl.textContent = errText;
+        debugEl.className = "debug-status error";
+      }
+      console.error("[doc2md Runtime Error]", { message, source, lineno, colno, error });
+      return false;
+    };
+    window.onunhandledrejection = function(event) {
+      const debugEl = typeof document !== "undefined" ? document.getElementById("debug-status") : null;
+      const reason = event.reason ? event.reason.message || String(event.reason) : "Falha ass\xEDncrona";
+      const errText = `[Erro Ass\xEDncrono/CDN]: ${reason}`;
+      if (debugEl) {
+        debugEl.style.display = "block";
+        debugEl.textContent = errText;
+        debugEl.className = "debug-status error";
+      }
+      console.error("[doc2md Unhandled Rejection]", event.reason);
+    };
+  }
+  var state = {
+    theme: "system",
+    queue: [],
+    maxConcurrency: 4,
+    userIsScrolling: false,
+    isMergeEnabled: false,
+    sortAscending: true,
+    isExtracting: false,
+    isProcessing: false,
+    isExporting: false,
+    isExportingZip: false,
+    isExportingUnified: false
+  };
+  var DEFAULT_ZIP_BUTTON_HTML = `
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/>
+    <line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+  Baixar Todos (.zip)
+`.trim();
+  var DEFAULT_UNIFIED_BUTTON_HTML = `
+  <span class="icon-merge">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="12" y1="18" x2="12" y2="12"/>
+      <polyline points="9 15 12 18 15 15"/>
+    </svg>
+  </span>
+  Baixar Markdown Unificado (.md)
+`.trim();
+  var COMPLETED_ZIP_BUTTON_HTML = `
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-check-icon">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+  <span class="btn-text-label">Conclu\xEDdo!</span>
+`.trim();
+  var COMPLETED_UNIFIED_BUTTON_HTML = `
+  <span class="icon-merge">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-check-icon">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  </span>
+  <span class="btn-text-label">Conclu\xEDdo!</span>
+`.trim();
   function updateDynamicConcurrency(forceHighConcurrency = false) {
     if (forceHighConcurrency) {
       state.maxConcurrency = APP_CONFIG.CONCURRENCY && APP_CONFIG.CONCURRENCY.HIGH_VOLUME || 1e3;
@@ -1217,6 +1501,40 @@ ${textContent}
     state.maxConcurrency = getDynamicConcurrency(count);
     return state.maxConcurrency;
   }
+  var elements = typeof document !== "undefined" ? {
+    themeToggle: document.getElementById("theme-toggle"),
+    themeIconSun: document.getElementById("theme-icon-sun"),
+    themeIconMoon: document.getElementById("theme-icon-moon"),
+    headerVersion: document.getElementById("header-version"),
+    footerVersion: typeof document !== "undefined" ? document.getElementById("footer-version") || document.querySelector(".footer-version") || document.getElementById("app-version") : null,
+    dropzone: document.getElementById("dropzone"),
+    fileInput: document.getElementById("file-input"),
+    btnBrowse: document.getElementById("btn-browse"),
+    debugStatus: document.getElementById("debug-status"),
+    // Elementos da Fila de Arquivos em Lote
+    fileQueueSection: document.getElementById("file-queue-section"),
+    fileQueueList: document.getElementById("file-queue-list"),
+    queueCounter: document.getElementById("queue-counter"),
+    btnQueueClear: document.getElementById("btn-queue-clear"),
+    btnQueueDownloadAll: document.getElementById("btn-queue-download-all"),
+    toggleMergeMarkdown: document.getElementById("toggle-merge-markdown"),
+    btnSortFiles: document.getElementById("btn-sort-files"),
+    sortFilesLabel: document.getElementById("sort-files-label"),
+    btnQueueDownloadMerged: document.getElementById("btn-download-unified") || document.getElementById("btn-queue-download-merged"),
+    btnDownloadUnified: document.getElementById("btn-download-unified") || document.getElementById("btn-queue-download-merged"),
+    unifiedActionRow: document.getElementById("unified-action-row") || document.getElementById("unified-download-container"),
+    unifiedDownloadContainer: document.getElementById("unified-action-row") || document.getElementById("unified-download-container"),
+    batchGlobalProgress: document.getElementById("batch-global-progress"),
+    globalProgressCounter: document.getElementById("global-progress-counter"),
+    globalProgressFill: document.getElementById("global-progress-fill"),
+    queueTotalBytesCard: document.getElementById("queue-total-bytes-card"),
+    liveTotalBytesCounter: document.getElementById("live-total-bytes-counter"),
+    liveTotalFormattedUnit: document.getElementById("live-total-formatted-unit"),
+    consolidationProgress: document.getElementById("consolidation-progress"),
+    consolidationCounter: document.getElementById("consolidation-counter"),
+    consolidationFill: document.getElementById("consolidation-fill"),
+    consolidationStatusText: document.getElementById("consolidation-status-text")
+  } : {};
   function reinitElements() {
     const el = (id) => typeof document !== "undefined" ? document.getElementById(id) : null;
     Object.assign(elements, {
@@ -1452,6 +1770,7 @@ ${textContent}
     }
     return { fileName, blob, content };
   }
+  var triggerDownload = downloadMarkdownFile;
   function getFormattedTimestamp(date = /* @__PURE__ */ new Date()) {
     const now = date instanceof Date && !isNaN(date) ? date : /* @__PURE__ */ new Date();
     const year = now.getFullYear();
@@ -1835,6 +2154,7 @@ ${textContent}
     updateGlobalBatchButtonsState();
     dispatchNext();
   }
+  var BATCH_HEADLESS_THRESHOLD = 50;
   function shouldEnableHeadlessMode(queueLength) {
     return queueLength >= BATCH_HEADLESS_THRESHOLD;
   }
@@ -1860,6 +2180,61 @@ ${textContent}
     const val = parseFloat(gb.toFixed(1)).toLocaleString("pt-BR");
     return { value: String(val), unit: "GB", formatted: `${val} GB` };
   }
+  var totalBytesAnimController = {
+    currentBytes: 0,
+    targetBytes: 0,
+    rafId: null,
+    setTarget(newTarget) {
+      this.targetBytes = Math.max(0, newTarget);
+      if (typeof requestAnimationFrame === "function") {
+        if (!this.rafId) {
+          this.rafId = requestAnimationFrame(() => this.loop());
+        }
+      } else {
+        this.currentBytes = this.targetBytes;
+        this.render(this.targetBytes);
+        this.rafId = null;
+      }
+    },
+    loop() {
+      const diff = this.targetBytes - this.currentBytes;
+      if (Math.abs(diff) > 1) {
+        const step = diff * 0.12;
+        this.currentBytes += Math.abs(step) < 1 ? Math.sign(diff) : step;
+        this.render(Math.round(this.currentBytes));
+        if (typeof requestAnimationFrame === "function") {
+          this.rafId = requestAnimationFrame(() => this.loop());
+        } else {
+          this.rafId = null;
+        }
+      } else {
+        this.currentBytes = this.targetBytes;
+        this.render(this.targetBytes);
+        this.rafId = null;
+      }
+    },
+    render(bytes) {
+      const counterEl = elements && elements.liveTotalBytesCounter || (typeof document !== "undefined" ? document.getElementById("live-total-bytes-counter") : null);
+      const formattedEl = elements && elements.liveTotalFormattedUnit || (typeof document !== "undefined" ? document.getElementById("live-total-formatted-unit") : null);
+      if (!counterEl) return;
+      const { value, unit } = formatMdTelemetrySize(bytes);
+      counterEl.textContent = value;
+      if (formattedEl) {
+        formattedEl.textContent = unit;
+      }
+    },
+    reset() {
+      if (this.rafId) {
+        if (typeof cancelAnimationFrame === "function") {
+          cancelAnimationFrame(this.rafId);
+        }
+        this.rafId = null;
+      }
+      this.currentBytes = 0;
+      this.targetBytes = 0;
+      this.render(0);
+    }
+  };
   function computeAndAnimateTotalMdBytes() {
     if (!state || !state.queue) {
       totalBytesAnimController.setTarget(0);
@@ -1920,6 +2295,7 @@ ${textContent}
       }
     }
   }
+  var updateGlobalBatchButtonsState = updateGlobalActionButtonsState;
   function setupQueueListDelegation(queueListElement) {
     const queueList = queueListElement || elements && elements.fileQueueList || (typeof document !== "undefined" ? document.querySelector(".file-queue-list") || document.getElementById("file-queue-list") : null);
     if (!queueList) return;
@@ -2122,6 +2498,8 @@ ${textContent}
     setupQueueListDelegation(queueList);
     updateGlobalBatchProgress();
   }
+  var pendingQueueDOMUpdates = /* @__PURE__ */ new Map();
+  var queueRafId = null;
   function flushQueueDOMUpdates() {
     queueRafId = null;
     const items = Array.from(pendingQueueDOMUpdates.values());
@@ -2311,6 +2689,100 @@ ${textContent}
     renderQueue();
     processQueue();
   }
+  var batchAnimationController = {
+    currentCount: 0,
+    targetCount: 0,
+    currentPercent: 0,
+    targetPercent: 0,
+    total: 0,
+    lastFrameTime: null,
+    rafId: null,
+    updateTargets(completed, total) {
+      this.targetCount = completed;
+      this.total = total;
+      this.targetPercent = total > 0 ? completed / total * 100 : 0;
+      if (typeof requestAnimationFrame === "function") {
+        if (!this.rafId) {
+          this.lastFrameTime = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+          this.rafId = requestAnimationFrame((now) => this.tick(now));
+        }
+      } else {
+        this.currentCount = this.targetCount;
+        this.currentPercent = this.targetPercent;
+        this.render(this.targetCount, this.targetPercent);
+      }
+    },
+    tick(now) {
+      const perfNow = typeof now === "number" ? now : typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+      const dt = Math.min((perfNow - (this.lastFrameTime || perfNow)) / 1e3, 0.1);
+      this.lastFrameTime = perfNow;
+      const smoothing = 1 - Math.exp(-12 * dt);
+      const diffCount = this.targetCount - this.currentCount;
+      const diffPercent = this.targetPercent - this.currentPercent;
+      if (Math.abs(diffCount) > 0.08 || Math.abs(diffPercent) > 0.08) {
+        this.currentCount += diffCount * smoothing;
+        this.currentPercent += diffPercent * smoothing;
+        this.render(Math.round(this.currentCount), this.currentPercent);
+        if (typeof requestAnimationFrame === "function") {
+          this.rafId = requestAnimationFrame((n) => this.tick(n));
+        } else {
+          this.rafId = null;
+        }
+      } else {
+        this.currentCount = this.targetCount;
+        this.currentPercent = this.targetPercent;
+        this.render(this.targetCount, this.targetPercent);
+        this.rafId = null;
+      }
+    },
+    render(displayCount, displayPercent) {
+      const counterEl = elements && elements.globalProgressCounter || (typeof document !== "undefined" ? document.getElementById("global-progress-counter") : null);
+      const fillEl = elements && elements.globalProgressFill || (typeof document !== "undefined" ? document.getElementById("global-progress-fill") : null);
+      const globalProgressEl = elements && elements.batchGlobalProgress || (typeof document !== "undefined" ? document.getElementById("batch-global-progress") : null);
+      if (counterEl) {
+        const roundedPct = Math.min(100, Math.round(displayPercent));
+        counterEl.textContent = `${displayCount.toLocaleString("pt-BR")} / ${this.total.toLocaleString("pt-BR")} arquivos processados (${roundedPct}%)`;
+      }
+      if (fillEl) {
+        fillEl.style.width = `${displayPercent.toFixed(2)}%`;
+        if (displayPercent >= 99.99) {
+          fillEl.classList.add("finished");
+        } else {
+          fillEl.classList.remove("finished");
+        }
+      }
+      if (globalProgressEl) {
+        if (displayPercent >= 99.99) {
+          globalProgressEl.classList.add("is-completed");
+        } else {
+          globalProgressEl.classList.remove("is-completed");
+        }
+      }
+      if (displayPercent >= 99.99 || this.total > 0 && displayCount >= this.total) {
+        updateGlobalBatchButtonsState();
+      }
+    },
+    reset() {
+      if (this.rafId) {
+        if (typeof cancelAnimationFrame === "function") {
+          cancelAnimationFrame(this.rafId);
+        }
+        this.rafId = null;
+      }
+      this.currentCount = 0;
+      this.targetCount = 0;
+      this.currentPercent = 0;
+      this.targetPercent = 0;
+      this.total = 0;
+      this.lastFrameTime = null;
+      const globalProgressEl = elements && elements.batchGlobalProgress || (typeof document !== "undefined" ? document.getElementById("batch-global-progress") : null);
+      if (globalProgressEl) {
+        globalProgressEl.classList.remove("is-completed");
+      }
+      this.render(0, 0);
+    }
+  };
+  var completedCountSinceLastScroll = 0;
   function handleBatchChunkAutoScroll(itemIndex, totalQueueItems) {
     if (totalQueueItems >= 50 || state && state.userIsScrolling) return;
     completedCountSinceLastScroll++;
@@ -3256,324 +3728,50 @@ ${footerDelimiter}
     initDropzone();
     initQueueEvents();
   }
-  var state, DEFAULT_ZIP_BUTTON_HTML, DEFAULT_UNIFIED_BUTTON_HTML, COMPLETED_ZIP_BUTTON_HTML, COMPLETED_UNIFIED_BUTTON_HTML, elements, triggerDownload, BATCH_HEADLESS_THRESHOLD, totalBytesAnimController, updateGlobalBatchButtonsState, pendingQueueDOMUpdates, queueRafId, batchAnimationController, completedCountSinceLastScroll;
-  var init_app = __esm({
-    "js/app.js"() {
-      init_config();
-      init_docx_parser();
-      init_xlsx_parser();
-      init_pptx_parser();
-      init_pdf_parser();
-      init_text_parser();
-      if (typeof window !== "undefined") {
-        window.onerror = function(message, source, lineno, colno, error) {
-          const debugEl = typeof document !== "undefined" ? document.getElementById("debug-status") : null;
-          const sourceFile = source ? source.split("/").pop() : "script";
-          const errText = `[Erro Fatal/Script]: ${message} (${sourceFile}:${lineno})`;
-          if (debugEl) {
-            debugEl.style.display = "block";
-            debugEl.textContent = errText;
-            debugEl.className = "debug-status error";
-          }
-          console.error("[doc2md Runtime Error]", { message, source, lineno, colno, error });
-          return false;
-        };
-        window.onunhandledrejection = function(event) {
-          const debugEl = typeof document !== "undefined" ? document.getElementById("debug-status") : null;
-          const reason = event.reason ? event.reason.message || String(event.reason) : "Falha ass\xEDncrona";
-          const errText = `[Erro Ass\xEDncrono/CDN]: ${reason}`;
-          if (debugEl) {
-            debugEl.style.display = "block";
-            debugEl.textContent = errText;
-            debugEl.className = "debug-status error";
-          }
-          console.error("[doc2md Unhandled Rejection]", event.reason);
-        };
-      }
-      state = {
-        theme: "system",
-        queue: [],
-        maxConcurrency: 4,
-        userIsScrolling: false,
-        isMergeEnabled: false,
-        sortAscending: true,
-        isExtracting: false,
-        isProcessing: false,
-        isExporting: false,
-        isExportingZip: false,
-        isExportingUnified: false
-      };
-      DEFAULT_ZIP_BUTTON_HTML = `
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-    <polyline points="7 10 12 15 17 10"/>
-    <line x1="12" y1="15" x2="12" y2="3"/>
-  </svg>
-  Baixar Todos (.zip)
-`.trim();
-      DEFAULT_UNIFIED_BUTTON_HTML = `
-  <span class="icon-merge">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-      <polyline points="14 2 14 8 20 8"/>
-      <line x1="12" y1="18" x2="12" y2="12"/>
-      <polyline points="9 15 12 18 15 15"/>
-    </svg>
-  </span>
-  Baixar Markdown Unificado (.md)
-`.trim();
-      COMPLETED_ZIP_BUTTON_HTML = `
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-check-icon">
-    <polyline points="20 6 9 17 4 12"></polyline>
-  </svg>
-  <span class="btn-text-label">Conclu\xEDdo!</span>
-`.trim();
-      COMPLETED_UNIFIED_BUTTON_HTML = `
-  <span class="icon-merge">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="inline-check-icon">
-      <polyline points="20 6 9 17 4 12"></polyline>
-    </svg>
-  </span>
-  <span class="btn-text-label">Conclu\xEDdo!</span>
-`.trim();
-      elements = typeof document !== "undefined" ? {
-        themeToggle: document.getElementById("theme-toggle"),
-        themeIconSun: document.getElementById("theme-icon-sun"),
-        themeIconMoon: document.getElementById("theme-icon-moon"),
-        headerVersion: document.getElementById("header-version"),
-        footerVersion: typeof document !== "undefined" ? document.getElementById("footer-version") || document.querySelector(".footer-version") || document.getElementById("app-version") : null,
-        dropzone: document.getElementById("dropzone"),
-        fileInput: document.getElementById("file-input"),
-        btnBrowse: document.getElementById("btn-browse"),
-        debugStatus: document.getElementById("debug-status"),
-        // Elementos da Fila de Arquivos em Lote
-        fileQueueSection: document.getElementById("file-queue-section"),
-        fileQueueList: document.getElementById("file-queue-list"),
-        queueCounter: document.getElementById("queue-counter"),
-        btnQueueClear: document.getElementById("btn-queue-clear"),
-        btnQueueDownloadAll: document.getElementById("btn-queue-download-all"),
-        toggleMergeMarkdown: document.getElementById("toggle-merge-markdown"),
-        btnSortFiles: document.getElementById("btn-sort-files"),
-        sortFilesLabel: document.getElementById("sort-files-label"),
-        btnQueueDownloadMerged: document.getElementById("btn-download-unified") || document.getElementById("btn-queue-download-merged"),
-        btnDownloadUnified: document.getElementById("btn-download-unified") || document.getElementById("btn-queue-download-merged"),
-        unifiedActionRow: document.getElementById("unified-action-row") || document.getElementById("unified-download-container"),
-        unifiedDownloadContainer: document.getElementById("unified-action-row") || document.getElementById("unified-download-container"),
-        batchGlobalProgress: document.getElementById("batch-global-progress"),
-        globalProgressCounter: document.getElementById("global-progress-counter"),
-        globalProgressFill: document.getElementById("global-progress-fill"),
-        queueTotalBytesCard: document.getElementById("queue-total-bytes-card"),
-        liveTotalBytesCounter: document.getElementById("live-total-bytes-counter"),
-        liveTotalFormattedUnit: document.getElementById("live-total-formatted-unit"),
-        consolidationProgress: document.getElementById("consolidation-progress"),
-        consolidationCounter: document.getElementById("consolidation-counter"),
-        consolidationFill: document.getElementById("consolidation-fill"),
-        consolidationStatusText: document.getElementById("consolidation-status-text")
-      } : {};
-      triggerDownload = downloadMarkdownFile;
-      BATCH_HEADLESS_THRESHOLD = 50;
-      totalBytesAnimController = {
-        currentBytes: 0,
-        targetBytes: 0,
-        rafId: null,
-        setTarget(newTarget) {
-          this.targetBytes = Math.max(0, newTarget);
-          if (typeof requestAnimationFrame === "function") {
-            if (!this.rafId) {
-              this.rafId = requestAnimationFrame(() => this.loop());
-            }
-          } else {
-            this.currentBytes = this.targetBytes;
-            this.render(this.targetBytes);
-            this.rafId = null;
-          }
-        },
-        loop() {
-          const diff = this.targetBytes - this.currentBytes;
-          if (Math.abs(diff) > 1) {
-            const step = diff * 0.12;
-            this.currentBytes += Math.abs(step) < 1 ? Math.sign(diff) : step;
-            this.render(Math.round(this.currentBytes));
-            if (typeof requestAnimationFrame === "function") {
-              this.rafId = requestAnimationFrame(() => this.loop());
-            } else {
-              this.rafId = null;
-            }
-          } else {
-            this.currentBytes = this.targetBytes;
-            this.render(this.targetBytes);
-            this.rafId = null;
-          }
-        },
-        render(bytes) {
-          const counterEl = elements && elements.liveTotalBytesCounter || (typeof document !== "undefined" ? document.getElementById("live-total-bytes-counter") : null);
-          const formattedEl = elements && elements.liveTotalFormattedUnit || (typeof document !== "undefined" ? document.getElementById("live-total-formatted-unit") : null);
-          if (!counterEl) return;
-          const { value, unit } = formatMdTelemetrySize(bytes);
-          counterEl.textContent = value;
-          if (formattedEl) {
-            formattedEl.textContent = unit;
-          }
-        },
-        reset() {
-          if (this.rafId) {
-            if (typeof cancelAnimationFrame === "function") {
-              cancelAnimationFrame(this.rafId);
-            }
-            this.rafId = null;
-          }
-          this.currentBytes = 0;
-          this.targetBytes = 0;
-          this.render(0);
-        }
-      };
-      updateGlobalBatchButtonsState = updateGlobalActionButtonsState;
-      pendingQueueDOMUpdates = /* @__PURE__ */ new Map();
-      queueRafId = null;
-      batchAnimationController = {
-        currentCount: 0,
-        targetCount: 0,
-        currentPercent: 0,
-        targetPercent: 0,
-        total: 0,
-        lastFrameTime: null,
-        rafId: null,
-        updateTargets(completed, total) {
-          this.targetCount = completed;
-          this.total = total;
-          this.targetPercent = total > 0 ? completed / total * 100 : 0;
-          if (typeof requestAnimationFrame === "function") {
-            if (!this.rafId) {
-              this.lastFrameTime = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
-              this.rafId = requestAnimationFrame((now) => this.tick(now));
-            }
-          } else {
-            this.currentCount = this.targetCount;
-            this.currentPercent = this.targetPercent;
-            this.render(this.targetCount, this.targetPercent);
-          }
-        },
-        tick(now) {
-          const perfNow = typeof now === "number" ? now : typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
-          const dt = Math.min((perfNow - (this.lastFrameTime || perfNow)) / 1e3, 0.1);
-          this.lastFrameTime = perfNow;
-          const smoothing = 1 - Math.exp(-12 * dt);
-          const diffCount = this.targetCount - this.currentCount;
-          const diffPercent = this.targetPercent - this.currentPercent;
-          if (Math.abs(diffCount) > 0.08 || Math.abs(diffPercent) > 0.08) {
-            this.currentCount += diffCount * smoothing;
-            this.currentPercent += diffPercent * smoothing;
-            this.render(Math.round(this.currentCount), this.currentPercent);
-            if (typeof requestAnimationFrame === "function") {
-              this.rafId = requestAnimationFrame((n) => this.tick(n));
-            } else {
-              this.rafId = null;
-            }
-          } else {
-            this.currentCount = this.targetCount;
-            this.currentPercent = this.targetPercent;
-            this.render(this.targetCount, this.targetPercent);
-            this.rafId = null;
-          }
-        },
-        render(displayCount, displayPercent) {
-          const counterEl = elements && elements.globalProgressCounter || (typeof document !== "undefined" ? document.getElementById("global-progress-counter") : null);
-          const fillEl = elements && elements.globalProgressFill || (typeof document !== "undefined" ? document.getElementById("global-progress-fill") : null);
-          const globalProgressEl = elements && elements.batchGlobalProgress || (typeof document !== "undefined" ? document.getElementById("batch-global-progress") : null);
-          if (counterEl) {
-            const roundedPct = Math.min(100, Math.round(displayPercent));
-            counterEl.textContent = `${displayCount.toLocaleString("pt-BR")} / ${this.total.toLocaleString("pt-BR")} arquivos processados (${roundedPct}%)`;
-          }
-          if (fillEl) {
-            fillEl.style.width = `${displayPercent.toFixed(2)}%`;
-            if (displayPercent >= 99.99) {
-              fillEl.classList.add("finished");
-            } else {
-              fillEl.classList.remove("finished");
-            }
-          }
-          if (globalProgressEl) {
-            if (displayPercent >= 99.99) {
-              globalProgressEl.classList.add("is-completed");
-            } else {
-              globalProgressEl.classList.remove("is-completed");
-            }
-          }
-          if (displayPercent >= 99.99 || this.total > 0 && displayCount >= this.total) {
-            updateGlobalBatchButtonsState();
-          }
-        },
-        reset() {
-          if (this.rafId) {
-            if (typeof cancelAnimationFrame === "function") {
-              cancelAnimationFrame(this.rafId);
-            }
-            this.rafId = null;
-          }
-          this.currentCount = 0;
-          this.targetCount = 0;
-          this.currentPercent = 0;
-          this.targetPercent = 0;
-          this.total = 0;
-          this.lastFrameTime = null;
-          const globalProgressEl = elements && elements.batchGlobalProgress || (typeof document !== "undefined" ? document.getElementById("batch-global-progress") : null);
-          if (globalProgressEl) {
-            globalProgressEl.classList.remove("is-completed");
-          }
-          this.render(0, 0);
-        }
-      };
-      completedCountSinceLastScroll = 0;
-      if (typeof document !== "undefined") {
-        const isSubModule = typeof window.__openToolRegistryActive !== "undefined";
-        if (!isSubModule) {
-          if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", boot);
-          } else {
-            boot();
-          }
-        }
-        if (!document.__openMarkGlobalClickAttached) {
-          document.__openMarkGlobalClickAttached = true;
-          document.addEventListener("click", (e) => {
-            const btnUnified = e.target && typeof e.target.closest === "function" ? e.target.closest("#btn-download-unified, .btn-download-unified, .btn-queue-download-merged") : null;
-            if (btnUnified) {
-              if (typeof e.preventDefault === "function") e.preventDefault();
-              if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
-              else if (typeof e.stopPropagation === "function") e.stopPropagation();
-              downloadUnifiedMarkdown();
-              return;
-            }
-            const btnZip = e.target && typeof e.target.closest === "function" ? e.target.closest("#btn-queue-download-all, .btn-queue-download-all") : null;
-            if (btnZip) {
-              if (typeof e.preventDefault === "function") e.preventDefault();
-              if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
-              else if (typeof e.stopPropagation === "function") e.stopPropagation();
-              downloadAllZip();
-              return;
-            }
-            const btnItem = e.target && typeof e.target.closest === "function" ? e.target.closest(".btn-download-item, .btn-queue-item-download, .btn-download") : null;
-            if (btnItem) {
-              if (typeof e.preventDefault === "function") e.preventDefault();
-              if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
-              else if (typeof e.stopPropagation === "function") e.stopPropagation();
-              const itemId = btnItem.dataset ? btnItem.dataset.id : btnItem.getAttribute ? btnItem.getAttribute("data-id") : null;
-              if (itemId) {
-                downloadQueueItem(itemId);
-              }
-              return;
-            }
-          }, true);
-        }
+  if (typeof document !== "undefined") {
+    const isSubModule = typeof window.__openToolRegistryActive !== "undefined";
+    if (!isSubModule) {
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", boot);
+      } else {
+        boot();
       }
     }
-  });
+    if (!document.__openMarkGlobalClickAttached) {
+      document.__openMarkGlobalClickAttached = true;
+      document.addEventListener("click", (e) => {
+        const btnUnified = e.target && typeof e.target.closest === "function" ? e.target.closest("#btn-download-unified, .btn-download-unified, .btn-queue-download-merged") : null;
+        if (btnUnified) {
+          if (typeof e.preventDefault === "function") e.preventDefault();
+          if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+          else if (typeof e.stopPropagation === "function") e.stopPropagation();
+          downloadUnifiedMarkdown();
+          return;
+        }
+        const btnZip = e.target && typeof e.target.closest === "function" ? e.target.closest("#btn-queue-download-all, .btn-queue-download-all") : null;
+        if (btnZip) {
+          if (typeof e.preventDefault === "function") e.preventDefault();
+          if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+          else if (typeof e.stopPropagation === "function") e.stopPropagation();
+          downloadAllZip();
+          return;
+        }
+        const btnItem = e.target && typeof e.target.closest === "function" ? e.target.closest(".btn-download-item, .btn-queue-item-download, .btn-download") : null;
+        if (btnItem) {
+          if (typeof e.preventDefault === "function") e.preventDefault();
+          if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+          else if (typeof e.stopPropagation === "function") e.stopPropagation();
+          const itemId = btnItem.dataset ? btnItem.dataset.id : btnItem.getAttribute ? btnItem.getAttribute("data-id") : null;
+          if (itemId) {
+            downloadQueueItem(itemId);
+          }
+          return;
+        }
+      }, true);
+    }
+  }
 
   // js/app-doc2md.js
-  var app_doc2md_exports = {};
-  __export(app_doc2md_exports, {
-    initDoc2md: () => initDoc2md
-  });
   async function initDoc2md(container) {
     await new Promise((r) => typeof requestAnimationFrame !== "undefined" ? requestAnimationFrame(r) : setTimeout(r, 16));
     try {
@@ -3584,405 +3782,8 @@ ${footerDelimiter}
     return function cleanup() {
     };
   }
-  var init_app_doc2md = __esm({
-    "js/app-doc2md.js"() {
-      init_app();
-    }
-  });
-
-  // js/tool-registry.js
-  init_config();
-  var import_meta = {};
-  var STORAGE_KEY_ACTIVE_TOOL = "opentool_active_tool";
-  var _registryBase = typeof import_meta !== "undefined" && import_meta?.url ? new URL(".", import_meta.url).href : "./js/";
-  var _preloadedModules = /* @__PURE__ */ new Map();
-  function registerToolModule(id, toolModule) {
-    _preloadedModules.set(id, toolModule);
-  }
-  var TOOL_CATALOG = [
-    {
-      id: "doc2md",
-      label: "Doc \u2192 MD",
-      description: "Converta documentos, planilhas, PDFs e c\xF3digo para Markdown estruturado",
-      modulePath: _registryBase + "tools/doc2md/tool.js",
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-      <polyline points="14 2 14 8 20 8"/>
-      <line x1="16" y1="13" x2="8" y2="13"/>
-      <line x1="16" y1="17" x2="8" y2="17"/>
-    </svg>`
-    },
-    {
-      id: "qrcode",
-      label: "QR Code",
-      description: "Gere QR Codes a partir de links e texto \u2014 100% local, sem servidores",
-      modulePath: _registryBase + "tools/qrcode/tool.js",
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/>
-      <rect x="14" y="3" width="7" height="7" rx="1"/>
-      <rect x="3" y="14" width="7" height="7" rx="1"/>
-      <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-      <rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-      <rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/>
-      <path d="M14 14h3v3h-3z" fill="currentColor" stroke="none"/>
-      <path d="M17 17h4"/>
-      <path d="M17 21v-4"/>
-      <path d="M21 17v4"/>
-    </svg>`
-    }
-  ];
-  var _activeModule = null;
-  var _activeToolId = null;
-  var _viewport = null;
-  async function initRegistry(viewport) {
-    _viewport = viewport;
-    const savedTool = localStorage.getItem(STORAGE_KEY_ACTIVE_TOOL);
-    const initialTool = TOOL_CATALOG.find((t) => t.id === savedTool) || TOOL_CATALOG[0];
-    await activateTool(initialTool.id);
-  }
-  async function activateTool(toolId) {
-    if (toolId === _activeToolId) return;
-    const toolMeta = TOOL_CATALOG.find((t) => t.id === toolId);
-    if (!toolMeta) {
-      console.error(`[ToolRegistry] Ferramenta desconhecida: ${toolId}`);
-      return;
-    }
-    if (_activeModule && typeof _activeModule.unmount === "function") {
-      try {
-        _activeModule.unmount();
-      } catch (e) {
-      }
-    }
-    _viewport.classList.add("tool-viewport--transitioning");
-    _viewport.style.minHeight = _viewport.offsetHeight + "px";
-    try {
-      let mod = null;
-      if (_preloadedModules.has(toolId)) {
-        mod = { default: _preloadedModules.get(toolId) };
-      } else if (typeof window !== "undefined" && window.__OPEN_TOOL_MODULES__ && window.__OPEN_TOOL_MODULES__[toolId]) {
-        mod = { default: window.__OPEN_TOOL_MODULES__[toolId] };
-      } else {
-        mod = await import(toolMeta.modulePath);
-      }
-      _activeModule = mod.default;
-      _activeToolId = toolId;
-      if (typeof _activeModule.render === "function") {
-        _activeModule.render(_viewport);
-      }
-      _viewport.style.minHeight = "";
-      await new Promise((r) => setTimeout(r, 20));
-      if (typeof _activeModule.mount === "function") {
-        await _activeModule.mount(_viewport);
-      }
-      localStorage.setItem(STORAGE_KEY_ACTIVE_TOOL, toolId);
-      _updateNavbar(toolId);
-      const raf = typeof requestAnimationFrame !== "undefined" ? requestAnimationFrame : (cb) => setTimeout(cb, 16);
-      raf(() => {
-        _viewport.classList.remove("tool-viewport--transitioning");
-      });
-    } catch (err) {
-      console.error(`[ToolRegistry] Falha ao carregar ferramenta "${toolId}":`, err);
-      _viewport.classList.remove("tool-viewport--transitioning");
-      _viewport.style.minHeight = "";
-      _viewport.innerHTML = `<div class="tool-error-state">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--error-color);opacity:.6">
-        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
-      <p>Falha ao carregar <strong>${toolMeta.label}</strong></p>
-      <p class="tool-error-detail">${err.message}</p>
-    </div>`;
-    }
-  }
-  function renderToolbar(container) {
-    container.innerHTML = `
-    <nav class="tool-navbar" role="tablist" aria-label="Ferramentas dispon\xEDveis">
-      <div class="tool-navbar-inner">
-        ${TOOL_CATALOG.map((tool3) => `
-          <button
-            class="tool-nav-btn"
-            data-tool-id="${tool3.id}"
-            role="tab"
-            aria-selected="false"
-            title="${tool3.description}"
-            id="tool-tab-${tool3.id}"
-          >
-            <span class="tool-nav-icon" aria-hidden="true">${tool3.icon}</span>
-            <span class="tool-nav-label">${tool3.label}</span>
-          </button>
-        `).join("")}
-      </div>
-    </nav>
-  `;
-    container.querySelectorAll(".tool-nav-btn").forEach((btn) => {
-      btn.addEventListener("click", () => activateTool(btn.dataset.toolId));
-    });
-  }
-  function _updateNavbar(activeToolId) {
-    document.querySelectorAll(".tool-nav-btn").forEach((btn) => {
-      const isActive = btn.dataset.toolId === activeToolId;
-      btn.classList.toggle("tool-nav-btn--active", isActive);
-      btn.setAttribute("aria-selected", String(isActive));
-    });
-  }
-
-  // js/tools/doc2md/ui.js
-  function getDoc2mdHTML() {
-    return `
-    <div class="doc2md-tool-root">
-
-      <!-- Se\xE7\xE3o de Apresenta\xE7\xE3o & Dropzone -->
-      <section class="hero-section">
-        <!-- Cabe\xE7alho Principal -->
-        <header class="hero-header">
-          <h2 class="hero-title">Conversor Universal &amp; Mesclador de Documentos para Markdown</h2>
-          <p class="hero-subtitle">
-            Converta, descompacte e unifique documentos, planilhas, apresenta\xE7\xF5es, PDFs e pacotes (.zip/.rar) diretamente no navegador. 100% privado, local e sem depend\xEAncia de servidores.
-          </p>
-        </header>
-
-        <!-- \xC1rea da Dropzone -->
-        <div class="dropzone-container">
-          <label for="file-input" class="dropzone" id="dropzone" tabindex="0">
-            <div class="dropzone-icon dropzone-icon-wrap" aria-hidden="true">
-              <svg class="upload-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-            </div>
-
-            <p class="dropzone-main-text dropzone-prompt">
-              Arraste e solte seus arquivos ou pacotes (.zip, .rar) aqui, ou clique no bot\xE3o abaixo
-            </p>
-
-            <button type="button" id="btn-browse" class="btn btn-primary btn-browse">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-              Selecionar Arquivo do Computador
-            </button>
-
-            <p class="dropzone-subtext dropzone-subprompt">
-              Suporta upload em lote, descompacta\xE7\xE3o autom\xE1tica e colagem de arquivos/texto (Ctrl+V)
-            </p>
-
-            <div class="format-badges-list format-tags">
-              <span class="format-badge format-tag">.docx</span>
-              <span class="format-badge format-tag">.xlsx</span>
-              <span class="format-badge format-tag">.csv</span>
-              <span class="format-badge format-tag">.ods</span>
-              <span class="format-badge format-tag">.pptx</span>
-              <span class="format-badge format-tag">.pdf</span>
-              <span class="format-badge format-tag">.txt</span>
-              <span class="format-badge format-tag">.json</span>
-              <span class="format-badge format-tag">.yml</span>
-              <span class="format-badge format-tag">.yaml</span>
-              <span class="format-badge format-tag">.html</span>
-              <span class="format-badge format-tag">.rtf</span>
-              <span class="format-badge format-tag">.js</span>
-              <span class="format-badge format-tag">.py</span>
-              <span class="format-badge format-tag">.m</span>
-              <span class="format-badge format-tag">.lua</span>
-              <span class="format-badge format-tag">.cpp</span>
-              <span class="format-badge format-tag">.rs</span>
-              <span class="format-badge format-tag">.sh</span>
-              <span class="format-badge format-tag">.zip</span>
-              <span class="format-badge format-tag">.rar</span>
-              <span class="format-badge format-tag highlight">+algumas linguagens de c\xF3digo</span>
-            </div>
-
-            <div class="limit-indicator limit-badge" title="Tamanho m\xE1ximo suportado por documento">
-              <span class="icon-info">\u24D8</span>
-              <span>Limite m\xE1ximo: <strong>1,5 GB</strong> por arquivo ou pacote compactado</span>
-            </div>
-
-            <input type="file" id="file-input" class="visually-hidden" multiple style="position: absolute; left: -9999px; opacity: 0;" aria-label="Selecionar arquivos" />
-          </label>
-        </div>
-
-        <!-- Telemetria e Diagn\xF3stico Visual T\xE9cnico (oculto por padr\xE3o) -->
-        <div id="debug-status" class="debug-status" aria-live="polite" style="display: none;"></div>
-      </section>
-
-      <!-- Fila de Documentos & Progresso em Lote (File Queue Section) -->
-      <section id="file-queue-section" class="file-queue-section" style="display: none;" aria-label="Fila de arquivos para convers\xE3o">
-        <div class="file-queue-card">
-          <div class="file-queue-header queue-header">
-            <!-- LINHA 1: BARRA SUPERIOR FIXA E IMUT\xC1VEL -->
-            <div class="queue-header-main">
-              <div class="file-queue-title-wrap queue-header-title">
-                <div class="file-queue-icon icon-queue" aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
-                  </svg>
-                </div>
-                <h3 class="file-queue-title">
-                  Fila de Documentos
-                  <span class="file-queue-counter badge-count" id="queue-counter">0 arquivos</span>
-                </h3>
-              </div>
-
-              <div class="queue-header-actions queue-header-controls">
-                <label class="toggle-switch" for="toggle-merge-markdown" title="Compilar todos os arquivos convertidos em um \xFAnico documento Markdown consolidado">
-                  <input type="checkbox" id="toggle-merge-markdown">
-                  <span class="toggle-slider"></span>
-                  <span class="toggle-label">Mesclar arquivos em um \xFAnico .md</span>
-                </label>
-
-                <div class="queue-buttons-group queue-static-buttons">
-                  <button type="button" id="btn-queue-download-all" class="btn btn-secondary btn-sm" title="Baixar todos os documentos convertidos em arquivo .zip">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                      <polyline points="7 10 12 15 17 10"/>
-                      <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
-                    Baixar Todos (.zip)
-                  </button>
-                  <button type="button" id="btn-queue-clear" class="btn btn-ghost btn-sm" title="Limpar todos os arquivos da fila">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 6h18"/>
-                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                    </svg>
-                    Limpar Todos
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- LINHA 2: \xC1REA EXCLUSIVA PARA DOWNLOAD UNIFICADO & ORDENA\xC7\xC3O (SURGE ABAIXO) -->
-            <div id="unified-action-row" class="unified-action-row unified-download-container" style="display: none;">
-              <div class="merge-sort-container">
-                <button type="button" id="btn-sort-files" class="btn-sort" title="Classificar arquivos por ordem alfab\xE9tica">
-                  <svg class="sort-icon icon-desc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-                    <line x1="5" y1="4" x2="5" y2="20" />
-                    <polyline points="2 17 5 20 8 17" />
-                    <line x1="11" y1="5" x2="21" y2="5" />
-                    <line x1="11" y1="10" x2="18" y2="10" />
-                    <line x1="11" y1="15" x2="15" y2="15" />
-                    <line x1="11" y1="20" x2="13" y2="20" />
-                  </svg>
-                  <svg class="sort-icon icon-asc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="20" x2="5" y2="4" />
-                    <polyline points="2 7 5 4 8 7" />
-                    <line x1="11" y1="5" x2="13" y2="5" />
-                    <line x1="11" y1="10" x2="15" y2="10" />
-                    <line x1="11" y1="15" x2="18" y2="15" />
-                    <line x1="11" y1="20" x2="21" y2="20" />
-                  </svg>
-                  <span id="sort-files-label">Classificar A-Z</span>
-                </button>
-              </div>
-              <button type="button" id="btn-download-unified" class="btn btn-primary btn-sm btn-unified btn-unified-pulse btn-queue-download-merged" title="Baixar todos os documentos mesclados em um \xFAnico arquivo .md">
-                <span class="icon-merge">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="12" y1="18" x2="12" y2="12"/>
-                    <polyline points="9 15 12 18 15 15"/>
-                  </svg>
-                </span>
-                Baixar Markdown Unificado (.md)
-              </button>
-
-              <!-- CARD DE TELEMETRIA DE TOTAL DE BYTES DO MD -->
-              <div id="queue-total-bytes-card" class="queue-total-bytes-card">
-                <span class="total-bytes-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                  </svg>
-                </span>
-                <span class="total-bytes-label">Tamanho do MD:</span>
-                <span class="total-bytes-values">
-                  <strong id="live-total-bytes-counter" class="live-total-bytes-counter">0</strong>
-                  <span id="live-total-formatted-unit" class="live-total-formatted-unit">kB</span>
-                </span>
-              </div>
-            </div>
-
-            <!-- BARRA DE PROGRESSO DE CONSOLIDA\xC7\xC3O & EXPORTA\xC7\xC3O ASS\xCDNCRONA -->
-            <div id="consolidation-progress" class="consolidation-progress-bar" style="display: none;">
-              <div class="consolidation-header">
-                <span class="consolidation-label">
-                  <span class="consolidation-spinner-icon" id="consolidation-spinner-icon" aria-hidden="true">
-                    <svg viewBox="0 0 100 100" class="radial-spinner-svg">
-                      <line x1="50" y1="14" x2="50" y2="28" stroke-width="8" stroke-linecap="round" class="ray ray-1" />
-                      <line x1="68" y1="18.8" x2="61" y2="30.9" stroke-width="8" stroke-linecap="round" class="ray ray-2" />
-                      <line x1="81.2" y1="32" x2="69.1" y2="39" stroke-width="8" stroke-linecap="round" class="ray ray-3" />
-                      <line x1="86" y1="50" x2="72" y2="50" stroke-width="8" stroke-linecap="round" class="ray ray-4" />
-                      <line x1="81.2" y1="68" x2="69.1" y2="61" stroke-width="8" stroke-linecap="round" class="ray ray-5" />
-                      <line x1="68" y1="81.2" x2="61" y2="69.1" stroke-width="8" stroke-linecap="round" class="ray ray-6" />
-                      <line x1="50" y1="86" x2="50" y2="72" stroke-width="8" stroke-linecap="round" class="ray ray-7" />
-                      <line x1="32" y1="81.2" x2="39" y2="69.1" stroke-width="8" stroke-linecap="round" class="ray ray-8" />
-                      <line x1="18.8" y1="68" x2="30.9" y2="61" stroke-width="8" stroke-linecap="round" class="ray ray-9" />
-                      <line x1="14" y1="50" x2="28" y2="50" stroke-width="8" stroke-linecap="round" class="ray ray-10" />
-                      <line x1="18.8" y1="32" x2="30.9" y2="39" stroke-width="8" stroke-linecap="round" class="ray ray-11" />
-                      <line x1="32" y1="18.8" x2="39" y2="30.9" stroke-width="8" stroke-linecap="round" class="ray ray-12" />
-                    </svg>
-                  </span>
-                  <span id="consolidation-status-text">Consolidando:</span>
-                </span>
-                <strong id="consolidation-counter" class="consolidation-counter">0 / 0 (0%)</strong>
-              </div>
-              <div class="consolidation-track">
-                <div id="consolidation-fill" class="consolidation-fill" style="width: 0%;"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- BARRA DE CARREGAMENTO / PROGRESSO GLOBAL PARA LOTES (> 10 ARQUIVOS) -->
-          <div id="batch-global-progress" class="batch-global-progress" style="display: none;">
-            <div class="global-progress-header">
-              <span class="global-progress-label">
-                <span class="batch-spinner-icon" id="batch-spinner-icon" aria-hidden="true">
-                  <svg viewBox="0 0 100 100" class="radial-spinner-svg">
-                    <line x1="50" y1="14" x2="50" y2="28" stroke-width="8" stroke-linecap="round" class="ray ray-1" />
-                    <line x1="68" y1="18.8" x2="61" y2="30.9" stroke-width="8" stroke-linecap="round" class="ray ray-2" />
-                    <line x1="81.2" y1="32" x2="69.1" y2="39" stroke-width="8" stroke-linecap="round" class="ray ray-3" />
-                    <line x1="86" y1="50" x2="72" y2="50" stroke-width="8" stroke-linecap="round" class="ray ray-4" />
-                    <line x1="81.2" y1="68" x2="69.1" y2="61" stroke-width="8" stroke-linecap="round" class="ray ray-5" />
-                    <line x1="68" y1="81.2" x2="61" y2="69.1" stroke-width="8" stroke-linecap="round" class="ray ray-6" />
-                    <line x1="50" y1="86" x2="50" y2="72" stroke-width="8" stroke-linecap="round" class="ray ray-7" />
-                    <line x1="32" y1="81.2" x2="39" y2="69.1" stroke-width="8" stroke-linecap="round" class="ray ray-8" />
-                    <line x1="18.8" y1="68" x2="30.9" y2="61" stroke-width="8" stroke-linecap="round" class="ray ray-9" />
-                    <line x1="14" y1="50" x2="28" y2="50" stroke-width="8" stroke-linecap="round" class="ray ray-10" />
-                    <line x1="18.8" y1="32" x2="30.9" y2="39" stroke-width="8" stroke-linecap="round" class="ray ray-11" />
-                    <line x1="32" y1="18.8" x2="39" y2="30.9" stroke-width="8" stroke-linecap="round" class="ray ray-12" />
-                  </svg>
-                  <svg viewBox="0 0 24 24" class="batch-success-check-svg" style="display: none;" width="18" height="18" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                </span>
-                Progresso do Lote
-              </span>
-              <span id="global-progress-counter" class="global-progress-counter">0 / 0 conclu\xEDdos (0%)</span>
-            </div>
-            <div class="global-progress-track">
-              <div id="global-progress-fill" class="global-progress-fill" style="width: 0%;"></div>
-            </div>
-          </div>
-
-          <div id="file-queue-list" class="file-queue-list" role="list">
-            <!-- Itens da fila renderizados dinamicamente -->
-          </div>
-        </div>
-      </section>
-
-    </div>
-  `;
-  }
 
   // js/tools/doc2md/tool.js
-  var _appModule = null;
   var _cleanupFns = [];
   var tool = {
     id: "doc2md",
@@ -4002,11 +3803,8 @@ ${footerDelimiter}
      */
     async mount(container) {
       _cleanupFns = [];
-      if (!_appModule) {
-        _appModule = await Promise.resolve().then(() => (init_app_doc2md(), app_doc2md_exports));
-      }
-      if (typeof _appModule.initDoc2md === "function") {
-        const cleanup = await _appModule.initDoc2md(container);
+      if (typeof initDoc2md === "function") {
+        const cleanup = await initDoc2md(container);
         if (typeof cleanup === "function") {
           _cleanupFns.push(cleanup);
         }
@@ -4258,9 +4056,7 @@ ${footerDelimiter}
   }
 
   // js/tools/qrcode/tool.js
-  init_config();
-  var import_meta2 = {};
-  var QRCODE_LIB_URL = typeof import_meta2 !== "undefined" && import_meta2?.url ? new URL("../../lib/qrcodegen.js", import_meta2.url).href : "js/lib/qrcodegen.js";
+  var QRCODE_LIB_URL = "js/lib/qrcodegen.js";
   var ECL_DESCRIPTIONS = {
     L: "L \u2014 7% de recupera\xE7\xE3o (menor densidade)",
     M: "M \u2014 15% de recupera\xE7\xE3o (padr\xE3o)",
@@ -4332,9 +4128,25 @@ ${footerDelimiter}
       _listeners = [];
       _activeEcl = "M";
       _lastQr = null;
-      await loadScript(QRCODE_LIB_URL);
+      if (typeof window !== "undefined" && !window.qrcodegen) {
+        try {
+          await loadScript(QRCODE_LIB_URL);
+        } catch (err) {
+          console.warn("[qrcode] Falha ao carregar qrcodegen via script tag:", err);
+        }
+      }
       await new Promise((resolve) => {
-        const check = () => typeof window.qrcodegen !== "undefined" ? resolve() : setTimeout(check, 50);
+        let attempts = 0;
+        const check = () => {
+          if (typeof window !== "undefined" && window.qrcodegen) {
+            resolve();
+          } else if (++attempts > 40) {
+            console.warn("[qrcode] Timeout aguardando window.qrcodegen");
+            resolve();
+          } else {
+            setTimeout(check, 50);
+          }
+        };
         check();
       });
       const inputEl = container.querySelector("#qr-input");
@@ -4530,8 +4342,303 @@ ${footerDelimiter}
   };
   var tool_default2 = tool2;
 
+  // js/tools/hub/ui.js
+  function getHubHTML(catalog = []) {
+    const tools = catalog.filter((t) => t.id !== "hub");
+    return `
+    <div class="hub-root">
+      <!-- Cabe\xE7alho Principal do Hub -->
+      <section class="hub-hero">
+        <div class="hub-hero-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Plataforma 100% Local &amp; Segura
+        </div>
+        <h1 class="hub-hero-title">Todas as Ferramentas Open Tool</h1>
+        <p class="hub-hero-subtitle">
+          Solu\xE7\xF5es pr\xE1ticas e universais executadas inteiramente no seu navegador. Seus dados nunca saem do seu computador.
+        </p>
+      </section>
+
+      <!-- Grade de Ferramentas (PDF24 Tools Style) -->
+      <div class="hub-grid" id="hub-tools-grid">
+        ${tools.map((tool4) => {
+      const badge = tool4.id === "doc2md" ? "CONVERSOR" : tool4.id === "qrcode" ? "GERADOR" : "FERRAMENTA";
+      const features = tool4.id === "doc2md" ? ["Word (.docx), Excel (.xlsx), PDF, PPTX", "Extra\xE7\xE3o autom\xE1tica de pacotes .ZIP e .RAR", "Gera\xE7\xE3o de Markdown limpo e formatado"] : tool4.id === "qrcode" ? ["Gera\xE7\xE3o imediata para Links e Textos", "Exporta\xE7\xE3o em PNG de alta resolu\xE7\xE3o e SVG", "Customiza\xE7\xE3o de cores, tamanho e margem"] : ["Processamento 100% no navegador", "Zero telemetria de dados"];
+      return `
+            <article class="hub-card" data-tool-card="${tool4.id}" tabindex="0" role="button" aria-label="Abrir ferramenta ${tool4.label}">
+              <div class="hub-card-top">
+                <div class="hub-card-icon-wrap" aria-hidden="true">
+                  ${tool4.icon}
+                </div>
+                <span class="hub-card-badge">${badge}</span>
+              </div>
+
+              <div class="hub-card-content">
+                <h2 class="hub-card-title">${tool4.label}</h2>
+                <p class="hub-card-desc">${tool4.description}</p>
+
+                <ul class="hub-card-features">
+                  ${features.map((f) => `
+                    <li>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      <span>${f}</span>
+                    </li>
+                  `).join("")}
+                </ul>
+              </div>
+
+              <div class="hub-card-action">
+                <button type="button" class="btn btn-primary hub-card-btn" data-open-tool="${tool4.id}">
+                  <span>Abrir Ferramenta</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </button>
+              </div>
+            </article>
+          `;
+    }).join("")}
+
+        <!-- Card de Extensibilidade (Pr\xF3ximas Ferramentas) -->
+        <article class="hub-card hub-card--extensible" title="Arquitetura modular aberta para novas ferramentas">
+          <div class="hub-card-top">
+            <div class="hub-card-icon-wrap hub-card-icon-wrap--dashed" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </div>
+            <span class="hub-card-badge hub-card-badge--neutral">MODULAR</span>
+          </div>
+
+          <div class="hub-card-content">
+            <h2 class="hub-card-title">Novas Ferramentas</h2>
+            <p class="hub-card-desc">
+              Estrutura modular plug\xE1vel pronta para receber novos utilit\xE1rios de produtividade, formata\xE7\xE3o e convers\xE3o local.
+            </p>
+            <div class="hub-card-hint">
+              <span>Plug &amp; Play \u2022 100% Client-Side</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  `;
+  }
+
+  // js/tools/hub/tool.js
+  var _listeners2 = [];
+  var tool3 = {
+    id: "hub",
+    label: "Todas as Ferramentas",
+    render(container) {
+      container.innerHTML = getHubHTML(TOOL_CATALOG);
+    },
+    async mount(container) {
+      _listeners2 = [];
+      const grid = container.querySelector("#hub-tools-grid");
+      if (grid) {
+        const handleCardClick = (e) => {
+          const btn = e.target.closest("[data-open-tool]");
+          if (btn) {
+            e.preventDefault();
+            const targetId = btn.dataset.openTool;
+            if (targetId) activateTool(targetId);
+            return;
+          }
+          const card = e.target.closest("[data-tool-card]");
+          if (card && !e.target.closest("button, a")) {
+            const targetId = card.dataset.toolCard;
+            if (targetId) activateTool(targetId);
+          }
+        };
+        const handleKey = (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            const card = e.target.closest("[data-tool-card]");
+            if (card) {
+              e.preventDefault();
+              const targetId = card.dataset.toolCard;
+              if (targetId) activateTool(targetId);
+            }
+          }
+        };
+        grid.addEventListener("click", handleCardClick);
+        grid.addEventListener("keydown", handleKey);
+        _listeners2.push(
+          () => grid.removeEventListener("click", handleCardClick),
+          () => grid.removeEventListener("keydown", handleKey)
+        );
+      }
+    },
+    unmount() {
+      _listeners2.forEach((fn) => {
+        try {
+          fn();
+        } catch (e) {
+        }
+      });
+      _listeners2 = [];
+    }
+  };
+  var tool_default3 = tool3;
+
+  // js/tool-registry.js
+  var STORAGE_KEY_ACTIVE_TOOL = "opentool_active_tool";
+  var BUILTIN_TOOLS = {
+    hub: tool_default3,
+    doc2md: tool_default,
+    qrcode: tool_default2
+  };
+  var _preloadedModules = /* @__PURE__ */ new Map();
+  var TOOL_CATALOG = [
+    {
+      id: "hub",
+      label: "Todas as Ferramentas",
+      description: "Cat\xE1logo geral estilo PDF24 Tools com todas as ferramentas dispon\xEDveis",
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+    </svg>`
+    },
+    {
+      id: "doc2md",
+      label: "Doc \u2192 MD",
+      description: "Converta documentos, planilhas, PDFs e c\xF3digo para Markdown estruturado",
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>`
+    },
+    {
+      id: "qrcode",
+      label: "QR Code",
+      description: "Gere QR Codes a partir de links e texto \u2014 100% local, sem servidores",
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
+      <rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
+      <rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/>
+      <path d="M14 14h3v3h-3z" fill="currentColor" stroke="none"/>
+      <path d="M17 17h4"/>
+      <path d="M17 21v-4"/>
+      <path d="M21 17v4"/>
+    </svg>`
+    }
+  ];
+  var _activeModule = null;
+  var _activeToolId = null;
+  var _viewport = null;
+  async function initRegistry(viewport) {
+    _viewport = viewport;
+    const savedTool = localStorage.getItem(STORAGE_KEY_ACTIVE_TOOL);
+    const initialTool = TOOL_CATALOG.find((t) => t.id === savedTool) || TOOL_CATALOG.find((t) => t.id === "doc2md") || TOOL_CATALOG[0];
+    await activateTool(initialTool.id);
+  }
+  async function activateTool(toolId) {
+    if (toolId === _activeToolId) return;
+    const toolMeta = TOOL_CATALOG.find((t) => t.id === toolId);
+    if (!toolMeta) {
+      console.error(`[ToolRegistry] Ferramenta desconhecida: ${toolId}`);
+      return;
+    }
+    if (_activeModule && typeof _activeModule.unmount === "function") {
+      try {
+        _activeModule.unmount();
+      } catch (e) {
+      }
+    }
+    if (!_viewport && typeof document !== "undefined") {
+      _viewport = document.getElementById("toolViewport");
+    }
+    if (_viewport) {
+      _viewport.classList.add("tool-viewport--transitioning");
+      _viewport.style.minHeight = _viewport.offsetHeight + "px";
+    }
+    try {
+      let mod = null;
+      if (BUILTIN_TOOLS[toolId]) {
+        mod = { default: BUILTIN_TOOLS[toolId] };
+      } else if (_preloadedModules.has(toolId)) {
+        mod = { default: _preloadedModules.get(toolId) };
+      } else if (typeof window !== "undefined" && window.__OPEN_TOOL_MODULES__ && window.__OPEN_TOOL_MODULES__[toolId]) {
+        mod = { default: window.__OPEN_TOOL_MODULES__[toolId] };
+      } else if (toolMeta.modulePath) {
+        mod = await import(toolMeta.modulePath);
+      }
+      _activeModule = mod.default;
+      _activeToolId = toolId;
+      if (typeof _activeModule.render === "function") {
+        _activeModule.render(_viewport);
+      }
+      _viewport.style.minHeight = "";
+      await new Promise((r) => setTimeout(r, 20));
+      if (typeof _activeModule.mount === "function") {
+        await _activeModule.mount(_viewport);
+      }
+      localStorage.setItem(STORAGE_KEY_ACTIVE_TOOL, toolId);
+      _updateNavbar(toolId);
+      const raf = typeof requestAnimationFrame !== "undefined" ? requestAnimationFrame : (cb) => setTimeout(cb, 16);
+      raf(() => {
+        _viewport.classList.remove("tool-viewport--transitioning");
+      });
+    } catch (err) {
+      console.error(`[ToolRegistry] Falha ao carregar ferramenta "${toolId}":`, err);
+      _viewport.classList.remove("tool-viewport--transitioning");
+      _viewport.style.minHeight = "";
+      _viewport.innerHTML = `<div class="tool-error-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--error-color);opacity:.6">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <p>Falha ao carregar <strong>${toolMeta.label}</strong></p>
+      <p class="tool-error-detail">${err.message}</p>
+    </div>`;
+    }
+  }
+  function renderToolbar(container) {
+    container.innerHTML = `
+    <nav class="tool-navbar" role="tablist" aria-label="Ferramentas dispon\xEDveis">
+      <div class="tool-navbar-inner">
+        ${TOOL_CATALOG.map((tool4) => `
+          <button
+            class="tool-nav-btn"
+            data-tool-id="${tool4.id}"
+            role="tab"
+            aria-selected="false"
+            title="${tool4.description}"
+            id="tool-tab-${tool4.id}"
+          >
+            <span class="tool-nav-icon" aria-hidden="true">${tool4.icon}</span>
+            <span class="tool-nav-label">${tool4.label}</span>
+          </button>
+        `).join("")}
+      </div>
+    </nav>
+  `;
+    container.querySelectorAll(".tool-nav-btn").forEach((btn) => {
+      btn.addEventListener("click", () => activateTool(btn.dataset.toolId));
+    });
+  }
+  function _updateNavbar(activeToolId) {
+    if (typeof document === "undefined" || typeof document.querySelectorAll !== "function") return;
+    document.querySelectorAll(".tool-nav-btn").forEach((btn) => {
+      const isActive = btn.dataset.toolId === activeToolId;
+      btn.classList.toggle("tool-nav-btn--active", isActive);
+      btn.setAttribute("aria-selected", String(isActive));
+    });
+  }
+
   // js/main.js
-  init_config();
   window.__openToolRegistryActive = true;
   function initTheme2() {
     const toggleBtn = document.getElementById("theme-toggle");
@@ -4590,6 +4697,4 @@ ${footerDelimiter}
   if (typeof window !== "undefined") {
     window.__openToolRegistryActive = true;
   }
-  registerToolModule("doc2md", tool_default);
-  registerToolModule("qrcode", tool_default2);
 })();

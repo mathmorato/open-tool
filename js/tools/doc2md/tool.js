@@ -5,9 +5,8 @@
  */
 
 import { getDoc2mdHTML } from './ui.js';
+import { initDoc2md } from '../../app-doc2md.js';
 
-// Referência ao módulo principal do conversor (importado sob demanda)
-let _appModule = null;
 // Guarda listeners para cleanup no unmount
 let _cleanupFns = [];
 
@@ -32,14 +31,9 @@ const tool = {
   async mount(container) {
     _cleanupFns = [];
 
-    // Carrega o módulo principal do conversor (que já tem toda a lógica)
-    if (!_appModule) {
-      _appModule = await import('../../app-doc2md.js');
-    }
-
     // Inicializa o controlador do conversor
-    if (typeof _appModule.initDoc2md === 'function') {
-      const cleanup = await _appModule.initDoc2md(container);
+    if (typeof initDoc2md === 'function') {
+      const cleanup = await initDoc2md(container);
       if (typeof cleanup === 'function') {
         _cleanupFns.push(cleanup);
       }

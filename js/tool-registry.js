@@ -5,13 +5,21 @@
  */
 
 import { APP_CONFIG } from './config.js';
+import doc2mdTool from './tools/doc2md/tool.js';
+import qrcodeTool from './tools/qrcode/tool.js';
+import hubTool from './tools/hub/tool.js';
 
 const STORAGE_KEY_ACTIVE_TOOL = 'opentool_active_tool';
 
-// Resolve base URL do registry para imports absolutos (defensivo contra IIFE/bundle)
-const _registryBase = (typeof import.meta !== 'undefined' && import.meta?.url)
-  ? new URL('.', import.meta.url).href
-  : './js/';
+// Mapa de ferramentas nativas embarcadas (execução síncrona sem falhas de CORS/file://)
+export const BUILTIN_TOOLS = {
+  hub: hubTool,
+  doc2md: doc2mdTool,
+  qrcode: qrcodeTool
+};
+
+// Base path para imports dinâmicos caso necessário
+const _registryBase = './js/';
 
 // Mapa de módulos pré-carregados (suporte a bundle/file:// sem quebrar contrato modular)
 const _preloadedModules = new Map();
@@ -26,14 +34,24 @@ export function registerToolModule(id, toolModule) {
 }
 
 /**
- * Catálogo de ferramentas disponíveis na plataforma.
+ * Catálogo de ferramentas disponíveis na plataforma (estilo PDF24 Tools).
  */
 export const TOOL_CATALOG = [
+  {
+    id: 'hub',
+    label: 'Todas as Ferramentas',
+    description: 'Catálogo geral estilo PDF24 Tools com todas as ferramentas disponíveis',
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+    </svg>`
+  },
   {
     id: 'doc2md',
     label: 'Doc → MD',
     description: 'Converta documentos, planilhas, PDFs e código para Markdown estruturado',
-    modulePath: _registryBase + 'tools/doc2md/tool.js',
     icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
       <polyline points="14 2 14 8 20 8"/>
@@ -45,7 +63,6 @@ export const TOOL_CATALOG = [
     id: 'qrcode',
     label: 'QR Code',
     description: 'Gere QR Codes a partir de links e texto — 100% local, sem servidores',
-    modulePath: _registryBase + 'tools/qrcode/tool.js',
     icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
       <rect x="3" y="3" width="7" height="7" rx="1"/>
       <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -73,7 +90,7 @@ let _viewport = null;
 export async function initRegistry(viewport) {
   _viewport = viewport;
   const savedTool = localStorage.getItem(STORAGE_KEY_ACTIVE_TOOL);
-  const initialTool = TOOL_CATALOG.find(t => t.id === savedTool) || TOOL_CATALOG[0];
+  const initialTool = TOOL_CATALOG.find(t => t.id === savedTool) || TOOL_CATALOG.find(t => t.id === 'doc2md') || TOOL_CATALOG[0];
   await activateTool(initialTool.id);
 }
 
@@ -95,17 +112,25 @@ export async function activateTool(toolId) {
     try { _activeModule.unmount(); } catch (e) { /* ignore */ }
   }
 
+  if (!_viewport && typeof document !== 'undefined') {
+    _viewport = document.getElementById('toolViewport');
+  }
+
   // Transição de saída
-  _viewport.classList.add('tool-viewport--transitioning');
-  _viewport.style.minHeight = _viewport.offsetHeight + 'px';
+  if (_viewport) {
+    _viewport.classList.add('tool-viewport--transitioning');
+    _viewport.style.minHeight = _viewport.offsetHeight + 'px';
+  }
 
   try {
     let mod = null;
-    if (_preloadedModules.has(toolId)) {
+    if (BUILTIN_TOOLS[toolId]) {
+      mod = { default: BUILTIN_TOOLS[toolId] };
+    } else if (_preloadedModules.has(toolId)) {
       mod = { default: _preloadedModules.get(toolId) };
     } else if (typeof window !== 'undefined' && window.__OPEN_TOOL_MODULES__ && window.__OPEN_TOOL_MODULES__[toolId]) {
       mod = { default: window.__OPEN_TOOL_MODULES__[toolId] };
-    } else {
+    } else if (toolMeta.modulePath) {
       mod = await import(toolMeta.modulePath);
     }
     _activeModule = mod.default;
@@ -180,6 +205,7 @@ export function renderToolbar(container) {
 }
 
 function _updateNavbar(activeToolId) {
+  if (typeof document === 'undefined' || typeof document.querySelectorAll !== 'function') return;
   document.querySelectorAll('.tool-nav-btn').forEach(btn => {
     const isActive = btn.dataset.toolId === activeToolId;
     btn.classList.toggle('tool-nav-btn--active', isActive);

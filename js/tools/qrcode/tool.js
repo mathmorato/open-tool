@@ -15,9 +15,7 @@ import { loadScript } from '../../config.js';
 
 // Biblioteca nayuki — IIFE local (expõe window.qrcodegen)
 // Fonte: nayuki-qr-code-generator@1.8.0 + wrapper IIFE para compatibilidade com <script>
-const QRCODE_LIB_URL = (typeof import.meta !== 'undefined' && import.meta?.url)
-  ? new URL('../../lib/qrcodegen.js', import.meta.url).href
-  : 'js/lib/qrcodegen.js';
+const QRCODE_LIB_URL = 'js/lib/qrcodegen.js';
 
 // Descrições dos níveis de correção de erro
 const ECL_DESCRIPTIONS = {
@@ -124,13 +122,28 @@ const tool = {
     _activeEcl = 'M';
     _lastQr    = null;
 
-    // Carrega a biblioteca nayuki de forma lazy
-    await loadScript(QRCODE_LIB_URL);
+    // Carrega a biblioteca nayuki de forma lazy apenas se ainda não estiver presente
+    if (typeof window !== 'undefined' && !window.qrcodegen) {
+      try {
+        await loadScript(QRCODE_LIB_URL);
+      } catch (err) {
+        console.warn('[qrcode] Falha ao carregar qrcodegen via script tag:', err);
+      }
+    }
 
-    // Aguarda o global `qrcodegen` estar disponível
+    // Aguarda o global `qrcodegen` estar disponível (com timeout de segurança)
     await new Promise(resolve => {
-      const check = () =>
-        (typeof window.qrcodegen !== 'undefined' ? resolve() : setTimeout(check, 50));
+      let attempts = 0;
+      const check = () => {
+        if (typeof window !== 'undefined' && window.qrcodegen) {
+          resolve();
+        } else if (++attempts > 40) {
+          console.warn('[qrcode] Timeout aguardando window.qrcodegen');
+          resolve();
+        } else {
+          setTimeout(check, 50);
+        }
+      };
       check();
     });
 

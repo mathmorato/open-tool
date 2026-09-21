@@ -1,0 +1,240 @@
+/**
+ * Open Tool — Hub (Todas as Ferramentas) Styles
+ * Visual moderno, limpo e técnico inspirado no PDF24 Tools
+ * @version v.2.0.2
+ */
+
+.hub-root {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem 4rem;
+  animation: fadeInTool 0.25s ease;
+}
+
+/* ── Hero do Hub ─────────────────────────────────────────────────────────── */
+.hub-hero {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hub-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  background: var(--accent-soft);
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.hub-hero-title {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+  margin-bottom: 0.75rem;
+}
+
+.hub-hero-subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  max-width: 620px;
+  line-height: 1.6;
+}
+
+/* ── Grade de Cards (PDF24 Tools Style) ──────────────────────────────────── */
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.75rem;
+}
+
+@media (max-width: 768px) {
+  .hub-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .hub-hero-title {
+    font-size: 1.65rem;
+  }
+}
+
+/* ── Card Individual ─────────────────────────────────────────────────────── */
+.hub-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  border-radius: 1.25rem;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: transform 0.22s cubic-bezier(0.2, 0, 0.1, 1),
+              box-shadow 0.22s cubic-bezier(0.2, 0, 0.1, 1),
+              border-color 0.22s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.hub-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-primary);
+  box-shadow: 0 16px 32px -8px rgba(37, 99, 235, 0.14);
+}
+
+.hub-card:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* ── Topo do Card (Ícone e Badge) ────────────────────────────────────────── */
+.hub-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.hub-card-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.85rem;
+  background: var(--accent-soft);
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.hub-card:hover .hub-card-icon-wrap {
+  transform: scale(1.05);
+}
+
+.hub-card-icon-wrap svg {
+  width: 24px;
+  height: 24px;
+}
+
+.hub-card-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  background: var(--accent-soft);
+  color: var(--accent-primary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.hub-card-badge--neutral {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+/* ── Conteúdo do Card ────────────────────────────────────────────────────── */
+.hub-card-content {
+  flex-grow: 1;
+}
+
+.hub-card-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.015em;
+}
+
+.hub-card-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Lista de Recursos no Card ───────────────────────────────────────────── */
+.hub-card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hub-card-features li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.825rem;
+  color: var(--text-secondary);
+}
+
+.hub-card-features li svg {
+  color: var(--success-color, #10B981);
+  flex-shrink: 0;
+}
+
+/* ── Ação do Card ────────────────────────────────────────────────────────── */
+.hub-card-action {
+  margin-top: auto;
+}
+
+.hub-card-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 0.75rem;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.hub-card-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.hub-card:hover .hub-card-btn svg {
+  transform: translateX(4px);
+}
+
+/* ── Card Extensível (Placeholder de Novas Ferramentas) ──────────────────── */
+.hub-card--extensible {
+  border-style: dashed;
+  border-width: 2px;
+  background: var(--bg-secondary);
+  opacity: 0.85;
+  cursor: default;
+}
+
+.hub-card--extensible:hover {
+  transform: none;
+  border-color: var(--border-color);
+  box-shadow: none;
+}
+
+.hub-card-icon-wrap--dashed {
+  background: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.hub-card-hint {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  margin-top: 1rem;
+}
