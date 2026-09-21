@@ -689,6 +689,275 @@ body {
   color: #FFFFFF !important;
 }
 
+/* ==========================================================================
+   Botões do Ecossistema de Ferramentas PDF (Consistentes & Acessíveis)
+   ========================================================================== */
+
+/* ── Botão Limpar abaixo do PDF Carregado ── */
+.pdf-file-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: color-mix(in srgb, var(--bg-card) 70%, transparent);
+  color: var(--text-secondary);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: 0.78125rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.2s);
+  margin-top: 0.25rem;
+  box-sizing: border-box;
+}
+
+.pdf-file-clear-btn svg {
+  color: var(--text-secondary);
+  stroke: var(--text-secondary);
+  transition: stroke 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.pdf-file-clear-btn:hover {
+  background: color-mix(in srgb, var(--error-color, #ef4444) 10%, transparent);
+  border-color: var(--error-color, #ef4444);
+  color: var(--error-color, #ef4444);
+  border-style: solid;
+}
+
+.pdf-file-clear-btn:hover svg {
+  color: var(--error-color, #ef4444);
+  stroke: var(--error-color, #ef4444);
+  transform: scale(1.08);
+}
+
+[data-theme="dark"] .pdf-file-clear-btn {
+  background: rgba(30, 41, 59, 0.5);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .pdf-file-clear-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #f87171;
+  color: #f87171;
+}
+
+[data-theme="dark"] .pdf-file-clear-btn:hover svg {
+  color: #f87171;
+  stroke: #f87171;
+}
+
+/* ── Botão Primário de Ação da Ferramenta (CTA 100% de largura) ── */
+.pdf-primary-btn,
+.pdf-action-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6875rem 1.25rem;
+  background-color: var(--blue-primary, #2563EB);
+  color: #FFFFFF !important;
+  border: 1px solid var(--blue-primary, #2563EB);
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
+  margin-top: auto;
+  box-sizing: border-box;
+}
+
+.pdf-primary-btn svg,
+.pdf-action-cta svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  flex-shrink: 0;
+}
+
+.pdf-primary-btn:hover:not(:disabled),
+.pdf-action-cta:hover:not(:disabled) {
+  background-color: var(--blue-hover, #1D4ED8);
+  border-color: var(--blue-hover, #1D4ED8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.pdf-primary-btn:active:not(:disabled),
+.pdf-action-cta:active:not(:disabled) {
+  background-color: var(--blue-active, #1E40AF);
+  border-color: var(--blue-active, #1E40AF);
+  transform: translateY(0);
+}
+
+.pdf-primary-btn:disabled,
+.pdf-action-cta:disabled {
+  background-color: #F1F5F9 !important;
+  color: #64748B !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+
+.pdf-primary-btn:disabled svg,
+.pdf-action-cta:disabled svg {
+  color: #64748B !important;
+  stroke: #64748B !important;
+}
+
+[data-theme="dark"] .pdf-primary-btn:disabled,
+[data-theme="dark"] .pdf-action-cta:disabled {
+  background-color: #1E293B !important;
+  color: #94A3B8 !important;
+  border: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .pdf-primary-btn:disabled svg,
+[data-theme="dark"] .pdf-action-cta:disabled svg {
+  color: #94A3B8 !important;
+  stroke: #94A3B8 !important;
+}
+
+/* ── Botão Secundário de Controles ── */
+.pdf-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.6875rem 1rem;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pdf-secondary-btn svg {
+  color: var(--text-secondary);
+  stroke: var(--text-secondary);
+  transition: stroke 0.2s;
+  flex-shrink: 0;
+}
+
+.pdf-secondary-btn:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--error-color, #ef4444);
+  color: var(--error-color, #ef4444);
+}
+
+.pdf-secondary-btn:hover svg {
+  color: var(--error-color, #ef4444);
+  stroke: var(--error-color, #ef4444);
+}
+
+/* ── Barra de Ações do Resultado e Exportação ── */
+.pdf-actions-bar,
+.pdf-result-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: auto;
+  box-sizing: border-box;
+}
+
+.pdf-actions-bar > button,
+.pdf-result-actions > button,
+.pdf-export-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius-md, 0.5rem);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.pdf-export-btn svg {
+  flex-shrink: 0;
+}
+
+.pdf-export-btn--primary,
+.pdf-download-btn {
+  background-color: var(--blue-primary, #2563EB);
+  color: #FFFFFF !important;
+  border: 1px solid var(--blue-primary, #2563EB);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+.pdf-export-btn--primary svg,
+.pdf-download-btn svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+.pdf-export-btn--primary:hover,
+.pdf-download-btn:hover {
+  background-color: var(--blue-hover, #1D4ED8);
+  border-color: var(--blue-hover, #1D4ED8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.pdf-export-btn--secondary {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.pdf-export-btn--secondary svg {
+  color: var(--text-secondary);
+  stroke: var(--text-secondary);
+  transition: stroke 0.2s, transform 0.2s;
+}
+
+.pdf-export-btn--secondary:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--blue-primary, #2563EB);
+  color: var(--blue-primary, #2563EB);
+}
+
+.pdf-export-btn--secondary:hover svg {
+  color: var(--blue-primary, #2563EB);
+  stroke: var(--blue-primary, #2563EB);
+  transform: rotate(-45deg);
+}
+
+[data-theme="dark"] .pdf-export-btn--secondary {
+  background-color: #1E293B;
+  border-color: #334155;
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .pdf-export-btn--secondary:hover {
+  background-color: #273549;
+  border-color: #60A5FA;
+  color: #60A5FA;
+}
+
+
 .markdown-body code {
   font-family: var(--font-mono);
   font-size: 0.85em;

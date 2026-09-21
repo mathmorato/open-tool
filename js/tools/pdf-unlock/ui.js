@@ -48,11 +48,14 @@ export function getPdfUnlockHTML() {
                 <span class="pdf-filename" id="u-filename">documento.pdf</span>
                 <span class="pdf-filesize" id="u-filesize">0 KB</span>
               </div>
-              <button type="button" class="pdf-remove-btn" id="u-remove-btn" title="Remover e trocar arquivo">
-                ${ICONS.x(14)}
-              </button>
             </div>
           </div>
+
+          <!-- Botão Limpar abaixo do PDF -->
+          <button type="button" id="u-clear-input-btn" class="pdf-file-clear-btn" style="display: none;" title="Limpar arquivo e carregar outro">
+            ${ICONS.trash(14)}
+            <span>Limpar PDF</span>
+          </button>
 
           <!-- Card de Status da Proteção -->
           <div class="pdf-status-card" id="u-status-card">
@@ -80,17 +83,11 @@ export function getPdfUnlockHTML() {
             <span class="pdf-hint">A senha será testada exclusivamente no seu navegador para descriptografar os streams.</span>
           </div>
 
-          <!-- Ações de Entrada: Limpar e Desbloquear -->
-          <div class="pdf-controls-actions" id="u-controls-actions">
-            <button type="button" id="u-clear-input-btn" class="pdf-secondary-btn" style="display: none;" title="Limpar arquivo e carregar outro">
-              ${ICONS.trash(15)}
-              <span>Limpar</span>
-            </button>
-            <button type="button" id="u-unlock-btn" class="pdf-primary-btn" disabled>
-              ${ICONS.unlock(16)}
-              <span id="u-unlock-btn-text">Desbloquear PDF</span>
-            </button>
-          </div>
+          <!-- Botão Principal de Desbloqueio (100% de largura) -->
+          <button type="button" id="u-unlock-btn" class="pdf-primary-btn" disabled>
+            ${ICONS.unlock(16)}
+            <span id="u-unlock-btn-text">Desbloquear PDF Agora</span>
+          </button>
 
         </div>
 

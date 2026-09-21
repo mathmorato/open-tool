@@ -345,7 +345,7 @@ export default {
 
     // Eventos
     _on(dropzone, 'click', (e) => {
-      if (e.target !== removeBtn && !removeBtn?.contains(e.target)) {
+      if (!_currentFile) {
         fileInput.click();
       }
     });
@@ -353,7 +353,7 @@ export default {
     _on(dropzone, 'keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        fileInput.click();
+        if (!_currentFile) fileInput.click();
       }
     });
 
@@ -376,11 +376,6 @@ export default {
       if (file && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) {
         _inspectPdf(file);
       }
-    });
-
-    _on(removeBtn, 'click', (e) => {
-      e.stopPropagation();
-      _reset();
     });
 
     _on(togglePwdBtn, 'click', () => {

@@ -48,11 +48,14 @@ export function getImageToVectorHTML() {
                 <span class="v-filename" id="v-filename">imagem.png</span>
                 <span class="v-filesize" id="v-filesize">0 KB</span>
               </div>
-              <button type="button" class="v-remove-btn" id="v-remove-btn" title="Trocar imagem">
-                ${ICONS.x(14)}
-              </button>
             </div>
           </div>
+
+          <!-- Botão Limpar abaixo da Imagem -->
+          <button type="button" id="v-clear-input-btn" class="pdf-file-clear-btn" style="display: none;" title="Limpar imagem e carregar outra">
+            ${ICONS.trash(14)}
+            <span>Limpar Imagem</span>
+          </button>
 
           <!-- Remoção Inteligente de Fundo (Em Linha Compacta) -->
           <div class="v-bg-remover-card" id="v-bg-remover-card">

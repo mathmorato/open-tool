@@ -28,13 +28,38 @@
 }
 
 .pdf-link-btn {
-  background: transparent;
-  border: none;
-  color: var(--accent-primary);
-  font-size: 0.6875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.725rem;
+  font-weight: 500;
   cursor: pointer;
-  padding: 0;
-  text-decoration: underline;
+  padding: 0.25rem 0.55rem;
+  border-radius: var(--radius-sm, 0.375rem);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.pdf-link-btn svg {
+  color: var(--text-secondary);
+  stroke: var(--text-secondary);
+  transition: stroke 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.pdf-link-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--error-color, #ef4444);
+  color: var(--error-color, #ef4444);
+}
+
+.pdf-link-btn:hover svg {
+  color: var(--error-color, #ef4444);
+  stroke: var(--error-color, #ef4444);
+  transform: scale(1.08);
 }
 
 .pdf-merge-list {

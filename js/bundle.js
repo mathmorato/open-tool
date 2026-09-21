@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.4.3",
+    VERSION: "v.2.4.4",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -7141,11 +7141,14 @@ ${footerDelimiter}
                 <span class="v-filename" id="v-filename">imagem.png</span>
                 <span class="v-filesize" id="v-filesize">0 KB</span>
               </div>
-              <button type="button" class="v-remove-btn" id="v-remove-btn" title="Trocar imagem">
-                ${ICONS.x(14)}
-              </button>
             </div>
           </div>
+
+          <!-- Bot\xE3o Limpar abaixo da Imagem -->
+          <button type="button" id="v-clear-input-btn" class="pdf-file-clear-btn" style="display: none;" title="Limpar imagem e carregar outra">
+            ${ICONS.trash(14)}
+            <span>Limpar Imagem</span>
+          </button>
 
           <!-- Remo\xE7\xE3o Inteligente de Fundo (Em Linha Compacta) -->
           <div class="v-bg-remover-card" id="v-bg-remover-card">
@@ -7544,7 +7547,7 @@ ${footerDelimiter}
       const previewImg = container.querySelector("#v-preview-img");
       const filenameEl = container.querySelector("#v-filename");
       const filesizeEl = container.querySelector("#v-filesize");
-      const removeBtn = container.querySelector("#v-remove-btn");
+      const clearInputBtn = container.querySelector("#v-clear-input-btn");
       const convertBtn = container.querySelector("#v-convert-btn");
       const presetGrid = container.querySelector("#v-preset-grid");
       const removeBgBtn = container.querySelector("#v-remove-bg-btn");
@@ -7658,6 +7661,7 @@ ${footerDelimiter}
         dropPrompt.style.display = "none";
         loadedBox.style.display = "flex";
         convertBtn.disabled = false;
+        if (clearInputBtn) clearInputBtn.style.display = "inline-flex";
       }
       function _resetFile() {
         _currentFile = null;
@@ -7673,6 +7677,7 @@ ${footerDelimiter}
         dropPrompt.style.display = "flex";
         loadedBox.style.display = "none";
         convertBtn.disabled = true;
+        if (clearInputBtn) clearInputBtn.style.display = "none";
         removeBgBtn.disabled = true;
         removeBgBtn.classList.remove("v-bg-btn--active");
         removeBgBtnText.textContent = "Remover Fundo";
@@ -7892,8 +7897,8 @@ ${footerDelimiter}
           copyFeedback.style.display = "none";
         }, 3500);
       }
-      _on2(dropzone, "click", (e) => {
-        if (e.target !== removeBtn && !removeBtn.contains(e.target)) {
+      _on2(dropzone, "click", () => {
+        if (!_currentFile) {
           fileInput.click();
         }
       });
@@ -7927,10 +7932,12 @@ ${footerDelimiter}
           }
         }
       });
-      _on2(removeBtn, "click", (e) => {
-        e.stopPropagation();
-        _resetFile();
-      });
+      if (clearInputBtn) {
+        _on2(clearInputBtn, "click", (e) => {
+          e.stopPropagation();
+          _resetFile();
+        });
+      }
       presetGrid.querySelectorAll(".v-preset-btn").forEach((btn) => {
         _on2(btn, "click", () => {
           _activePreset = btn.dataset.preset;
@@ -8043,11 +8050,14 @@ ${footerDelimiter}
                 <span class="pdf-filename" id="u-filename">documento.pdf</span>
                 <span class="pdf-filesize" id="u-filesize">0 KB</span>
               </div>
-              <button type="button" class="pdf-remove-btn" id="u-remove-btn" title="Remover e trocar arquivo">
-                ${ICONS.x(14)}
-              </button>
             </div>
           </div>
+
+          <!-- Bot\xE3o Limpar abaixo do PDF -->
+          <button type="button" id="u-clear-input-btn" class="pdf-file-clear-btn" style="display: none;" title="Limpar arquivo e carregar outro">
+            ${ICONS.trash(14)}
+            <span>Limpar PDF</span>
+          </button>
 
           <!-- Card de Status da Prote\xE7\xE3o -->
           <div class="pdf-status-card" id="u-status-card">
@@ -8075,17 +8085,11 @@ ${footerDelimiter}
             <span class="pdf-hint">A senha ser\xE1 testada exclusivamente no seu navegador para descriptografar os streams.</span>
           </div>
 
-          <!-- A\xE7\xF5es de Entrada: Limpar e Desbloquear -->
-          <div class="pdf-controls-actions" id="u-controls-actions">
-            <button type="button" id="u-clear-input-btn" class="pdf-secondary-btn" style="display: none;" title="Limpar arquivo e carregar outro">
-              ${ICONS.trash(15)}
-              <span>Limpar</span>
-            </button>
-            <button type="button" id="u-unlock-btn" class="pdf-primary-btn" disabled>
-              ${ICONS.unlock(16)}
-              <span id="u-unlock-btn-text">Desbloquear PDF</span>
-            </button>
-          </div>
+          <!-- Bot\xE3o Principal de Desbloqueio (100% de largura) -->
+          <button type="button" id="u-unlock-btn" class="pdf-primary-btn" disabled>
+            ${ICONS.unlock(16)}
+            <span id="u-unlock-btn-text">Desbloquear PDF Agora</span>
+          </button>
 
         </div>
 
@@ -8463,14 +8467,14 @@ ${footerDelimiter}
         }
       }
       _on3(dropzone, "click", (e) => {
-        if (e.target !== removeBtn && !removeBtn?.contains(e.target)) {
+        if (!_currentFile2) {
           fileInput.click();
         }
       });
       _on3(dropzone, "keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          fileInput.click();
+          if (!_currentFile2) fileInput.click();
         }
       });
       _on3(fileInput, "change", (e) => {
@@ -8489,10 +8493,6 @@ ${footerDelimiter}
         if (file && (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf"))) {
           _inspectPdf(file);
         }
-      });
-      _on3(removeBtn, "click", (e) => {
-        e.stopPropagation();
-        _reset();
       });
       _on3(togglePwdBtn, "click", () => {
         passwordInput.type = passwordInput.type === "password" ? "text" : "password";
@@ -8599,11 +8599,14 @@ ${pageStr}
                 <span class="pdf-filename" id="c-filename">documento.pdf</span>
                 <span class="pdf-filesize" id="c-filesize">0 KB</span>
               </div>
-              <button type="button" class="pdf-remove-btn" id="c-remove-btn" title="Remover e carregar outro">
-                ${ICONS.x(14)}
-              </button>
             </div>
           </div>
+
+          <!-- Bot\xE3o Limpar abaixo do PDF -->
+          <button type="button" id="c-clear-input-btn" class="pdf-file-clear-btn" style="display: none;" title="Limpar arquivo e carregar outro">
+            ${ICONS.trash(14)}
+            <span>Limpar PDF</span>
+          </button>
 
           <!-- N\xEDvel de Compress\xE3o (Presets 3 Colunas) -->
           <div class="pdf-field-group">
@@ -8654,17 +8657,11 @@ ${pageStr}
             </div>
           </details>
 
-          <!-- A\xE7\xF5es de Entrada: Limpar e Comprimir -->
-          <div class="pdf-controls-actions" id="c-controls-actions">
-            <button type="button" id="c-clear-input-btn" class="pdf-secondary-btn" style="display: none;" title="Limpar arquivo e carregar outro">
-              ${ICONS.trash(15)}
-              <span>Limpar</span>
-            </button>
-            <button type="button" id="c-compress-btn" class="pdf-primary-btn" disabled>
-              ${ICONS.toolCompress(16)}
-              <span>Comprimir PDF</span>
-            </button>
-          </div>
+          <!-- Bot\xE3o Principal de Compress\xE3o (100% de largura) -->
+          <button type="button" id="c-compress-btn" class="pdf-primary-btn" disabled>
+            ${ICONS.toolCompress(16)}
+            <span>Comprimir PDF</span>
+          </button>
 
         </div>
 
@@ -8812,7 +8809,6 @@ ${pageStr}
       const fileLoadedBox = container.querySelector("#c-file-loaded");
       const filenameEl = container.querySelector("#c-filename");
       const filesizeEl = container.querySelector("#c-filesize");
-      const removeBtn = container.querySelector("#c-remove-btn");
       const presetBtns = container.querySelectorAll(".pdf-preset-btn");
       const dpiRange = container.querySelector("#c-dpi-range");
       const dpiVal = container.querySelector("#c-dpi-val");
@@ -8982,14 +8978,14 @@ ${pageStr}
         }
       }
       _on4(dropzone, "click", (e) => {
-        if (e.target !== removeBtn && !removeBtn?.contains(e.target)) {
+        if (!_currentFile3) {
           fileInput.click();
         }
       });
       _on4(dropzone, "keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          fileInput.click();
+          if (!_currentFile3) fileInput.click();
         }
       });
       _on4(fileInput, "change", (e) => {
@@ -9008,10 +9004,6 @@ ${pageStr}
         if (file && (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf"))) {
           _handleFile(file);
         }
-      });
-      _on4(removeBtn, "click", (e) => {
-        e.stopPropagation();
-        _reset();
       });
       presetBtns.forEach((btn) => {
         _on4(btn, "click", () => {
@@ -9552,11 +9544,14 @@ ${pageStr}
                 <span class="pdf-filename" id="s-filename">documento.pdf</span>
                 <span class="pdf-filesize" id="s-filesize">0 KB</span>
               </div>
-              <button type="button" class="pdf-remove-btn" id="s-remove-btn" title="Remover e carregar outro">
-                ${ICONS.x(14)}
-              </button>
             </div>
           </div>
+
+          <!-- Bot\xE3o Limpar abaixo do PDF -->
+          <button type="button" id="s-clear-input-btn" class="pdf-file-clear-btn" style="display: none;" title="Limpar arquivo e carregar outro">
+            ${ICONS.trash(14)}
+            <span>Limpar PDF</span>
+          </button>
 
           <!-- Modos de Divis\xE3o (4 Op\xE7\xF5es Compactas) -->
           <div class="pdf-ctrl-group">
@@ -9636,17 +9631,11 @@ ${pageStr}
             </div>
           </div>
 
-          <!-- A\xE7\xF5es de Entrada: Limpar e Dividir -->
-          <div class="pdf-controls-actions" id="s-controls-actions">
-            <button type="button" id="s-clear-input-btn" class="pdf-secondary-btn" style="display: none;" title="Limpar arquivo e carregar outro">
-              ${ICONS.trash(15)}
-              <span>Limpar</span>
-            </button>
-            <button type="button" id="s-split-btn" class="btn-primary pdf-action-cta" disabled>
-              ${ICONS.toolSplit(16)}
-              <span id="s-split-btn-text">Dividir PDF Agora</span>
-            </button>
-          </div>
+          <!-- Bot\xE3o Principal de Divis\xE3o (100% de largura) -->
+          <button type="button" id="s-split-btn" class="btn-primary pdf-action-cta" disabled>
+            ${ICONS.toolSplit(16)}
+            <span id="s-split-btn-text">Dividir PDF Agora</span>
+          </button>
 
         </div>
 
@@ -10136,14 +10125,14 @@ ${pageStr}
         }
       }
       _on6(dropzone, "click", (e) => {
-        if (e.target !== removeBtn && !removeBtn?.contains(e.target)) {
+        if (!_currentFile4) {
           fileInput.click();
         }
       });
       _on6(dropzone, "keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          fileInput.click();
+          if (!_currentFile4) fileInput.click();
         }
       });
       _on6(fileInput, "change", (e) => {
@@ -10162,10 +10151,6 @@ ${pageStr}
         if (file && (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf"))) {
           _handleFile(file);
         }
-      });
-      _on6(removeBtn, "click", (e) => {
-        e.stopPropagation();
-        _reset();
       });
       modeBtns.forEach((btn) => {
         _on6(btn, "click", () => {

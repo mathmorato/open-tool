@@ -81,7 +81,6 @@ export default {
     const fileLoadedBox   = container.querySelector('#c-file-loaded');
     const filenameEl      = container.querySelector('#c-filename');
     const filesizeEl      = container.querySelector('#c-filesize');
-    const removeBtn       = container.querySelector('#c-remove-btn');
 
     const presetBtns      = container.querySelectorAll('.pdf-preset-btn');
     const dpiRange        = container.querySelector('#c-dpi-range');
@@ -291,7 +290,7 @@ export default {
 
     // Eventos
     _on(dropzone, 'click', (e) => {
-      if (e.target !== removeBtn && !removeBtn?.contains(e.target)) {
+      if (!_currentFile) {
         fileInput.click();
       }
     });
@@ -299,7 +298,7 @@ export default {
     _on(dropzone, 'keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        fileInput.click();
+        if (!_currentFile) fileInput.click();
       }
     });
 
@@ -322,11 +321,6 @@ export default {
       if (file && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) {
         _handleFile(file);
       }
-    });
-
-    _on(removeBtn, 'click', (e) => {
-      e.stopPropagation();
-      _reset();
     });
 
     presetBtns.forEach(btn => {

@@ -752,25 +752,52 @@
   transition: all 0.2s ease;
 }
 
+.v-export-btn svg {
+  flex-shrink: 0;
+  stroke: currentColor;
+}
+
 .v-export-btn--primary {
-  background: var(--accent-primary);
-  color: #fff;
-  border: none;
+  background: var(--blue-primary, #2563EB);
+  color: #FFFFFF !important;
+  border: 1px solid var(--blue-primary, #2563EB);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+.v-export-btn--primary svg {
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
 }
 
 .v-export-btn--primary:hover {
-  background: var(--accent-interactive);
+  background: var(--blue-hover, #1D4ED8);
+  border-color: var(--blue-hover, #1D4ED8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
 
 .v-export-btn--secondary {
-  background: transparent;
+  background: var(--bg-card);
   color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-color);
 }
 
 .v-export-btn--secondary:hover {
-  border-color: var(--accent-primary);
-  background: color-mix(in srgb, var(--accent-primary) 8%, transparent);
+  border-color: var(--blue-primary, #2563EB);
+  color: var(--blue-primary, #2563EB);
+  background: var(--bg-card-hover);
+}
+
+[data-theme="dark"] .v-export-btn--secondary {
+  background: #1E293B;
+  border-color: #334155;
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .v-export-btn--secondary:hover {
+  background: #273549;
+  border-color: #60A5FA;
+  color: #60A5FA;
 }
 
 .v-copy-feedback {

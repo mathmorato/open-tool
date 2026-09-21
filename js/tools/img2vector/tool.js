@@ -217,7 +217,7 @@ export default {
     const previewImg      = container.querySelector('#v-preview-img');
     const filenameEl      = container.querySelector('#v-filename');
     const filesizeEl      = container.querySelector('#v-filesize');
-    const removeBtn       = container.querySelector('#v-remove-btn');
+    const clearInputBtn   = container.querySelector('#v-clear-input-btn');
     const convertBtn      = container.querySelector('#v-convert-btn');
     const presetGrid      = container.querySelector('#v-preset-grid');
 
@@ -348,6 +348,7 @@ export default {
       dropPrompt.style.display = 'none';
       loadedBox.style.display = 'flex';
       convertBtn.disabled = false;
+      if (clearInputBtn) clearInputBtn.style.display = 'inline-flex';
     }
 
     function _resetFile() {
@@ -365,6 +366,7 @@ export default {
       dropPrompt.style.display = 'flex';
       loadedBox.style.display = 'none';
       convertBtn.disabled = true;
+      if (clearInputBtn) clearInputBtn.style.display = 'none';
 
       removeBgBtn.disabled = true;
       removeBgBtn.classList.remove('v-bg-btn--active');
@@ -631,8 +633,8 @@ export default {
     // ── Listeners ────────────────────────────────────────────────────────────
 
     // Drag & Drop
-    _on(dropzone, 'click', (e) => {
-      if (e.target !== removeBtn && !removeBtn.contains(e.target)) {
+    _on(dropzone, 'click', () => {
+      if (!_currentFile) {
         fileInput.click();
       }
     });
@@ -673,10 +675,12 @@ export default {
       }
     });
 
-    _on(removeBtn, 'click', (e) => {
-      e.stopPropagation();
-      _resetFile();
-    });
+    if (clearInputBtn) {
+      _on(clearInputBtn, 'click', (e) => {
+        e.stopPropagation();
+        _resetFile();
+      });
+    }
 
     // Presets
     presetGrid.querySelectorAll('.v-preset-btn').forEach(btn => {

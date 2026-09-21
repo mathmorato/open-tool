@@ -48,11 +48,14 @@ export function getPdfSplitHTML() {
                 <span class="pdf-filename" id="s-filename">documento.pdf</span>
                 <span class="pdf-filesize" id="s-filesize">0 KB</span>
               </div>
-              <button type="button" class="pdf-remove-btn" id="s-remove-btn" title="Remover e carregar outro">
-                ${ICONS.x(14)}
-              </button>
             </div>
           </div>
+
+          <!-- Botão Limpar abaixo do PDF -->
+          <button type="button" id="s-clear-input-btn" class="pdf-file-clear-btn" style="display: none;" title="Limpar arquivo e carregar outro">
+            ${ICONS.trash(14)}
+            <span>Limpar PDF</span>
+          </button>
 
           <!-- Modos de Divisão (4 Opções Compactas) -->
           <div class="pdf-ctrl-group">
@@ -132,17 +135,11 @@ export function getPdfSplitHTML() {
             </div>
           </div>
 
-          <!-- Ações de Entrada: Limpar e Dividir -->
-          <div class="pdf-controls-actions" id="s-controls-actions">
-            <button type="button" id="s-clear-input-btn" class="pdf-secondary-btn" style="display: none;" title="Limpar arquivo e carregar outro">
-              ${ICONS.trash(15)}
-              <span>Limpar</span>
-            </button>
-            <button type="button" id="s-split-btn" class="btn-primary pdf-action-cta" disabled>
-              ${ICONS.toolSplit(16)}
-              <span id="s-split-btn-text">Dividir PDF Agora</span>
-            </button>
-          </div>
+          <!-- Botão Principal de Divisão (100% de largura) -->
+          <button type="button" id="s-split-btn" class="btn-primary pdf-action-cta" disabled>
+            ${ICONS.toolSplit(16)}
+            <span id="s-split-btn-text">Dividir PDF Agora</span>
+          </button>
 
         </div>
 
