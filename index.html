@@ -9,6 +9,9 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/tools/qrcode.css">
 
+  <!-- Biblioteca QR Code Nayuki (100% Client-Side Local) -->
+  <script src="js/lib/qrcodegen.js"></script>
+
   <!-- Fontes modernas Google Fonts (Inter e JetBrains Mono) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,7 +37,7 @@
         </div>
         <div class="brand-title">
           <span>Open <span class="accent">Tool</span></span>
-          <span class="version-badge" id="header-version">v.2.0.0</span>
+          <span class="version-badge" id="header-version">v.2.0.1</span>
         </div>
       </a>
 
@@ -89,14 +92,25 @@
       </div>
 
       <div class="footer-links">
-        <span class="version-badge footer-version" id="footer-version">v.2.0.0</span>
+        <span class="version-badge footer-version" id="footer-version">v.2.0.1</span>
         <a href="https://github.com/mathmorato/open-tool" target="_blank" rel="noopener noreferrer">GitHub</a>
         <span>Licença MIT</span>
       </div>
     </div>
   </footer>
 
-  <!-- Bootstrap Principal ES Modules -->
-  <script type="module" src="js/main.js"></script>
+  <!-- Carregamento Modular & Híbrido: Servidor/GitHub Pages (ES Modules) e Abertura Local file:/// (Bundle) -->
+  <script>
+    if (window.location.protocol === 'file:') {
+      const bundleScript = document.createElement('script');
+      bundleScript.src = 'js/bundle.js';
+      document.body.appendChild(bundleScript);
+    }
+  </script>
+  <script type="module">
+    if (window.location.protocol !== 'file:') {
+      import('./js/main.js');
+    }
+  </script>
 </body>
 </html>

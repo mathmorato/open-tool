@@ -13,12 +13,20 @@ import { initRegistry, renderToolbar } from './tool-registry.js';
 // ── Tema ──────────────────────────────────────────────────────────────────
 
 function initTheme() {
-  const stored = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.THEME) || 'system';
-  applyTheme(stored);
-
   const toggleBtn  = document.getElementById('theme-toggle');
   const iconSun    = document.getElementById('theme-icon-sun');
   const iconMoon   = document.getElementById('theme-icon-moon');
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const isDark = theme === 'dark' ||
+      (theme === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (iconSun)  iconSun.style.display  = isDark  ? 'none' : '';
+    if (iconMoon) iconMoon.style.display = isDark  ? '' : 'none';
+  }
+
+  const stored = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.THEME) || 'system';
+  applyTheme(stored);
 
   if (toggleBtn) {
     toggleBtn.addEventListener('click', () => {
@@ -30,17 +38,11 @@ function initTheme() {
   }
 
   // Observa mudanças no sistema
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    const stored = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.THEME) || 'system';
-    if (stored === 'system') applyTheme('system');
-  });
-
-  function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    const isDark = theme === 'dark' ||
-      (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    if (iconSun)  iconSun.style.display  = isDark  ? 'none' : '';
-    if (iconMoon) iconMoon.style.display = isDark  ? '' : 'none';
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      const stored = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.THEME) || 'system';
+      if (stored === 'system') applyTheme('system');
+    });
   }
 }
 

@@ -1,16 +1,16 @@
-# Open Mark (doc2md) `v.1.9.0`
+# Open Tool `v.2.0.1`
 
-[![Version](https://img.shields.io/badge/version-v.1.9.0-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v.2.0.1-blue.svg)](package.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![Architecture: 100% Client--Side](https://img.shields.io/badge/Architecture-100%25%20Client--Side-informational.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
 [![Privacy: Zero Server Upload](https://img.shields.io/badge/Privacy-Zero%20Server%20Upload-green.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
 [![Deploy: GitHub Pages Ready](https://img.shields.io/badge/Deploy-GitHub%20Pages%20Ready-brightgreen.svg)](#-instruções-de-deploy-no-github-pages)
 
-Uma plataforma web estática moderna, ultrarrápida e universal para processamento e conversão de múltiplos formatos de documento em **Markdown semântico e estruturado** (`.md`). Desenvolvida em Vanilla JavaScript modular (ES Modules), a ferramenta roda **100% no navegador do usuário**, eliminando qualquer dependência de servidores, containers ou transmissão de dados para a nuvem.
+Uma plataforma web estática moderna, modular e universal de ferramentas 100% client-side (Doc → MD, Gerador de QR Code e mais). Desenvolvida em Vanilla JavaScript modular (ES Modules), a ferramenta roda **100% no navegador do usuário**, eliminando qualquer dependência de servidores, containers ou transmissão de dados para a nuvem.
 
 ### 🌐 Acesso Online Imediato
-Além da instalação e execução local, você pode utilizar a versão em produção diretamente pelo navegador (100% client-side, sem necessidade de instalar nada):
-👉 **[Acessar Open Mark](https://mathmorato.github.io/open-mark/#)**
+Além da execução local, você pode utilizar a versão em produção diretamente pelo navegador (100% client-side, sem necessidade de instalar nada):
+👉 **[Acessar Open Tool](https://mathmorato.github.io/open-tool/#)**
 
 ---
 

@@ -7,7 +7,7 @@ import { APP_CONFIG } from '../js/config.js';
 import fs from 'fs';
 import path from 'path';
 
-console.log('--- Iniciando validação do Open Mark ---');
+console.log('--- Iniciando validação do Open Tool ---');
 
 // 1. Verifica versão SemVer (Base Decimal Estrita: Y, Z <= 9)
 console.log(`[OK] Versão SemVer configurada: ${APP_CONFIG.VERSION}`);
@@ -17,12 +17,12 @@ if (!semverDecimalRegex.test(APP_CONFIG.VERSION)) {
   console.error(`[ERRO] Versão ${APP_CONFIG.VERSION} viola a regra de base decimal estrita (Y e Z devem ser de 0 a 9)`);
   process.exit(1);
 }
-if (APP_CONFIG.VERSION !== 'v.1.9.0') {
-  console.error('[ERRO] Versão diferente de v.1.9.0');
+if (APP_CONFIG.VERSION !== 'v.2.0.1') {
+  console.error('[ERRO] Versão diferente de v.2.0.1');
   process.exit(1);
 }
-if (APP_CONFIG.APP_NAME !== 'Open Mark') {
-  console.error('[ERRO] APP_CONFIG.APP_NAME diferente de "Open Mark"');
+if (APP_CONFIG.APP_NAME !== 'Open Tool') {
+  console.error('[ERRO] APP_CONFIG.APP_NAME diferente de "Open Tool"');
   process.exit(1);
 }
 // Garante que versões inválidas como v.1.4.11 sejam expressamente rejeitadas
@@ -47,76 +47,84 @@ console.log(`[OK] Pacotes compactados configurados: ${APP_CONFIG.ARCHIVE_EXTENSI
 
 // 2. Verifica package.json
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
-if (pkg.version !== '1.9.0' || !/^[0-9]\.[0-9]\.[0-9]$/.test(pkg.version)) {
+if (pkg.version !== '2.0.1' || !/^[0-9]\.[0-9]\.[0-9]$/.test(pkg.version)) {
   console.error('[ERRO] package.json version incompatível ou fora da base decimal');
   process.exit(1);
 }
 console.log(`[OK] package.json version: ${pkg.version}`);
 
-// 3. Verifica sincronização no index.html, fila de downloads, container central, ausência de toasts e de exemplos
+// 3. Verifica sincronização no index.html e templates modulares das ferramentas
 const indexHtml = fs.readFileSync('./index.html', 'utf8');
-if (!indexHtml.includes('v.1.9.0')) {
-  console.error('[ERRO] index.html não contém v.1.9.0');
+const doc2mdUi = fs.readFileSync('./js/tools/doc2md/ui.js', 'utf8');
+const qrcodeUi = fs.readFileSync('./js/tools/qrcode/ui.js', 'utf8');
+const fullAppHtml = indexHtml + '\n' + doc2mdUi + '\n' + qrcodeUi;
+
+if (!indexHtml.includes('v.2.0.1')) {
+  console.error('[ERRO] index.html não contém v.2.0.1');
   process.exit(1);
 }
-if (!indexHtml.includes('brand-logo-svg') || !indexHtml.includes('Open <span class="accent">Mark</span>')) {
-  console.error('[ERRO] index.html não contém o novo logo SVG brand-logo-svg ou brand-title Open Mark');
+if (!indexHtml.includes('brand-logo-svg') || !indexHtml.includes('Open <span class="accent">Tool</span>')) {
+  console.error('[ERRO] index.html não contém o novo logo SVG brand-logo-svg ou brand-title Open Tool');
   process.exit(1);
 }
-if (!indexHtml.includes('id="toggle-merge-markdown"') || (!indexHtml.includes('btn-queue-download-merged') && !indexHtml.includes('btn-download-unified'))) {
-  console.error('[ERRO] index.html não contém o seletor ou botão de mesclagem unificada (.md)');
+if (!indexHtml.includes('id="tool-navbar-container"') || !indexHtml.includes('id="tool-viewport"')) {
+  console.error('[ERRO] index.html não contém containers modulares tool-navbar-container e tool-viewport');
   process.exit(1);
 }
-if (!indexHtml.includes('unified-download-container') && !indexHtml.includes('unified-action-row')) {
-  console.error('[ERRO] index.html não contém container unificado unified-action-row');
+if (!fullAppHtml.includes('id="toggle-merge-markdown"') || (!fullAppHtml.includes('btn-queue-download-merged') && !fullAppHtml.includes('btn-download-unified'))) {
+  console.error('[ERRO] UI não contém o seletor ou botão de mesclagem unificada (.md)');
   process.exit(1);
 }
-if (!indexHtml.includes('id="batch-global-progress"') || !indexHtml.includes('id="global-progress-counter"') || !indexHtml.includes('id="global-progress-fill"')) {
-  console.error('[ERRO] index.html não contém os elementos da barra de progresso global (#batch-global-progress)');
+if (!fullAppHtml.includes('unified-download-container') && !fullAppHtml.includes('unified-action-row')) {
+  console.error('[ERRO] UI não contém container unificado unified-action-row');
   process.exit(1);
 }
-if (indexHtml.includes('id="headless-mode-notice"') || indexHtml.includes('headless-badge')) {
-  console.error('[ERRO] index.html ainda contém o aviso de modo alto desempenho (#headless-mode-notice)');
+if (!fullAppHtml.includes('id="batch-global-progress"') || !fullAppHtml.includes('id="global-progress-counter"') || !fullAppHtml.includes('id="global-progress-fill"')) {
+  console.error('[ERRO] UI não contém os elementos da barra de progresso global (#batch-global-progress)');
   process.exit(1);
 }
-if (!indexHtml.includes('id="batch-spinner-icon"') || !indexHtml.includes('radial-spinner-svg')) {
-  console.error('[ERRO] index.html não contém o spinner radial vetorial (#batch-spinner-icon / .radial-spinner-svg)');
+if (fullAppHtml.includes('id="headless-mode-notice"') || fullAppHtml.includes('headless-badge')) {
+  console.error('[ERRO] UI ainda contém o aviso de modo alto desempenho (#headless-mode-notice)');
   process.exit(1);
 }
-if (!indexHtml.includes('id="queue-total-bytes-card"') || !indexHtml.includes('id="live-total-bytes-counter"') || !indexHtml.includes('id="live-total-formatted-unit"')) {
-  console.error('[ERRO] index.html não contém o card de telemetria de bytes totais de MD (#queue-total-bytes-card)');
+if (!fullAppHtml.includes('id="batch-spinner-icon"') || !fullAppHtml.includes('radial-spinner-svg')) {
+  console.error('[ERRO] UI não contém o spinner radial vetorial (#batch-spinner-icon / .radial-spinner-svg)');
   process.exit(1);
 }
-if (!indexHtml.includes('id="consolidation-progress"') || !indexHtml.includes('id="consolidation-counter"') || !indexHtml.includes('id="consolidation-fill"')) {
-  console.error('[ERRO] index.html não contém a barra de progresso de consolidação (#consolidation-progress)');
+if (!fullAppHtml.includes('id="queue-total-bytes-card"') || !fullAppHtml.includes('id="live-total-bytes-counter"') || !fullAppHtml.includes('id="live-total-formatted-unit"')) {
+  console.error('[ERRO] UI não contém o card de telemetria de bytes totais de MD (#queue-total-bytes-card)');
   process.exit(1);
 }
-if (!indexHtml.includes('Tamanho do MD:')) {
-  console.error('[ERRO] index.html não contém o rótulo "Tamanho do MD:"');
+if (!fullAppHtml.includes('id="consolidation-progress"') || !fullAppHtml.includes('id="consolidation-counter"') || !fullAppHtml.includes('id="consolidation-fill"')) {
+  console.error('[ERRO] UI não contém a barra de progresso de consolidação (#consolidation-progress)');
   process.exit(1);
 }
-if (!indexHtml.includes('id="btn-sort-files"') || !indexHtml.includes('merge-sort-container')) {
-  console.error('[ERRO] index.html não contém o botão de ordenação #btn-sort-files ou container .merge-sort-container');
+if (!fullAppHtml.includes('Tamanho do MD:')) {
+  console.error('[ERRO] UI não contém o rótulo "Tamanho do MD:"');
   process.exit(1);
 }
-if (!indexHtml.includes('queue-header-main') || !indexHtml.includes('queue-header-controls') || !indexHtml.includes('queue-static-buttons')) {
-  console.error('[ERRO] index.html não contém as classes da arquitetura de cabeçalho travado (.queue-header-main, .queue-header-controls, .queue-static-buttons)');
+if (!fullAppHtml.includes('id="btn-sort-files"') || !fullAppHtml.includes('merge-sort-container')) {
+  console.error('[ERRO] UI não contém o botão de ordenação #btn-sort-files ou container .merge-sort-container');
   process.exit(1);
 }
-if (indexHtml.includes('toast-container') || indexHtml.includes('id="toast-container"')) {
-  console.error('[ERRO] index.html ainda contém container flutuante de toast (toast-container)');
+if (!fullAppHtml.includes('queue-header-main') || !fullAppHtml.includes('queue-header-controls') || !fullAppHtml.includes('queue-static-buttons')) {
+  console.error('[ERRO] UI não contém as classes da arquitetura de cabeçalho travado (.queue-header-main, .queue-header-controls, .queue-static-buttons)');
   process.exit(1);
 }
-if (!indexHtml.includes('limit-badge') || !indexHtml.includes('1,5 GB')) {
-  console.error('[ERRO] index.html não contém indicação visível de limite de 1,5 GB (.limit-badge)');
+if (fullAppHtml.includes('toast-container') || fullAppHtml.includes('id="toast-container"')) {
+  console.error('[ERRO] UI ainda contém container flutuante de toast (toast-container)');
+  process.exit(1);
+}
+if (!fullAppHtml.includes('limit-badge') || !fullAppHtml.includes('1,5 GB')) {
+  console.error('[ERRO] UI não contém indicação visível de limite de 1,5 GB (.limit-badge)');
   process.exit(1);
 }
 if (!indexHtml.includes('app-main-container')) {
   console.error('[ERRO] index.html não contém o container unificado app-main-container');
   process.exit(1);
 }
-if (!indexHtml.includes('id="btn-browse"')) {
-  console.error('[ERRO] index.html não contém botão explícito #btn-browse');
+if (!fullAppHtml.includes('id="btn-browse"')) {
+  console.error('[ERRO] UI não contém botão explícito #btn-browse');
   process.exit(1);
 }
 if (indexHtml.includes('Sistema pronto. Nenhuma falha detectada.')) {
@@ -136,35 +144,35 @@ if (fs.existsSync('./examples')) {
   console.error('[ERRO] Pasta examples/ ainda existe na raiz do repositório');
   process.exit(1);
 }
-if (!indexHtml.includes('left: -9999px')) {
-  console.error('[ERRO] index.html não contém posicionamento neutro do file-input');
+if (!fullAppHtml.includes('left: -9999px')) {
+  console.error('[ERRO] UI não contém posicionamento neutro do file-input');
   process.exit(1);
 }
-if (!indexHtml.includes('multiple')) {
-  console.error('[ERRO] index.html não contém atributo multiple no file-input');
+if (!fullAppHtml.includes('multiple')) {
+  console.error('[ERRO] UI não contém atributo multiple no file-input');
   process.exit(1);
 }
-if (!indexHtml.includes('id="file-queue-section"') || !indexHtml.includes('id="btn-queue-download-all"') || !indexHtml.includes('id="btn-queue-clear"')) {
-  console.error('[ERRO] index.html não contém os elementos da fila de processamento em lote');
+if (!fullAppHtml.includes('id="file-queue-section"') || !fullAppHtml.includes('id="btn-queue-download-all"') || !fullAppHtml.includes('id="btn-queue-clear"')) {
+  console.error('[ERRO] UI não contém os elementos da fila de processamento em lote');
   process.exit(1);
 }
-if (indexHtml.includes('id="raw-markdown-editor"') || indexHtml.includes('id="preview-container"') || indexHtml.includes('id="metrics-bar"')) {
-  console.error('[ERRO] index.html ainda contém painel de edição/preview obsoleto que deveriam ter sido removidos');
+if (fullAppHtml.includes('id="raw-markdown-editor"') || fullAppHtml.includes('id="preview-container"') || fullAppHtml.includes('id="metrics-bar"')) {
+  console.error('[ERRO] UI ainda contém painel de edição/preview obsoleto que deveriam ter sido removidos');
   process.exit(1);
 }
-if (!indexHtml.includes('Conversor Universal & Mesclador de Documentos para Markdown')) {
-  console.error('[ERRO] index.html não contém o título principal atualizado');
+if (!fullAppHtml.includes('Conversor Universal &amp; Mesclador') && !fullAppHtml.includes('Conversor Universal & Mesclador')) {
+  console.error('[ERRO] UI não contém o título principal atualizado');
   process.exit(1);
 }
-if (!indexHtml.includes('hero-header') || !indexHtml.includes('format-badges-list') || !indexHtml.includes('limit-indicator')) {
-  console.error('[ERRO] index.html não contém as novas classes hero-header, format-badges-list ou limit-indicator');
+if (!fullAppHtml.includes('hero-header') || !fullAppHtml.includes('format-badges-list') || !fullAppHtml.includes('limit-indicator')) {
+  console.error('[ERRO] UI não contém as novas classes hero-header, format-badges-list ou limit-indicator');
   process.exit(1);
 }
-if (!indexHtml.includes('+algumas linguagens de código')) {
-  console.error('[ERRO] index.html não contém a badge destacada +algumas linguagens de código');
+if (!fullAppHtml.includes('+algumas linguagens de código')) {
+  console.error('[ERRO] UI não contém a badge destacada +algumas linguagens de código');
   process.exit(1);
 }
-console.log('[OK] index.html contém v.1.9.0, novo cabeçalho Open Mark com logo SVG e badge Tamanho do MD');
+console.log('[OK] index.html e UI modulares contêm v.2.0.1, layout Open Tool com logo SVG e badge Tamanho do MD');
 
 // 3.1. Verifica concorrência dinâmica de 1000 workers e otimização requestAnimationFrame
 const configJs = fs.readFileSync('./js/config.js', 'utf8');
@@ -417,8 +425,8 @@ if (!stylesCss.includes('gap: 0.38rem')) {
   console.error('[ERRO] css/styles.css não contém redução de 50% no gap vertical do cabeçalho (gap: 0.38rem)');
   process.exit(1);
 }
-if (!indexHtml.includes('icon-desc') || !indexHtml.includes('icon-asc')) {
-  console.error('[ERRO] index.html não contém os ícones vetoriais de ordenação icon-desc e icon-asc');
+if (!fullAppHtml.includes('icon-desc') || !fullAppHtml.includes('icon-asc')) {
+  console.error('[ERRO] UI não contém os ícones vetoriais de ordenação icon-desc e icon-asc');
   process.exit(1);
 }
 if (!stylesCss.includes('.queue-header-main') || !stylesCss.includes('.queue-header-controls') || !stylesCss.includes('.queue-static-buttons')) {
@@ -461,27 +469,37 @@ console.log('[OK] css/styles.css contém layout travado de cabeçalho (CLS=0), b
 
 // 6. Verifica README.md
 const readme = fs.readFileSync('./README.md', 'utf8');
-if (!readme.includes('v.1.9.0')) {
-  console.error('[ERRO] README.md não contém v.1.9.0');
+if (!readme.includes('v.2.0.1')) {
+  console.error('[ERRO] README.md não contém v.2.0.1');
   process.exit(1);
 }
-if (!readme.includes('# Open Mark')) {
-  console.error('[ERRO] README.md não contém o título oficial # Open Mark');
+if (!readme.includes('# Open Tool')) {
+  console.error('[ERRO] README.md não contém o título oficial # Open Tool');
   process.exit(1);
 }
-if (!readme.includes('https://mathmorato.github.io/open-mark/#')) {
-  console.error('[ERRO] README.md não contém o link de acesso online oficial (https://mathmorato.github.io/open-mark/#)');
+if (!readme.includes('https://mathmorato.github.io/open-tool/#')) {
+  console.error('[ERRO] README.md não contém o link de acesso online oficial (https://mathmorato.github.io/open-tool/#)');
   process.exit(1);
 }
-console.log('[OK] README.md contém cabeçalho v.1.9.0, título # Open Mark e link de acesso online imediato');
+console.log('[OK] README.md contém cabeçalho v.2.0.1, título # Open Tool e link de acesso online imediato');
 
-// 5. Verifica existência de todos os arquivos do projeto
+// 5. Verifica existência de todos os arquivos do projeto (incluindo módulos e ferramentas)
 const requiredFiles = [
   'index.html',
   'favicon.svg',
   'css/styles.css',
+  'css/tools/qrcode.css',
   'js/config.js',
+  'js/main.js',
+  'js/tool-registry.js',
+  'js/bundle.js',
   'js/app.js',
+  'js/app-doc2md.js',
+  'js/lib/qrcodegen.js',
+  'js/tools/doc2md/tool.js',
+  'js/tools/doc2md/ui.js',
+  'js/tools/qrcode/tool.js',
+  'js/tools/qrcode/ui.js',
   'js/parsers/docx-parser.js',
   'js/parsers/xlsx-parser.js',
   'js/parsers/pptx-parser.js',

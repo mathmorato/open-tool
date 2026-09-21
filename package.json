@@ -1,12 +1,13 @@
 {
   "name": "open-tool",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Open Tool: Plataforma de ferramentas universais 100% client-side (doc2md, QR Code e mais)",
   "main": "index.html",
   "type": "module",
   "scripts": {
     "start": "npx serve . -l 3000",
     "dev": "npx serve . -l 3000",
+    "build": "npx esbuild js/bundle-entry.js --bundle --outfile=js/bundle.js --format=iife --target=es2020",
     "test": "node test/validate-parsers.js"
   },
   "keywords": [

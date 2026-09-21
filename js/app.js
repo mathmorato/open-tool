@@ -2971,6 +2971,7 @@ export function showToast() {
    Inicialização Global do App
    ========================================================================== */
 export function boot() {
+  reinitElements();
   initVersion();
   initTheme();
   initDropzone();

@@ -10,7 +10,7 @@
  */
 
 // Importa o módulo principal do conversor para garantir que seja carregado
-import { boot } from '../app.js';
+import { boot } from './app.js';
 
 /**
  * Inicializa a ferramenta doc2md após o HTML ter sido injetado no viewport.
@@ -20,7 +20,7 @@ import { boot } from '../app.js';
  */
 export async function initDoc2md(container) {
   // Garante que o DOM processou o HTML recém-injetado
-  await new Promise(r => requestAnimationFrame(r));
+  await new Promise(r => (typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame(r) : setTimeout(r, 16)));
 
   // Chama boot() que inicializa initDropzone() e initQueueEvents()
   // Os elementos agora existem no DOM (renderizados pelo tool.render())

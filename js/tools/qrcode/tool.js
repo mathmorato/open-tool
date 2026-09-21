@@ -15,7 +15,9 @@ import { loadScript } from '../../config.js';
 
 // Biblioteca nayuki — IIFE local (expõe window.qrcodegen)
 // Fonte: nayuki-qr-code-generator@1.8.0 + wrapper IIFE para compatibilidade com <script>
-const QRCODE_LIB_URL = '/js/lib/qrcodegen.js';
+const QRCODE_LIB_URL = (typeof import.meta !== 'undefined' && import.meta?.url)
+  ? new URL('../../lib/qrcodegen.js', import.meta.url).href
+  : 'js/lib/qrcodegen.js';
 
 // Descrições dos níveis de correção de erro
 const ECL_DESCRIPTIONS = {

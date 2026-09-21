@@ -8,8 +8,22 @@ import { APP_CONFIG } from './config.js';
 
 const STORAGE_KEY_ACTIVE_TOOL = 'opentool_active_tool';
 
-// Resolve base URL do registry para imports absolutos (evita falha em serve estático)
-const _registryBase = new URL('.', import.meta.url).href;
+// Resolve base URL do registry para imports absolutos (defensivo contra IIFE/bundle)
+const _registryBase = (typeof import.meta !== 'undefined' && import.meta?.url)
+  ? new URL('.', import.meta.url).href
+  : './js/';
+
+// Mapa de módulos pré-carregados (suporte a bundle/file:// sem quebrar contrato modular)
+const _preloadedModules = new Map();
+
+/**
+ * Registra um módulo de ferramenta pré-carregado no catálogo.
+ * @param {string} id
+ * @param {object} toolModule
+ */
+export function registerToolModule(id, toolModule) {
+  _preloadedModules.set(id, toolModule);
+}
 
 /**
  * Catálogo de ferramentas disponíveis na plataforma.
@@ -86,7 +100,14 @@ export async function activateTool(toolId) {
   _viewport.style.minHeight = _viewport.offsetHeight + 'px';
 
   try {
-    const mod = await import(toolMeta.modulePath);
+    let mod = null;
+    if (_preloadedModules.has(toolId)) {
+      mod = { default: _preloadedModules.get(toolId) };
+    } else if (typeof window !== 'undefined' && window.__OPEN_TOOL_MODULES__ && window.__OPEN_TOOL_MODULES__[toolId]) {
+      mod = { default: window.__OPEN_TOOL_MODULES__[toolId] };
+    } else {
+      mod = await import(toolMeta.modulePath);
+    }
     _activeModule = mod.default;
     _activeToolId = toolId;
 
@@ -109,7 +130,8 @@ export async function activateTool(toolId) {
     localStorage.setItem(STORAGE_KEY_ACTIVE_TOOL, toolId);
     _updateNavbar(toolId);
 
-    requestAnimationFrame(() => {
+    const raf = typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame : (cb) => setTimeout(cb, 16);
+    raf(() => {
       _viewport.classList.remove('tool-viewport--transitioning');
     });
 
