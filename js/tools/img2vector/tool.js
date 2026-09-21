@@ -327,7 +327,7 @@ export default {
 
       removeBgBtn.disabled = false;
       removeBgBtn.classList.remove('v-bg-btn--active');
-      removeBgBtnText.textContent = 'Remover Fundo da Imagem';
+      removeBgBtnText.textContent = 'Remover Fundo';
       bgBadge.textContent = 'Desativado';
       bgBadge.classList.remove('v-bg-badge--active');
 
@@ -354,7 +354,7 @@ export default {
 
       removeBgBtn.disabled = true;
       removeBgBtn.classList.remove('v-bg-btn--active');
-      removeBgBtnText.textContent = 'Remover Fundo da Imagem';
+      removeBgBtnText.textContent = 'Remover Fundo';
       bgBadge.textContent = 'Desativado';
       bgBadge.classList.remove('v-bg-badge--active');
 
@@ -405,7 +405,7 @@ export default {
         bgBadge.textContent = '✓ Fundo Removido';
         bgBadge.classList.add('v-bg-badge--active');
         removeBgBtn.classList.add('v-bg-btn--active');
-        removeBgBtnText.textContent = 'Restaurar Fundo Original';
+        removeBgBtnText.textContent = 'Restaurar Fundo';
         _updateCutoutPreviews();
         if (_currentSvgString) {
           _vectorize();
@@ -414,7 +414,7 @@ export default {
         bgBadge.textContent = 'Desativado';
         bgBadge.classList.remove('v-bg-badge--active');
         removeBgBtn.classList.remove('v-bg-btn--active');
-        removeBgBtnText.textContent = 'Remover Fundo da Imagem';
+        removeBgBtnText.textContent = 'Remover Fundo';
         _cutoutDataUrl = null;
         previewImg.src = _currentImageSrc;
         origOutput.src = _currentImageSrc;

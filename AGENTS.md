@@ -70,6 +70,25 @@ A interface deve transmitir clareza técnica, precisão, agilidade e confiabilid
   - **Tool Viewport:** Container onde o HTML de cada ferramenta é injetado dinamicamente com transição de fade.
   - **Padrão de Ícones:** Estritamente ícones de traço linear (`stroke-width="1.75"` ou `"2"`), `fill="none"` e terminações arredondadas (`stroke-linecap="round"`), como Lucide Icons ou Feather Icons. Proibido ícones chapados e pesados.
 
+### 2.4 Diretriz mandatória de ergonomia: Layout Single-Viewport e Alinhamento Perfeito (Zero Scroll Desnecessário)
+- **Princípio da Visão Única (Single-Viewport / Above the Fold):**
+  - Todas as ferramentas da plataforma DEVEM ser projetadas para caber integralmente em uma única visualização de tela em desktops e notebooks comuns (resolução padrão de 1366x768 a 1920x1080), SEM exigir que o usuário role a página verticalmente para operar a ferramenta.
+  - A altura total do container da ferramenta deve respeitar o espaço vertical disponível, eliminando barras de rolagem globais indesejadas na janela principal.
+- **Alinhamento Simétrico e Casado entre Painéis (Topos e Bases Nivelados):**
+  - O workspace de duas colunas (painel de controles/entrada à esquerda e painel de pré-visualização/saída à direita) deve adotar `align-items: stretch` ou alturas perfeitamente pareadas.
+  - As linhas de topo e as linhas de base dos dois cards devem coincidir milimetricamente, criando um bloco visual harmônico e coeso (conforme padrão do Gerador de QR Code).
+- **Densidade de Informação Inteligente e Controles Enxutos:**
+  - Proibido empilhar controles verticais extensos com parágrafos descritivos prolixos que inflem a coluna.
+  - Utilizar componentes compactos e modernos:
+    - **Dropzones:** altura enxuta com ícone moderado (22–24px) e layout horizontal, recolhendo-se suavemente ao carregar o arquivo.
+    - **Cards de Ajuste/Toggles:** linhas únicas e condensadas (ícone + título + status + botão de alternância/switch).
+    - **Grids de Opções/Presets:** distribuição em múltiplas colunas (ex: grid 3x2) com rótulos concisos e microcópia, em vez de botões verticais altos em coluna única ou dupla.
+    - **Configurações Avançadas:** agrupadas em acordeões colapsáveis (`<details>`) com campos dispostos em grid bidimensional quando expandidos.
+- **Botão de Ação Primária (CTA) Permanentemente Visível:**
+  - O botão de ação primária da ferramenta (ex: *Gerar QR Code*, *Vetorizar Imagem para SVG*, *Converter Documentos*) deve estar sempre visível imediatamente acima da dobra, sem requerer qualquer rolagem.
+- **Painel de Visualização Auto-Ajustável:**
+  - O palco de pré-visualização (`.stage`, `.canvas-wrap`, `.preview-panel`) deve empregar `flex: 1` e limites elásticos (`min-height`/`max-height`), permitindo que a imagem, vetor ou documento se auto-ajuste de forma responsiva ao espaço livre sem estourar o viewport.
+
 ---
 
 ## 3. Arquitetura técnica e processamento
@@ -108,7 +127,7 @@ A interface deve transmitir clareza técnica, precisão, agilidade e confiabilid
 ## 4. Sistema de versionamento
 
 - **Formato estrito SemVer:** `v.X.Y.Z` (onde `X` = Major, `Y` = Minor, `Z` = Patch).
-- Versão atual da plataforma: `v.2.0.0`.
+- Versão atual da plataforma: `v.2.2.2`.
 - **Locais obrigatórios de atualização a cada release:**
   1. Rodapé visível da interface principal (`index.html`).
   2. `js/config.js` — constante `APP_CONFIG.VERSION`.

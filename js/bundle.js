@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.2.1",
+    VERSION: "v.2.2.2",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -6916,16 +6916,16 @@ ${footerDelimiter}
       <section class="img2vector-hero">
         <header class="hero-header">
           <div class="img2vector-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
               <polyline points="2 17 12 22 22 17"></polyline>
               <polyline points="2 12 12 17 22 12"></polyline>
             </svg>
-            Vetoriza\xE7\xE3o Baseada em Curvas B\xE9zier
+            Vetoriza\xE7\xE3o Curvas B\xE9zier
           </div>
           <h2 class="hero-title">Image to Vector</h2>
           <p class="hero-subtitle">
-            Transforme imagens rasterizadas (PNG, JPG, WEBP, BMP) em gr\xE1ficos vetoriais SVG escal\xE1veis com fidelidade matem\xE1tica. 100% local \u2014 nenhuma imagem sai do seu dispositivo.
+            Transforme imagens rasterizadas em gr\xE1ficos vetoriais SVG escal\xE1veis com fidelidade matem\xE1tica. 100% local \u2014 zero tr\xE1fego de rede.
           </p>
         </header>
       </section>
@@ -6935,19 +6935,21 @@ ${footerDelimiter}
         <!-- Coluna Esquerda: Entrada & Controles -->
         <div class="img2vector-controls-panel">
 
-          <!-- Dropzone de Imagem -->
+          <!-- Dropzone de Imagem Compacto -->
           <div class="img2vector-dropzone" id="v-dropzone" tabindex="0" role="button" aria-label="Carregar imagem para vetoriza\xE7\xE3o">
             <input type="file" id="v-file-input" accept="image/png,image/jpeg,image/webp,image/bmp,image/gif" class="v-hidden-input">
             <div class="v-dropzone-content" id="v-dropzone-prompt">
               <div class="v-dropzone-icon">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                   <circle cx="8.5" cy="8.5" r="1.5"></circle>
                   <polyline points="21 15 16 10 5 21"></polyline>
                 </svg>
               </div>
-              <p class="v-dropzone-title">Arraste uma imagem ou <span class="v-link">selecione</span></p>
-              <p class="v-dropzone-sub">PNG, JPG, WEBP, BMP at\xE9 20MB \u2022 Cole com Ctrl+V</p>
+              <div class="v-dropzone-text">
+                <p class="v-dropzone-title">Arraste uma imagem ou <span class="v-link">selecione</span></p>
+                <p class="v-dropzone-sub">PNG, JPG, WEBP, BMP at\xE9 20MB \u2022 Ctrl+V</p>
+              </div>
             </div>
 
             <!-- Preview da Imagem Carregada -->
@@ -6958,7 +6960,7 @@ ${footerDelimiter}
                 <span class="v-filesize" id="v-filesize">0 KB</span>
               </div>
               <button type="button" class="v-remove-btn" id="v-remove-btn" title="Trocar imagem">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -6966,63 +6968,74 @@ ${footerDelimiter}
             </div>
           </div>
 
-          <!-- Remo\xE7\xE3o Inteligente de Fundo -->
+          <!-- Remo\xE7\xE3o Inteligente de Fundo (Em Linha Compacta) -->
           <div class="v-bg-remover-card" id="v-bg-remover-card">
-            <div class="v-bg-remover-header">
-              <div class="v-bg-remover-title-wrap">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="v-bg-icon">
+            <div class="v-bg-remover-row">
+              <div class="v-bg-remover-info">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="v-bg-icon">
                   <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
                 </svg>
-                <span class="v-bg-remover-title">Remo\xE7\xE3o Inteligente de Fundo</span>
+                <div class="v-bg-text-wrap">
+                  <span class="v-bg-remover-title">Remover Fundo</span>
+                  <span class="v-bg-badge" id="v-bg-badge">Desativado</span>
+                </div>
               </div>
-              <span class="v-bg-badge" id="v-bg-badge">Desativado</span>
+              <button type="button" class="v-bg-btn" id="v-remove-bg-btn" disabled>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="9" y1="3" x2="9" y2="21"></line>
+                  <path d="m14 8 4 4-4 4"></path>
+                </svg>
+                <span id="v-remove-bg-btn-text">Ativar Remo\xE7\xE3o</span>
+              </button>
             </div>
-            <p class="v-bg-remover-desc">
-              Detecta e isola automaticamente o plano de fundo externo via flood-fill perim\xE9trico, preservando elementos internos e gerando um vetor SVG transparente.
-            </p>
-            <button type="button" class="v-bg-btn" id="v-remove-bg-btn" disabled>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="9" y1="3" x2="9" y2="21"></line>
-                <path d="m14 8 4 4-4 4"></path>
-              </svg>
-              <span id="v-remove-bg-btn-text">Remover Fundo da Imagem</span>
-            </button>
           </div>
 
-          <!-- Presets de Vetoriza\xE7\xE3o -->
+          <!-- Presets de Vetoriza\xE7\xE3o (Grid 3x2 Compacto) -->
           <div class="img2vector-field-group">
             <label class="img2vector-label">Modo / Preset</label>
             <div class="v-preset-grid" id="v-preset-grid">
               <button type="button" class="v-preset-btn v-preset-btn--active" data-preset="bw">
-                <span class="v-preset-icon">\u2B1B</span>
-                <span class="v-preset-title">Logotipo / P&B</span>
-                <span class="v-preset-desc">2 cores, tra\xE7o limpo para silhuetas</span>
+                <div class="v-preset-head">
+                  <span class="v-preset-icon">\u2B1B</span>
+                  <span class="v-preset-title">Logotipo</span>
+                </div>
+                <span class="v-preset-desc">2 cores P&B</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="balanced">
-                <span class="v-preset-icon">\u{1F3A8}</span>
-                <span class="v-preset-title">Equilibrado</span>
-                <span class="v-preset-desc">16 cores, curvas e ilustra\xE7\xF5es</span>
+                <div class="v-preset-head">
+                  <span class="v-preset-icon">\u{1F3A8}</span>
+                  <span class="v-preset-title">Equilibrado</span>
+                </div>
+                <span class="v-preset-desc">16 cores</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="detailed">
-                <span class="v-preset-icon">\u2728</span>
-                <span class="v-preset-title">Alta Fidelidade</span>
-                <span class="v-preset-desc">32 cores, m\xE1xima nitidez</span>
+                <div class="v-preset-head">
+                  <span class="v-preset-icon">\u2728</span>
+                  <span class="v-preset-title">Alta Fid.</span>
+                </div>
+                <span class="v-preset-desc">32 cores</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="curvy">
-                <span class="v-preset-icon">\u3030\uFE0F</span>
-                <span class="v-preset-title">Curvas Suaves</span>
-                <span class="v-preset-desc">B\xE9ziers arredondadas e org\xE2nicas</span>
+                <div class="v-preset-head">
+                  <span class="v-preset-icon">\u3030\uFE0F</span>
+                  <span class="v-preset-title">Curvas</span>
+                </div>
+                <span class="v-preset-desc">Suaves</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="posterized">
-                <span class="v-preset-icon">\u{1F5BC}\uFE0F</span>
-                <span class="v-preset-title">Posterizado</span>
-                <span class="v-preset-desc">Cores s\xF3lidas estilo p\xF4ster</span>
+                <div class="v-preset-head">
+                  <span class="v-preset-icon">\u{1F5BC}\uFE0F</span>
+                  <span class="v-preset-title">Poster</span>
+                </div>
+                <span class="v-preset-desc">Cores s\xF3lidas</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="grayscale">
-                <span class="v-preset-icon">\u{1FA76}</span>
-                <span class="v-preset-title">Escala de Cinza</span>
-                <span class="v-preset-desc">Tons graduais monocrom\xE1ticos</span>
+                <div class="v-preset-head">
+                  <span class="v-preset-icon">\u{1FA76}</span>
+                  <span class="v-preset-title">Cinza</span>
+                </div>
+                <span class="v-preset-desc">Monocrom\xE1tico</span>
               </button>
             </div>
           </div>
@@ -7444,7 +7457,7 @@ ${footerDelimiter}
         filesizeEl.textContent = _formatBytes(file.size);
         removeBgBtn.disabled = false;
         removeBgBtn.classList.remove("v-bg-btn--active");
-        removeBgBtnText.textContent = "Remover Fundo da Imagem";
+        removeBgBtnText.textContent = "Remover Fundo";
         bgBadge.textContent = "Desativado";
         bgBadge.classList.remove("v-bg-badge--active");
         dropPrompt.style.display = "none";
@@ -7467,7 +7480,7 @@ ${footerDelimiter}
         convertBtn.disabled = true;
         removeBgBtn.disabled = true;
         removeBgBtn.classList.remove("v-bg-btn--active");
-        removeBgBtnText.textContent = "Remover Fundo da Imagem";
+        removeBgBtnText.textContent = "Remover Fundo";
         bgBadge.textContent = "Desativado";
         bgBadge.classList.remove("v-bg-badge--active");
         _setViewState("empty");
@@ -7512,7 +7525,7 @@ ${footerDelimiter}
           bgBadge.textContent = "\u2713 Fundo Removido";
           bgBadge.classList.add("v-bg-badge--active");
           removeBgBtn.classList.add("v-bg-btn--active");
-          removeBgBtnText.textContent = "Restaurar Fundo Original";
+          removeBgBtnText.textContent = "Restaurar Fundo";
           _updateCutoutPreviews();
           if (_currentSvgString) {
             _vectorize();
@@ -7521,7 +7534,7 @@ ${footerDelimiter}
           bgBadge.textContent = "Desativado";
           bgBadge.classList.remove("v-bg-badge--active");
           removeBgBtn.classList.remove("v-bg-btn--active");
-          removeBgBtnText.textContent = "Remover Fundo da Imagem";
+          removeBgBtnText.textContent = "Remover Fundo";
           _cutoutDataUrl = null;
           previewImg.src = _currentImageSrc;
           origOutput.src = _currentImageSrc;
