@@ -6,7 +6,7 @@
 [![Privacy: Zero Server Upload](https://img.shields.io/badge/Privacy-Zero%20Server%20Upload-green.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
 [![Deploy: GitHub Pages Ready](https://img.shields.io/badge/Deploy-GitHub%20Pages%20Ready-brightgreen.svg)](#-instruções-de-deploy-no-github-pages)
 
-Uma plataforma web estática moderna, modular e universal de ferramentas 100% client-side (Doc → MD, Gerador de QR Code e mais). Desenvolvida em Vanilla JavaScript modular (ES Modules), a ferramenta roda **100% no navegador do usuário**, eliminando qualquer dependência de servidores, containers ou transmissão de dados para a nuvem.
+Uma plataforma web estática moderna, modular e universal de ferramentas **100% client-side**. Desenvolvida em Vanilla JavaScript com arquitetura orientada a componentes plugáveis (ES Modules), o **Open Tool** executa todas as rotinas diretamente no navegador do usuário, eliminando qualquer dependência de servidores de backend, contêineres ou transmissão remota de dados.
 
 ### 🌐 Acesso Online Imediato
 Além da execução local, você pode utilizar a versão em produção diretamente pelo navegador (100% client-side, sem necessidade de instalar nada):
@@ -14,77 +14,129 @@ Além da execução local, você pode utilizar a versão em produção diretamen
 
 ---
 
-## 📊 Matriz Universal de Formatos Suportados (+30 Extensões)
+## 🛠️ Catálogo de Ferramentas Disponíveis
 
-O motor de conversão combina parsers documentais especializados com fallback heurístico para decodificação textual em UTF-8:
+O Open Tool adota uma experiência visual unificada inspirada no modelo *PDF24 Tools*, com alternância instantânea entre utilitários e carregamento síncrono no navegador:
+
+### 1. Hub de Ferramentas (`hub`)
+* **Interface Geral:** Catálogo visual em grade de cards apresentando todas as ferramentas disponíveis na plataforma.
+* **Informações Rápidas:** Badges de categorização, resumo de capacidades técnicas e botão de acesso direto.
+* **Extensibilidade Modular:** Ponto central de integração que reflete automaticamente novas ferramentas plugadas ao sistema.
+
+### 2. Doc → MD (`doc2md`)
+* **Conversor Universal:** Converte documentos de texto, planilhas matriciais, apresentações, PDFs e código-fonte em Markdown estruturado.
+* **Processamento Concorrente:** Fila de lote gerenciada com suporte a pacotes compactados (`.zip`, `.rar`, `.7z`, `.tar`, `.gz`, `.bz2`) e paralelismo via Web Workers.
+* **Exportação Flexível:** Download individual, download unificado (mesclado) ou cópia instantânea para a área de transferência.
+
+### 3. Gerador de QR Code (`qrcode`)
+* **Geração Local Instantânea:** Codifica links web (URLs) ou texto livre diretamente em canvas e SVG vetorial.
+* **Personalização Completa:** Controle de dimensão (128 px a 1024 px), cores personalizadas para módulos e fundo, e 4 níveis de correção de erro (L — 7%, M — 15%, Q — 25%, H — 30%).
+* **Colagem Inteligente:** Botão de colagem rápida com integração à Clipboard API e detecção em tempo real de URLs válidas.
+* **Exportação Dupla:** Baixe como imagem PNG de alta resolução ou arquivo SVG escalável.
+
+### 4. Image to Vector (`img2vector`)
+* **Vetorização Raster para SVG:** Converte imagens rasterizadas (`.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`, `.gif`) em caminhos vetoriais escaláveis `<path>` com curvas Bézier cúbicas e quadráticas.
+* **Presets Otimizados:** Perfis pré-definidos para *Logotipo / P&B* (2 cores nítidas), *Equilibrado* (ilustrações), *Alta Fidelidade* (detalhes finos), *Curvas Suaves*, *Posterizado* e *Escala de Cinza*.
+* **Ajustes Finos:** Quantização de cores (2 a 64 cores), redução de ruído (filtro de mediana/suavização) e omissão de speckles.
+* **Palco Comparativo:** Visualização do vetor SVG, da imagem original ou comparação lado a lado, com controle de zoom (50% a 300%) e métricas de caminhos e bytes.
+* **Exportação:** Download do arquivo `.svg` e cópia direta do código-fonte XML para a área de transferência.
+
+---
+
+## 📊 Matriz Universal de Formatos Suportados (Doc → MD)
+
+O motor documental combina parsers especializados com fallback heurístico para decodificação textual em UTF-8:
 
 | Categoria | Extensões Suportadas | Motor Técnico de Conversão | Estrutura de Saída Markdown |
 | :--- | :--- | :--- | :--- |
 | **Documentos de Texto** | `.docx`, `.odt`, `.rtf` | Mammoth.js + Turndown Service + DOMParser | Títulos (`#` a `######`), parágrafos, listas ordenadas/não-ordenadas, ênfases (`*itálico*`, `**negrito**`), tabelas e hiperlinks. |
-| **Planilhas & Matrizes** | `.xlsx`, `.xls`, `.csv`, `.tsv`, `.ods` | SheetJS (xlsx.full.min.js) | Matrizes tabulares com cabeçalhos estruturados e alinhamento padronizado (`\| coluna \|`). Múltiplas abas são convertidas em seções Markdown dedicadas. |
+| **Planilhas & Matrizes** | `.xlsx`, `.xls`, `.csv`, `.tsv`, `.ods` | SheetJS (xlsx.full.min.js) | Matrizes tabulares com cabeçalhos estruturados e alinhamento padronizado (`\| coluna \|`). Múltiplas abas convertidas em seções dedicadas. |
 | **Apresentações** | `.pptx`, `.odp` | JSZip + DOMParser XML | Extração hierárquica slide a slide (`# Slide N`), tópicos em listas e anotações do apresentador. |
-| **Documentos Fechados & E-books** | `.pdf`, `.epub` | PDF.js (Mozilla) | Fluxo contínuo de texto, preservação de quebras de parágrafo, paginação semântica e blocos destacados. |
-| **Marcação & Dados** | `.html`, `.htm`, `.xml`, `.json`, `.yaml`, `.yml`, `.svg` | Turndown + Prettifier Nativo | Elementos semânticos convertidos para sintaxe Markdown; dados estruturados organizados em blocos de código com identificação de linguagem (ex: ````json ... ````). |
-| **Código-Fonte & Scripts** | `.js`, `.ts`, `.py`, `.java`, `.c`, `.cpp`, `.cs`, `.go`, `.rs`, `.php`, `.rb`, `.sql`, `.sh`, `.bash`, etc. | TextDecoder UTF-8 | Blocos de código cercados (fenced code blocks) com indicação automática de sintaxe para visualizadores e LLMs. |
-| **Texto Puro & Configurações** | `.txt`, `.md`, `.markdown`, `.log`, `.ini`, `.env`, `.toml` | Leitor Nativo de Streams UTF-8 | Higienização de quebras de linha (CRLF -> LF) e formatação de texto preservada. |
+| **Documentos Fechados** | `.pdf`, `.epub` | PDF.js (Mozilla) | Fluxo contínuo de texto, preservação de quebras de parágrafo, paginação semântica e blocos destacados. |
+| **Marcação & Dados** | `.html`, `.htm`, `.xml`, `.json`, `.yaml`, `.yml`, `.svg` | Turndown + Prettifier Nativo | Elementos semânticos convertidos para sintaxe Markdown; dados estruturados organizados em blocos de código (`json`, `yaml`). |
+| **Código-Fonte & Scripts** | `.js`, `.ts`, `.py`, `.java`, `.c`, `.cpp`, `.cs`, `.go`, `.rs`, `.php`, `.rb`, `.sql`, `.sh`, etc. | TextDecoder UTF-8 | Blocos de código cercados (fenced code blocks) com indicação automática de sintaxe para LLMs e editores. |
+| **Texto Puro & Configurações** | `.txt`, `.md`, `.markdown`, `.log`, `.ini`, `.env`, `.toml` | Leitor Nativo UTF-8 | Higienização de quebras de linha (CRLF -> LF) e formatação original preservada. |
 | **Fallback Universal** | Qualquer arquivo de texto válido | Heurística de decodificação UTF-8 | Detecção dinâmica e conversão direta para bloco Markdown higienizado. |
 
 ---
 
 ## 🔒 Manifesto de Segurança e Privacidade (Data Privacy by Design)
 
-O **Open Mark** foi arquitetado sob a premissa fundamental de soberania de dados do usuário:
+O **Open Tool** foi arquitetado sob o princípio rigoroso de soberania e privacidade total dos dados do usuário:
 
-1. **Execução 100% Client-Side:** Toda a lógica de leitura binária, parsing de XML/ZIP e compilação de Markdown executa no sandbox do motor JavaScript do navegador do usuário (`V8`, `SpiderMonkey`, `JavaScriptCore`).
-2. **Zero Tráfego de Rede para Documentos:** Nenhum documento, fragmento de texto, nome de arquivo ou metadado trafega por redes externas ou servidores centrais. A aplicação funciona plenamente até mesmo em modo offline (*Air-Gapped*).
-3. **Telemetria Zero:** Sem ferramentas invasivas de analytics, cookies de rastreamento ou chamadas ocultas a APIs de terceiros. Apenas bibliotecas de parsing abertas são carregadas via CDNs consolidadas e imutáveis.
-4. **Ciclo de Vida de Memória Efêmero:** Os buffers binários (`ArrayBuffer`) e strings geradas residem estritamente na memória da sessão da aba aberta. Ao remover um item da fila ou recarregar a página, todos os recursos são descartados pelo *Garbage Collector*.
-5. **Conformidade Corporativa:** Ideal para ambientes regulados que lidam com propriedade intelectual confidencial, dados pessoais (LGPD/GDPR) e diretrizes rígidas de segurança corporativa.
+1. **Execução 100% Client-Side:** Toda a lógica de processamento de arquivos, geração de QR codes e vetorização executa no sandbox do motor JavaScript do navegador (`V8`, `SpiderMonkey`, `JavaScriptCore`).
+2. **Zero Envio de Dados:** Nenhum documento, texto, URL digitada ou imagem trafega por servidores centrais ou serviços de nuvem. A aplicação opera perfeitamente em redes fechadas (*Air-Gapped*) e em modo offline.
+3. **Telemetria Zero:** Sem analytics invasivos, rastreadores de terceiros ou identificadores persistentes. As bibliotecas são mantidas localmente no repositório.
+4. **Ciclo de Vida Efêmero em Memória:** Os buffers de imagem e strings processadas residem estritamente na memória volátil da sessão. Ao navegar ou recarregar a aba, os recursos são desalocados pelo *Garbage Collector*.
+5. **Conformidade com Privacidade:** Alinhado aos padrões mais rígidos de proteção de dados (LGPD, GDPR e políticas internas de segurança da informação).
 
 ---
 
-## 📁 Estrutura do Repositório (Árvore Limpa)
+## 📁 Estrutura do Repositório (Arquitetura Modular)
 
 ```
-open-mark/
-├── index.html                   # Interface SPA semântica, Dropzone e Fila de Lote
-├── package.json                 # Metadados do projeto e dependências
-├── package-lock.json            # Travamento determinístico de dependências locais
-├── LICENSE                      # Termos de licença open-source MIT
+open-tool/
+├── index.html                   # Estrutura base da aplicação SPA e Navbar de ferramentas
+├── package.json                 # Metadados do projeto e scripts de automação
+├── package-lock.json            # Travamento determinístico de dependências
+├── LICENSE                      # Termos da licença open-source MIT
 ├── README.md                    # Documentação técnica integral da plataforma
-├── .gitignore                   # Regras de exclusão de arquivos e diretórios
+├── favicon.svg                  # Ícone vetorial da marca
 ├── css/
-│   └── styles.css               # Design system, temas Claro/Escuro e media queries mobile
+│   ├── styles.css               # Design system global, variáveis e temas Claro/Escuro
+│   └── tools/                   # Folhas de estilo modulares por ferramenta
+│       ├── hub.css              # Estilos do catálogo visual estilo PDF24
+│       ├── qrcode.css           # Estilos específicos do gerador de QR Code
+│       └── img2vector.css       # Estilos específicos do vetorizador de imagens
 ├── js/
-│   ├── config.js                # Configuração central, constantes e CDN loaders
-│   ├── app.js                   # Controlador da aplicação, ciclo de vida da fila e Web APIs
-│   ├── parsers/                 # Módulos de conversão especializados
-│   │   ├── docx-parser.js       # Motor Mammoth + Turndown para DOCX/ODT
-│   │   ├── xlsx-parser.js       # Motor SheetJS para planilhas e tabelas matriciais
-│   │   ├── pptx-parser.js       # Motor JSZip para apresentações e anotações de slides
-│   │   ├── pdf-parser.js        # Motor PDF.js para documentos e fluxo textual
-│   │   └── text-parser.js       # Motor para texto puro, código-fonte e formatos de dados
+│   ├── config.js                # Configurações globais, mapa de MIME types e SemVer
+│   ├── main.js                  # Ponto de entrada (bootstrap) e inicialização de temas
+│   ├── tool-registry.js         # Catálogo central de roteamento e ciclo de vida das ferramentas
+│   ├── bundle.js                # Bundle compilado de produção para alta performance
+│   ├── bundle-entry.js          # Ponto de entrada para empacotamento com esbuild
+│   ├── app.js                   # Motor principal do Doc → MD e gerenciador da fila
+│   ├── app-doc2md.js            # Bridge de compatibilidade do Doc → MD
+│   ├── lib/                     # Bibliotecas locais 100% offline
+│   │   ├── qrcodegen.js         # Motor Nayuki QR Code Generator
+│   │   └── imagetracer.js       # Motor ImageTracer para vetorização raster → SVG
+│   ├── tools/                   # Módulos plugáveis de ferramentas
+│   │   ├── hub/                 # Ferramenta: Vitrine / Catálogo de ferramentas
+│   │   │   ├── tool.js          # Controlador do Hub
+│   │   │   └── ui.js            # Template HTML dos cards
+│   │   ├── doc2md/              # Ferramenta: Conversor documental para Markdown
+│   │   │   ├── tool.js          # Wrapper de ciclo de vida
+│   │   │   └── ui.js            # Template HTML da dropzone e fila
+│   │   ├── qrcode/              # Ferramenta: Gerador de QR Code
+│   │   │   ├── tool.js          # Controlador e renderizador de canvas/SVG
+│   │   │   └── ui.js            # Template HTML dos controles
+│   │   └── img2vector/          # Ferramenta: Image to Vector
+│   │       ├── tool.js          # Controlador de quantização e curvas Bézier
+│   │       └── ui.js            # Template HTML de upload, presets e palco
+│   ├── parsers/                 # Parsers especializados do Doc → MD
+│   │   ├── docx-parser.js       # Mammoth + Turndown para DOCX/ODT
+│   │   ├── xlsx-parser.js       # SheetJS para planilhas e tabelas
+│   │   ├── pptx-parser.js       # JSZip para apresentações PPTX
+│   │   ├── pdf-parser.js        # PDF.js para documentos PDF
+│   │   └── text-parser.js       # Decodificador UTF-8 para texto e código
 │   └── workers/
 │       └── converter-worker.js  # Web Worker para processamento assíncrono em background
-└── test/                        # Suíte completa de testes automatizados
-    ├── test-batch-queue.js      # Validação de concorrência, fila e dupla barra de progresso
-    ├── test-dropzone-logic.js   # Validação de extensões, detecção de MIME e filtros
-    └── validate-parsers.js      # Validação de sintaxe, SemVer e integridade de arquivos
+└── test/
+    └── validate-parsers.js      # Validador de integridade, arquivos e regras SemVer
 ```
 
 ---
 
 ## 🛠️ Guia de Instalação e Execução Local
 
-Como se trata de uma Single Page Application construída com ES Modules nativos, é recomendável servi-la via HTTP local para evitar bloqueios de CORS em navegadores modernos:
+Como se trata de uma Single Page Application com carregamento de módulos e scripts estáticos, recomenda-se servi-la via HTTP local:
 
 ### 1. Clonar o repositório
 ```bash
-git clone https://github.com/mathmorato/open-mark.git
-cd open-mark
+git clone https://github.com/mathmorato/open-tool.git
+cd open-tool
 ```
 
-### 2. Executar via servidor estático (escolha uma das opções abaixo)
+### 2. Executar via servidor estático (escolha uma das opções)
 
 **Opção A — Usando Node.js / npx serve:**
 ```bash
@@ -100,30 +152,28 @@ python -m http.server 3000
 Clique com o botão direito em `index.html` e selecione **Open with Live Server**.
 
 ### 3. Acessar a aplicação
-Abra o navegador em `http://localhost:3000` (ou porta indicada no terminal).
+Abra o navegador no endereço `http://localhost:3000` (ou na porta indicada no seu terminal).
 
 ---
 
 ## 🌐 Instruções de Deploy no GitHub Pages
 
-O projeto está 100% preparado para publicação contínua direta pelo GitHub Pages sem etapas intermediárias de build:
+O projeto está totalmente preparado para publicação contínua e direta via GitHub Pages:
 
-1. **Acessar Configurações:** No repositório no GitHub, clique na aba **Settings**.
-2. **Navegar para Pages:** No menu lateral esquerdo, selecione a opção **Pages**.
-3. **Configurar Publicação:**
-   - Em **Build and deployment > Source**, certifique-se de selecionar **Deploy from a branch**.
-   - Em **Branch**, selecione `main` e a pasta `/ (root)`.
-   - Clique em **Save**.
-4. **Deploy Concluído:** Em menos de 1 minuto, sua instância estará ativa e pronta para uso em:
-   `https://<seu-usuario>.github.io/open-mark/`
+1. Acesse o seu repositório no GitHub e clique na aba **Settings**.
+2. No menu lateral esquerdo, selecione **Pages**.
+3. Na seção **Build and deployment > Source**, escolha **Deploy from a branch**.
+4. Em **Branch**, selecione `main` e a pasta `/ (root)`.
+5. Clique em **Save**. Em instantes, sua instância estará ativa e pronta para uso em:
+   `https://<seu-usuario>.github.io/open-tool/`
 
 ---
 
 ## 🏷️ Licença e Versionamento SemVer
 
-- **Controle SemVer:** O projeto segue com rigor o padrão [Semantic Versioning 2.0.0](https://semver.org/). A versão atual é **`v.1.9.0`**, sincronizada nos pontos de governança do projeto:
+* **Controle SemVer:** O projeto segue o padrão [Semantic Versioning 2.0.0](https://semver.org/). A versão atual é **`v.2.1.0`**, sincronizada em todos os pontos de governança:
   1. Interface principal (`index.html`).
-  2. Arquivo `package.json` (`"version": "1.9.0"`).
+  2. Arquivo `package.json` (`"version": "2.1.0"`).
   3. Constante `APP_CONFIG.VERSION` em `js/config.js`.
   4. Badges e cabeçalho deste `README.md`.
-- **Licença de Uso:** Distribuído sob os termos da licença **MIT**. Para maiores detalhes, consulte o arquivo [LICENSE](LICENSE).
+* **Licença de Uso:** Distribuído sob os termos da licença **MIT**. Para maiores detalhes, consulte o arquivo [LICENSE](LICENSE).
