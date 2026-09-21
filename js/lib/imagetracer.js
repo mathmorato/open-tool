@@ -978,12 +978,16 @@ function ImageTracer(){
 		
 		var w = tracedata.width * options.scale, h = tracedata.height * options.scale;
 		
-		// SVG start
-		var svgstr = '<svg ' + (options.viewbox ? ('viewBox="0 0 '+w+' '+h+'" ') : ('width="'+w+'" height="'+h+'" ')) +
+		// SVG start with explicit dimensions and viewBox for maximum cross-browser and CSS compatibility
+		var svgstr = '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" ' +
 			'version="1.1" xmlns="http://www.w3.org/2000/svg" desc="Created with imagetracer.js version '+_this.versionnumber+'" >';
 
 		// Drawing: Layers and Paths loops
 		for(var lcnt=0; lcnt < tracedata.layers.length; lcnt++){
+			// Se a camada for completamente transparente (alpha === 0), pula para manter o fundo limpo e leve
+			if(tracedata.palette[lcnt] && tracedata.palette[lcnt].a === 0){
+				continue;
+			}
 			for(var pcnt=0; pcnt < tracedata.layers[lcnt].length; pcnt++){
 				
 				// Adding SVG <path> string

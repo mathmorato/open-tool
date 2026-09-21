@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.1.0",
+    VERSION: "v.2.1.1",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -7213,37 +7213,37 @@ ${footerDelimiter}
           colors: 2,
           blur: 0,
           omit: 8,
-          options: { colorsampling: 0, numberofcolors: 2, colorquantcycles: 1, pathomit: 8, ltres: 1, qtres: 1, strokewidth: 0 }
+          options: { colorsampling: 2, numberofcolors: 2, colorquantcycles: 2, pathomit: 8, ltres: 1, qtres: 1, strokewidth: 0.5 }
         },
         balanced: {
           colors: 16,
           blur: 0,
-          omit: 6,
-          options: { colorsampling: 2, numberofcolors: 16, colorquantcycles: 3, pathomit: 6, strokewidth: 0 }
+          omit: 8,
+          options: { colorsampling: 2, numberofcolors: 16, colorquantcycles: 3, pathomit: 8, ltres: 1, qtres: 1, strokewidth: 0.5 }
         },
         detailed: {
           colors: 32,
           blur: 0,
-          omit: 2,
-          options: { colorsampling: 2, numberofcolors: 32, colorquantcycles: 3, pathomit: 2, ltres: 0.5, qtres: 0.5, roundcoords: 2 }
+          omit: 6,
+          options: { colorsampling: 2, numberofcolors: 32, colorquantcycles: 3, pathomit: 6, ltres: 0.5, qtres: 0.5, roundcoords: 2, strokewidth: 0.5 }
         },
         curvy: {
           colors: 16,
           blur: 2,
           omit: 8,
-          options: { ltres: 0.01, linefilter: true, rightangleenhance: false, numberofcolors: 16, blurradius: 2 }
+          options: { colorsampling: 2, ltres: 0.01, linefilter: true, rightangleenhance: false, numberofcolors: 16, blurradius: 2, strokewidth: 0.5 }
         },
         posterized: {
           colors: 6,
           blur: 3,
-          omit: 14,
-          options: { numberofcolors: 6, blurradius: 3, pathomit: 14, strokewidth: 0 }
+          omit: 12,
+          options: { colorsampling: 2, numberofcolors: 6, blurradius: 3, pathomit: 12, strokewidth: 0 }
         },
         grayscale: {
           colors: 8,
           blur: 0,
-          omit: 6,
-          options: { colorsampling: 0, colorquantcycles: 1, numberofcolors: 8, pathomit: 6 }
+          omit: 8,
+          options: { colorsampling: 0, colorquantcycles: 1, numberofcolors: 8, pathomit: 8, strokewidth: 0.5 }
         }
       };
       function _syncPresetControls(presetKey) {
@@ -7325,15 +7325,38 @@ ${footerDelimiter}
         img.crossOrigin = "anonymous";
         img.onload = () => {
           try {
+            let targetW = img.naturalWidth || img.width;
+            let targetH = img.naturalHeight || img.height;
+            const maxDim = 1200;
+            if (targetW > maxDim || targetH > maxDim) {
+              if (targetW > targetH) {
+                targetH = Math.round(targetH * maxDim / targetW);
+                targetW = maxDim;
+              } else {
+                targetW = Math.round(targetW * maxDim / targetH);
+                targetH = maxDim;
+              }
+            }
             const canvas = document.createElement("canvas");
-            canvas.width = img.naturalWidth || img.width;
-            canvas.height = img.naturalHeight || img.height;
+            canvas.width = targetW;
+            canvas.height = targetH;
             const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0);
-            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, targetW, targetH);
+            const imgData = ctx.getImageData(0, 0, targetW, targetH);
             const svgStr = tracer.imagedataToSVG(imgData, options);
             _currentSvgString = svgStr;
             svgOutput.innerHTML = svgStr;
+            const svgEl = svgOutput.querySelector("svg");
+            if (svgEl) {
+              svgEl.setAttribute("width", targetW);
+              svgEl.setAttribute("height", targetH);
+              svgEl.setAttribute("viewBox", `0 0 ${targetW} ${targetH}`);
+              svgEl.style.width = "100%";
+              svgEl.style.height = "100%";
+              svgEl.style.maxWidth = "100%";
+              svgEl.style.maxHeight = "380px";
+              svgEl.style.display = "block";
+            }
             const pathMatches = svgStr.match(/<path /gi);
             const pathCount = pathMatches ? pathMatches.length : 0;
             const svgBytes = new Blob([svgStr], { type: "image/svg+xml" }).size;
@@ -7359,14 +7382,17 @@ ${footerDelimiter}
           btn.classList.toggle("v-mode-btn--active", btn.dataset.mode === mode);
         });
         if (mode === "vector") {
-          svgOutput.style.display = "block";
+          svgOutput.style.display = "flex";
           origOutput.style.display = "none";
+          stageContent.style.flexDirection = "row";
         } else if (mode === "original") {
           svgOutput.style.display = "none";
           origOutput.style.display = "block";
+          stageContent.style.flexDirection = "row";
         } else if (mode === "side") {
-          svgOutput.style.display = "block";
+          svgOutput.style.display = "flex";
           origOutput.style.display = "block";
+          stageContent.style.flexDirection = "row";
         }
       }
       function _setZoom(val) {
