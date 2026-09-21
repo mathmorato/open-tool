@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.3.0",
+    VERSION: "v.2.3.1",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -2781,14 +2781,47 @@
     if (loadedScripts.has(src)) {
       return loadedScripts.get(src);
     }
+    const existing = typeof document !== "undefined" ? document.querySelector(`script[src="${src}"]`) : null;
+    if (existing && existing.dataset.loaded === "true") {
+      return Promise.resolve();
+    }
+    if (typeof window !== "undefined") {
+      if ((src.includes("pdf-lib") || src.includes("pdf_lib")) && window.PDFLib) {
+        if (existing) existing.dataset.loaded = "true";
+        return Promise.resolve();
+      }
+      if (src.includes("pdf.min.js") && window.pdfjsLib) {
+        if (existing) existing.dataset.loaded = "true";
+        return Promise.resolve();
+      }
+      if (src.includes("qrcodegen") && window.qrcodegen) {
+        if (existing) existing.dataset.loaded = "true";
+        return Promise.resolve();
+      }
+      if (src.includes("imagetracer") && window.ImageTracer) {
+        if (existing) existing.dataset.loaded = "true";
+        return Promise.resolve();
+      }
+    }
     const promise = new Promise((resolve, reject) => {
-      const existing = document.querySelector(`script[src="${src}"]`);
       if (existing) {
         if (existing.dataset.loaded === "true") return resolve();
-        existing.addEventListener("load", () => resolve());
+        let settled = false;
+        const onDone = () => {
+          if (!settled) {
+            settled = true;
+            existing.dataset.loaded = "true";
+            resolve();
+          }
+        };
+        existing.addEventListener("load", onDone);
         existing.addEventListener("error", (err) => reject(err));
+        if (existing.readyState === "complete" || existing.readyState === "loaded" || document && document.readyState === "complete") {
+          setTimeout(onDone, 10);
+        }
         return;
       }
+      if (typeof document === "undefined") return resolve();
       const script = document.createElement("script");
       script.src = src;
       script.async = true;
@@ -7839,7 +7872,7 @@ ${footerDelimiter}
 
           <!-- Dropzone Compacto -->
           <div class="pdf-dropzone" id="u-dropzone" tabindex="0" role="button" aria-label="Carregar arquivo PDF para desbloquear">
-            <input type="file" id="u-file-input" accept="application/pdf" class="pdf-hidden-input">
+            <input type="file" id="u-file-input" accept="application/pdf,.pdf" class="pdf-hidden-input">
             <div class="pdf-dropzone-content" id="u-dropzone-prompt">
               <div class="pdf-dropzone-icon">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -8003,6 +8036,32 @@ ${footerDelimiter}
     if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / 1048576).toFixed(2) + " MB";
   }
+  function _dataUrlToBytes(dataUrl) {
+    const parts = dataUrl.split(",");
+    const bin = atob(parts[1]);
+    const len = bin.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = bin.charCodeAt(i);
+    }
+    return bytes;
+  }
+  async function _ensureLibs() {
+    const promises = [];
+    if (typeof window === "undefined" || !window.PDFLib) {
+      promises.push(loadScript("js/lib/pdf-lib.min.js").catch((e) => console.warn("pdf-lib load:", e)));
+    }
+    if (typeof window === "undefined" || !window.pdfjsLib) {
+      promises.push(loadScript(APP_CONFIG.CDN.PDFJS).catch((e) => console.warn("pdf.js load:", e)));
+    }
+    if (promises.length > 0) {
+      await Promise.all(promises);
+    }
+    const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+    }
+  }
   var tool_default5 = {
     id: "pdf-unlock",
     label: "Desbloquear PDF",
@@ -8015,14 +8074,6 @@ ${footerDelimiter}
       _currentArrayBuffer = null;
       _unlockedPdfBlob = null;
       _requiresPassword = false;
-      await Promise.all([
-        loadScript("js/lib/pdf-lib.min.js"),
-        loadScript(APP_CONFIG.CDN.PDFJS)
-      ]);
-      const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-      if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
-      }
       const dropzone = container.querySelector("#u-dropzone");
       const fileInput = container.querySelector("#u-file-input");
       const dropPrompt = container.querySelector("#u-dropzone-prompt");
@@ -8060,6 +8111,16 @@ ${footerDelimiter}
         _requiresPassword = false;
         passwordGroup.style.display = "none";
         passwordInput.value = "";
+        await _ensureLibs();
+        const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+        if (!pdfjsLib) {
+          lockBadge.textContent = "PDF Carregado";
+          lockBadge.className = "pdf-badge";
+          statusDesc.textContent = "Pronto para remo\xE7\xE3o de restri\xE7\xF5es de impress\xE3o e edi\xE7\xE3o.";
+          unlockBtn.disabled = false;
+          unlockBtnText.textContent = "Desbloquear PDF";
+          return;
+        }
         try {
           const loadingTask = pdfjsLib.getDocument({ data: _currentArrayBuffer.slice(0) });
           loadingTask.onPassword = (callback, reason) => {
@@ -8117,7 +8178,9 @@ ${footerDelimiter}
         if (!_currentArrayBuffer) return;
         _setViewState("loading");
         await new Promise((r) => setTimeout(r, 30));
+        await _ensureLibs();
         const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
+        const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
         if (!PDFLib) {
           alert("Biblioteca PDFLib n\xE3o carregada.");
           _setViewState("empty");
@@ -8126,6 +8189,7 @@ ${footerDelimiter}
         const password = passwordInput.value.trim();
         try {
           let pdfDoc = null;
+          let unlockedBytes = null;
           const copyBuf = _currentArrayBuffer.slice(0);
           if (_requiresPassword) {
             const loadingTask = pdfjsLib.getDocument({ data: copyBuf, password });
@@ -8141,7 +8205,7 @@ ${footerDelimiter}
               const ctx = canvas.getContext("2d");
               await page.render({ canvasContext: ctx, viewport }).promise;
               const imgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
-              const imgBytes = await fetch(imgDataUrl).then((r) => r.arrayBuffer());
+              const imgBytes = _dataUrlToBytes(imgDataUrl);
               const embeddedImg = await pdfDoc.embedJpg(imgBytes);
               const newPage = pdfDoc.addPage([viewport.width, viewport.height]);
               newPage.drawImage(embeddedImg, {
@@ -8151,26 +8215,60 @@ ${footerDelimiter}
                 height: viewport.height
               });
             }
+            unlockedBytes = await pdfDoc.save();
           } else {
-            pdfDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+            try {
+              pdfDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+              unlockedBytes = await pdfDoc.save();
+            } catch (errIgnore) {
+              if (pdfjsLib) {
+                const loadingTask = pdfjsLib.getDocument({ data: copyBuf });
+                const jsDoc = await loadingTask.promise;
+                const numPages = jsDoc.numPages;
+                pdfDoc = await PDFLib.PDFDocument.create();
+                for (let i = 1; i <= numPages; i++) {
+                  const page = await jsDoc.getPage(i);
+                  const viewport = page.getViewport({ scale: 1.5 });
+                  const canvas = document.createElement("canvas");
+                  canvas.width = viewport.width;
+                  canvas.height = viewport.height;
+                  const ctx = canvas.getContext("2d");
+                  await page.render({ canvasContext: ctx, viewport }).promise;
+                  const imgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+                  const imgBytes = _dataUrlToBytes(imgDataUrl);
+                  const embeddedImg = await pdfDoc.embedJpg(imgBytes);
+                  const newPage = pdfDoc.addPage([viewport.width, viewport.height]);
+                  newPage.drawImage(embeddedImg, {
+                    x: 0,
+                    y: 0,
+                    width: viewport.width,
+                    height: viewport.height
+                  });
+                }
+                unlockedBytes = await pdfDoc.save();
+              } else {
+                throw errIgnore;
+              }
+            }
           }
-          const unlockedBytes = await pdfDoc.save();
           _unlockedPdfBlob = new Blob([unlockedBytes], { type: "application/pdf" });
           metaPages.textContent = pdfDoc.getPageCount ? pdfDoc.getPageCount() : "1+";
           metaSize.textContent = _formatBytes(_unlockedPdfBlob.size);
-          try {
-            const previewTask = pdfjsLib.getDocument({ data: unlockedBytes.slice(0) });
-            const previewDoc = await previewTask.promise;
-            const firstPage = await previewDoc.getPage(1);
-            const stageViewport = firstPage.getViewport({ scale: 1 });
-            const scale = Math.min(260 / stageViewport.width, 240 / stageViewport.height);
-            const scaledViewport = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
-            previewCanvas.width = scaledViewport.width;
-            previewCanvas.height = scaledViewport.height;
-            const ctx = previewCanvas.getContext("2d");
-            await firstPage.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
-          } catch (e) {
-            console.warn("Miniatura preview n\xE3o dispon\xEDvel:", e);
+          if (pdfjsLib) {
+            try {
+              const previewTask = pdfjsLib.getDocument({ data: unlockedBytes.slice(0) });
+              const previewDoc = await previewTask.promise;
+              const firstPage = await previewDoc.getPage(1);
+              const stageViewport = firstPage.getViewport({ scale: 1 });
+              const scale = Math.min(260 / stageViewport.width, 240 / stageViewport.height);
+              const scaledViewport = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
+              previewCanvas.width = scaledViewport.width;
+              previewCanvas.height = scaledViewport.height;
+              const ctx = previewCanvas.getContext("2d");
+              await firstPage.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+            } catch (e) {
+              console.warn("Miniatura preview n\xE3o dispon\xEDvel:", e);
+            }
           }
           _setViewState("result");
         } catch (err) {
@@ -8179,6 +8277,17 @@ ${footerDelimiter}
           alert("Senha incorreta ou PDF com prote\xE7\xE3o n\xE3o suportada pelo navegador.");
         }
       }
+      _on3(dropzone, "click", (e) => {
+        if (e.target !== removeBtn && !removeBtn?.contains(e.target)) {
+          fileInput.click();
+        }
+      });
+      _on3(dropzone, "keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          fileInput.click();
+        }
+      });
       _on3(fileInput, "change", (e) => {
         const file = e.target.files && e.target.files[0];
         if (file) _inspectPdf(file);
@@ -8191,8 +8300,10 @@ ${footerDelimiter}
       _on3(dropzone, "drop", (e) => {
         e.preventDefault();
         dropzone.classList.remove("pdf-drag-over");
-        const file = e.dataTransfer.files && e.dataTransfer.files[0];
-        if (file && file.type === "application/pdf") _inspectPdf(file);
+        const file = e.dataTransfer?.files?.[0];
+        if (file && (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf"))) {
+          _inspectPdf(file);
+        }
       });
       _on3(removeBtn, "click", (e) => {
         e.stopPropagation();
@@ -8217,6 +8328,7 @@ ${footerDelimiter}
           URL.revokeObjectURL(url);
         }, 500);
       });
+      _ensureLibs().catch((err) => console.warn("Carregamento de bibliotecas PDF:", err));
     },
     unmount() {
       _listeners4.forEach(({ element, event, handler }) => {
@@ -8259,7 +8371,7 @@ ${footerDelimiter}
 
           <!-- Dropzone Compacto -->
           <div class="pdf-dropzone" id="c-dropzone" tabindex="0" role="button" aria-label="Carregar arquivo PDF para comprimir">
-            <input type="file" id="c-file-input" accept="application/pdf" class="pdf-hidden-input">
+            <input type="file" id="c-file-input" accept="application/pdf,.pdf" class="pdf-hidden-input">
             <div class="pdf-dropzone-content" id="c-dropzone-prompt">
               <div class="pdf-dropzone-icon">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -8449,6 +8561,32 @@ ${footerDelimiter}
     if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / 1048576).toFixed(2) + " MB";
   }
+  function _dataUrlToBytes2(dataUrl) {
+    const parts = dataUrl.split(",");
+    const bin = atob(parts[1]);
+    const len = bin.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = bin.charCodeAt(i);
+    }
+    return bytes;
+  }
+  async function _ensureLibs2() {
+    const promises = [];
+    if (typeof window === "undefined" || !window.PDFLib) {
+      promises.push(loadScript("js/lib/pdf-lib.min.js").catch((e) => console.warn("pdf-lib load:", e)));
+    }
+    if (typeof window === "undefined" || !window.pdfjsLib) {
+      promises.push(loadScript(APP_CONFIG.CDN.PDFJS).catch((e) => console.warn("pdf.js load:", e)));
+    }
+    if (promises.length > 0) {
+      await Promise.all(promises);
+    }
+    const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+    }
+  }
   var PRESETS = {
     extreme: { dpi: 72, quality: 0.5 },
     balanced: { dpi: 100, quality: 0.7 },
@@ -8466,14 +8604,6 @@ ${footerDelimiter}
       _currentArrayBuffer2 = null;
       _compressedPdfBlob = null;
       _currentPreset = "balanced";
-      await Promise.all([
-        loadScript("js/lib/pdf-lib.min.js"),
-        loadScript(APP_CONFIG.CDN.PDFJS)
-      ]);
-      const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-      if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
-      }
       const dropzone = container.querySelector("#c-dropzone");
       const fileInput = container.querySelector("#c-file-input");
       const dropPrompt = container.querySelector("#c-dropzone-prompt");
@@ -8534,9 +8664,11 @@ ${footerDelimiter}
         if (!_currentArrayBuffer2) return;
         _setViewState("loading");
         await new Promise((r) => setTimeout(r, 20));
+        await _ensureLibs2();
         const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
-        if (!PDFLib) {
-          alert("Biblioteca PDFLib n\xE3o dispon\xEDvel.");
+        const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+        if (!PDFLib || !pdfjsLib) {
+          alert("Bibliotecas de processamento de PDF indispon\xEDveis.");
           _setViewState("empty");
           return;
         }
@@ -8562,7 +8694,7 @@ ${footerDelimiter}
             const ctx = canvas.getContext("2d");
             await page.render({ canvasContext: ctx, viewport }).promise;
             const imgDataUrl = canvas.toDataURL("image/jpeg", quality);
-            const imgBytes = await fetch(imgDataUrl).then((r) => r.arrayBuffer());
+            const imgBytes = _dataUrlToBytes2(imgDataUrl);
             const embeddedImg = await newPdfDoc.embedJpg(imgBytes);
             const newPage = newPdfDoc.addPage([baseViewport.width, baseViewport.height]);
             newPage.drawImage(embeddedImg, {
@@ -8612,6 +8744,17 @@ ${footerDelimiter}
           alert("Erro ao comprimir o PDF. O arquivo pode estar corrompido ou protegido por senha.");
         }
       }
+      _on4(dropzone, "click", (e) => {
+        if (e.target !== removeBtn && !removeBtn?.contains(e.target)) {
+          fileInput.click();
+        }
+      });
+      _on4(dropzone, "keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          fileInput.click();
+        }
+      });
       _on4(fileInput, "change", (e) => {
         const file = e.target.files && e.target.files[0];
         if (file) _handleFile(file);
@@ -8624,8 +8767,10 @@ ${footerDelimiter}
       _on4(dropzone, "drop", (e) => {
         e.preventDefault();
         dropzone.classList.remove("pdf-drag-over");
-        const file = e.dataTransfer.files && e.dataTransfer.files[0];
-        if (file && file.type === "application/pdf") _handleFile(file);
+        const file = e.dataTransfer?.files?.[0];
+        if (file && (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf"))) {
+          _handleFile(file);
+        }
       });
       _on4(removeBtn, "click", (e) => {
         e.stopPropagation();
@@ -8661,6 +8806,7 @@ ${footerDelimiter}
           URL.revokeObjectURL(url);
         }, 500);
       });
+      _ensureLibs2().catch((err) => console.warn("Carregamento de bibliotecas PDF:", err));
     },
     unmount() {
       _listeners5.forEach(({ element, event, handler }) => {
@@ -8703,7 +8849,7 @@ ${footerDelimiter}
 
           <!-- Dropzone para m\xFAltiplos arquivos -->
           <div class="pdf-dropzone" id="m-dropzone" tabindex="0" role="button" aria-label="Adicionar arquivos PDF para mesclar">
-            <input type="file" id="m-file-input" accept="application/pdf" multiple class="pdf-hidden-input">
+            <input type="file" id="m-file-input" accept="application/pdf,.pdf" multiple class="pdf-hidden-input">
             <div class="pdf-dropzone-content" id="m-dropzone-prompt">
               <div class="pdf-dropzone-icon">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -8830,6 +8976,22 @@ ${footerDelimiter}
     if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / 1048576).toFixed(2) + " MB";
   }
+  async function _ensureLibs3() {
+    const promises = [];
+    if (typeof window === "undefined" || !window.PDFLib) {
+      promises.push(loadScript("js/lib/pdf-lib.min.js").catch((e) => console.warn("pdf-lib load:", e)));
+    }
+    if (typeof window === "undefined" || !window.pdfjsLib) {
+      promises.push(loadScript(APP_CONFIG.CDN.PDFJS).catch((e) => console.warn("pdf.js load:", e)));
+    }
+    if (promises.length > 0) {
+      await Promise.all(promises);
+    }
+    const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+    }
+  }
   var tool_default7 = {
     id: "pdf-merge",
     label: "Mesclar PDF",
@@ -8840,14 +9002,6 @@ ${footerDelimiter}
       _listeners6 = [];
       _filesQueue = [];
       _mergedPdfBlob = null;
-      await Promise.all([
-        loadScript("js/lib/pdf-lib.min.js"),
-        loadScript(APP_CONFIG.CDN.PDFJS)
-      ]);
-      const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-      if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
-      }
       const dropzone = container.querySelector("#m-dropzone");
       const fileInput = container.querySelector("#m-file-input");
       const fileList = container.querySelector("#m-file-list");
@@ -8943,7 +9097,9 @@ ${footerDelimiter}
         if (_filesQueue.length < 2) return;
         _setViewState("loading");
         await new Promise((r) => setTimeout(r, 20));
+        await _ensureLibs3();
         const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
+        const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
         if (!PDFLib) {
           alert("Biblioteca PDFLib n\xE3o dispon\xEDvel.");
           _setViewState("empty");
@@ -8953,29 +9109,59 @@ ${footerDelimiter}
           const mergedDoc = await PDFLib.PDFDocument.create();
           let totalPages = 0;
           for (const item of _filesQueue) {
-            const srcDoc = await PDFLib.PDFDocument.load(item.buffer.slice(0), { ignoreEncryption: true });
-            const pageIndices = srcDoc.getPageIndices();
-            const copiedPages = await mergedDoc.copyPages(srcDoc, pageIndices);
-            copiedPages.forEach((page) => mergedDoc.addPage(page));
-            totalPages += pageIndices.length;
+            try {
+              const srcDoc = await PDFLib.PDFDocument.load(item.buffer.slice(0), { ignoreEncryption: true });
+              const pageIndices = srcDoc.getPageIndices();
+              const copiedPages = await mergedDoc.copyPages(srcDoc, pageIndices);
+              copiedPages.forEach((page) => mergedDoc.addPage(page));
+              totalPages += pageIndices.length;
+            } catch (loadErr) {
+              if (pdfjsLib) {
+                const loadingTask = pdfjsLib.getDocument({ data: item.buffer.slice(0) });
+                const jsDoc = await loadingTask.promise;
+                const numPgs = jsDoc.numPages;
+                for (let p = 1; p <= numPgs; p++) {
+                  const page = await jsDoc.getPage(p);
+                  const vp = page.getViewport({ scale: 1.5 });
+                  const canvas = document.createElement("canvas");
+                  canvas.width = vp.width;
+                  canvas.height = vp.height;
+                  const ctx = canvas.getContext("2d");
+                  await page.render({ canvasContext: ctx, viewport: vp }).promise;
+                  const imgDataUrl = canvas.toDataURL("image/jpeg", 0.9);
+                  const parts = imgDataUrl.split(",");
+                  const bin = atob(parts[1]);
+                  const bytes = new Uint8Array(bin.length);
+                  for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
+                  const embedded = await mergedDoc.embedJpg(bytes);
+                  const newPg = mergedDoc.addPage([vp.width, vp.height]);
+                  newPg.drawImage(embedded, { x: 0, y: 0, width: vp.width, height: vp.height });
+                  totalPages++;
+                }
+              } else {
+                throw loadErr;
+              }
+            }
           }
           const mergedBytes = await mergedDoc.save();
           _mergedPdfBlob = new Blob([mergedBytes], { type: "application/pdf" });
           metaDocs.textContent = _filesQueue.length;
           metaPages.textContent = totalPages;
           metaSize.textContent = _formatBytes3(_mergedPdfBlob.size);
-          try {
-            const previewDoc = await pdfjsLib.getDocument({ data: mergedBytes.slice(0) }).promise;
-            const firstPage = await previewDoc.getPage(1);
-            const stageVp = firstPage.getViewport({ scale: 1 });
-            const scale = Math.min(260 / stageVp.width, 230 / stageVp.height);
-            const scaledVp = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
-            previewCanvas.width = scaledVp.width;
-            previewCanvas.height = scaledVp.height;
-            const ctx = previewCanvas.getContext("2d");
-            await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
-          } catch (e) {
-            console.warn("Erro ao renderizar miniatura mesclada:", e);
+          if (pdfjsLib) {
+            try {
+              const previewDoc = await pdfjsLib.getDocument({ data: mergedBytes.slice(0) }).promise;
+              const firstPage = await previewDoc.getPage(1);
+              const stageVp = firstPage.getViewport({ scale: 1 });
+              const scale = Math.min(260 / stageVp.width, 230 / stageVp.height);
+              const scaledVp = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
+              previewCanvas.width = scaledVp.width;
+              previewCanvas.height = scaledVp.height;
+              const ctx = previewCanvas.getContext("2d");
+              await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
+            } catch (e) {
+              console.warn("Erro ao renderizar miniatura mesclada:", e);
+            }
           }
           _setViewState("result");
         } catch (err) {
@@ -8984,6 +9170,15 @@ ${footerDelimiter}
           alert("Erro ao mesclar documentos. Um dos arquivos pode ter criptografia pesada.");
         }
       }
+      _on5(dropzone, "click", () => {
+        fileInput.click();
+      });
+      _on5(dropzone, "keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          fileInput.click();
+        }
+      });
       _on5(fileInput, "change", (e) => {
         if (e.target.files && e.target.files.length) {
           _addFiles(Array.from(e.target.files));
@@ -8998,8 +9193,9 @@ ${footerDelimiter}
       _on5(dropzone, "drop", (e) => {
         e.preventDefault();
         dropzone.classList.remove("pdf-drag-over");
-        if (e.dataTransfer.files && e.dataTransfer.files.length) {
-          _addFiles(Array.from(e.dataTransfer.files));
+        const files = e.dataTransfer?.files;
+        if (files && files.length) {
+          _addFiles(Array.from(files));
         }
       });
       _on5(clearBtn, "click", () => {
@@ -9022,6 +9218,7 @@ ${footerDelimiter}
           URL.revokeObjectURL(url);
         }, 500);
       });
+      _ensureLibs3().catch((err) => console.warn("Carregamento de bibliotecas PDF:", err));
     },
     unmount() {
       _listeners6.forEach(({ element, event, handler }) => {

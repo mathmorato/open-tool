@@ -1,6 +1,6 @@
 /**
  * Open Tool — Ferramenta: Comprimir PDF (pdf-compress)
- * 100% Client-Side via Renderização Canvas e Reamostragem PDFLib
+ * 100% Client-Side via PDF-lib e PDF.js com reamostragem em Canvas
  * @version v.2.3.0
  */
 
@@ -25,6 +25,34 @@ function _formatBytes(bytes) {
   return (bytes / 1048576).toFixed(2) + ' MB';
 }
 
+function _dataUrlToBytes(dataUrl) {
+  const parts = dataUrl.split(',');
+  const bin = atob(parts[1]);
+  const len = bin.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = bin.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function _ensureLibs() {
+  const promises = [];
+  if (typeof window === 'undefined' || !window.PDFLib) {
+    promises.push(loadScript('js/lib/pdf-lib.min.js').catch(e => console.warn('pdf-lib load:', e)));
+  }
+  if (typeof window === 'undefined' || !window.pdfjsLib) {
+    promises.push(loadScript(APP_CONFIG.CDN.PDFJS).catch(e => console.warn('pdf.js load:', e)));
+  }
+  if (promises.length > 0) {
+    await Promise.all(promises);
+  }
+  const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
+  if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+  }
+}
+
 const PRESETS = {
   extreme:  { dpi: 72,  quality: 0.50 },
   balanced: { dpi: 100, quality: 0.70 },
@@ -45,17 +73,6 @@ export default {
     _currentArrayBuffer = null;
     _compressedPdfBlob = null;
     _currentPreset = 'balanced';
-
-    // Garante bibliotecas carregadas
-    await Promise.all([
-      loadScript('js/lib/pdf-lib.min.js'),
-      loadScript(APP_CONFIG.CDN.PDFJS)
-    ]);
-
-    const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
-    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
-    }
 
     // Elementos DOM
     const dropzone        = container.querySelector('#c-dropzone');
@@ -132,16 +149,19 @@ export default {
       _setViewState('loading');
       await new Promise(r => setTimeout(r, 20));
 
+      await _ensureLibs();
       const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
-      if (!PDFLib) {
-        alert('Biblioteca PDFLib não disponível.');
+      const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
+
+      if (!PDFLib || !pdfjsLib) {
+        alert('Bibliotecas de processamento de PDF indisponíveis.');
         _setViewState('empty');
         return;
       }
 
       const dpi = parseInt(dpiRange.value, 10) || 100;
       const quality = (parseInt(qualityRange.value, 10) || 70) / 100;
-      const renderScale = dpi / 72; // 72 DPI é o padrão do PDF
+      const renderScale = dpi / 72; // 72 DPI é a escala base do PDF
 
       try {
         const copyBuf = _currentArrayBuffer.slice(0);
@@ -167,7 +187,7 @@ export default {
           await page.render({ canvasContext: ctx, viewport }).promise;
 
           const imgDataUrl = canvas.toDataURL('image/jpeg', quality);
-          const imgBytes = await fetch(imgDataUrl).then(r => r.arrayBuffer());
+          const imgBytes = _dataUrlToBytes(imgDataUrl);
           const embeddedImg = await newPdfDoc.embedJpg(imgBytes);
 
           const newPage = newPdfDoc.addPage([baseViewport.width, baseViewport.height]);
@@ -231,6 +251,19 @@ export default {
     }
 
     // Eventos
+    _on(dropzone, 'click', (e) => {
+      if (e.target !== removeBtn && !removeBtn?.contains(e.target)) {
+        fileInput.click();
+      }
+    });
+
+    _on(dropzone, 'keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+
     _on(fileInput, 'change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (file) _handleFile(file);
@@ -246,8 +279,10 @@ export default {
     _on(dropzone, 'drop', (e) => {
       e.preventDefault();
       dropzone.classList.remove('pdf-drag-over');
-      const file = e.dataTransfer.files && e.dataTransfer.files[0];
-      if (file && file.type === 'application/pdf') _handleFile(file);
+      const file = e.dataTransfer?.files?.[0];
+      if (file && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) {
+        _handleFile(file);
+      }
     });
 
     _on(removeBtn, 'click', (e) => {
@@ -290,6 +325,9 @@ export default {
         URL.revokeObjectURL(url);
       }, 500);
     });
+
+    // Inicia carregamento em background sem travar o mount
+    _ensureLibs().catch(err => console.warn('Carregamento de bibliotecas PDF:', err));
   },
 
   unmount() {

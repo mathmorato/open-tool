@@ -33,7 +33,7 @@ export function getPdfMergeHTML() {
 
           <!-- Dropzone para múltiplos arquivos -->
           <div class="pdf-dropzone" id="m-dropzone" tabindex="0" role="button" aria-label="Adicionar arquivos PDF para mesclar">
-            <input type="file" id="m-file-input" accept="application/pdf" multiple class="pdf-hidden-input">
+            <input type="file" id="m-file-input" accept="application/pdf,.pdf" multiple class="pdf-hidden-input">
             <div class="pdf-dropzone-content" id="m-dropzone-prompt">
               <div class="pdf-dropzone-icon">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -1,6 +1,6 @@
-# Open Tool `v.2.3.0`
+# Open Tool `v.2.3.1`
 
-[![Version](https://img.shields.io/badge/version-v.2.3.0-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v.2.3.1-blue.svg)](package.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![Architecture: 100% Client--Side](https://img.shields.io/badge/Architecture-100%25%20Client--Side-informational.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
 [![Privacy: Zero Server Upload](https://img.shields.io/badge/Privacy-Zero%20Server%20Upload-green.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
@@ -205,9 +205,9 @@ O projeto está totalmente preparado para publicação contínua e direta via Gi
 
 ## 🏷️ Licença e Versionamento SemVer
 
-* **Controle SemVer:** O projeto segue o padrão [Semantic Versioning 2.0.0](https://semver.org/). A versão atual é **`v.2.3.0`**, sincronizada em todos os pontos de governança:
+* **Controle SemVer:** O projeto segue o padrão [Semantic Versioning 2.0.0](https://semver.org/). A versão atual é **`v.2.3.1`**, sincronizada em todos os pontos de governança:
   1. Interface principal (`index.html`).
-  2. Arquivo `package.json` (`"version": "2.3.0"`).
+  2. Arquivo `package.json` (`"version": "2.3.1"`).
   3. Constante `APP_CONFIG.VERSION` em `js/config.js`.
   4. Badges e cabeçalho deste `README.md`.
 * **Licença de Uso:** Distribuído sob os termos da licença **MIT**. Para maiores detalhes, consulte o arquivo [LICENSE](LICENSE).

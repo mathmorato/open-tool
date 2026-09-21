@@ -1,7 +1,7 @@
 /**
  * Open Tool
  * Configuração Central & Versionamento SemVer
- * @version v.2.3.0
+ * @version v.2.3.1
  */
 
 export const CODE_EXTENSIONS_MAP = {
@@ -179,7 +179,7 @@ export const MIME_TYPE_MAP = {
 };
 
 export const APP_CONFIG = {
-  VERSION: 'v.2.3.0',
+  VERSION: 'v.2.3.1',
   APP_NAME: 'Open Tool',
   TAGLINE: 'Open Tool • Ferramentas Universais 100% Client-Side',
   REPO_URL: 'https://github.com/mathmorato/open-tool',
@@ -295,15 +295,56 @@ export function loadScript(src) {
     return loadedScripts.get(src);
   }
 
+  // Se o elemento já existe no DOM com dataset.loaded = true
+  const existing = typeof document !== 'undefined' ? document.querySelector(`script[src="${src}"]`) : null;
+  if (existing && existing.dataset.loaded === 'true') {
+    return Promise.resolve();
+  }
+
+  // Verifica se bibliotecas conhecidas já foram carregadas no escopo global
+  if (typeof window !== 'undefined') {
+    if ((src.includes('pdf-lib') || src.includes('pdf_lib')) && window.PDFLib) {
+      if (existing) existing.dataset.loaded = 'true';
+      return Promise.resolve();
+    }
+    if (src.includes('pdf.min.js') && window.pdfjsLib) {
+      if (existing) existing.dataset.loaded = 'true';
+      return Promise.resolve();
+    }
+    if (src.includes('qrcodegen') && window.qrcodegen) {
+      if (existing) existing.dataset.loaded = 'true';
+      return Promise.resolve();
+    }
+    if (src.includes('imagetracer') && window.ImageTracer) {
+      if (existing) existing.dataset.loaded = 'true';
+      return Promise.resolve();
+    }
+  }
+
   const promise = new Promise((resolve, reject) => {
-    // Se já estiver na página, resolve imediatamente
-    const existing = document.querySelector(`script[src="${src}"]`);
     if (existing) {
       if (existing.dataset.loaded === 'true') return resolve();
-      existing.addEventListener('load', () => resolve());
+
+      let settled = false;
+      const onDone = () => {
+        if (!settled) {
+          settled = true;
+          existing.dataset.loaded = 'true';
+          resolve();
+        }
+      };
+
+      existing.addEventListener('load', onDone);
       existing.addEventListener('error', (err) => reject(err));
+
+      // Se o script já terminou de carregar no DOM (ou documento pronto)
+      if (existing.readyState === 'complete' || existing.readyState === 'loaded' || (document && document.readyState === 'complete')) {
+        setTimeout(onDone, 10);
+      }
       return;
     }
+
+    if (typeof document === 'undefined') return resolve();
 
     const script = document.createElement('script');
     script.src = src;

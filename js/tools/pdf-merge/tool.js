@@ -1,6 +1,6 @@
 /**
  * Open Tool — Ferramenta: Mesclar PDF (pdf-merge)
- * 100% Client-Side via PDF-lib
+ * 100% Client-Side via PDF-lib e PDF.js
  * @version v.2.3.0
  */
 
@@ -23,6 +23,23 @@ function _formatBytes(bytes) {
   return (bytes / 1048576).toFixed(2) + ' MB';
 }
 
+async function _ensureLibs() {
+  const promises = [];
+  if (typeof window === 'undefined' || !window.PDFLib) {
+    promises.push(loadScript('js/lib/pdf-lib.min.js').catch(e => console.warn('pdf-lib load:', e)));
+  }
+  if (typeof window === 'undefined' || !window.pdfjsLib) {
+    promises.push(loadScript(APP_CONFIG.CDN.PDFJS).catch(e => console.warn('pdf.js load:', e)));
+  }
+  if (promises.length > 0) {
+    await Promise.all(promises);
+  }
+  const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
+  if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+  }
+}
+
 export default {
   id: 'pdf-merge',
   label: 'Mesclar PDF',
@@ -35,16 +52,6 @@ export default {
     _listeners = [];
     _filesQueue = [];
     _mergedPdfBlob = null;
-
-    await Promise.all([
-      loadScript('js/lib/pdf-lib.min.js'),
-      loadScript(APP_CONFIG.CDN.PDFJS)
-    ]);
-
-    const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
-    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
-    }
 
     const dropzone      = container.querySelector('#m-dropzone');
     const fileInput     = container.querySelector('#m-file-input');
@@ -156,7 +163,10 @@ export default {
       _setViewState('loading');
       await new Promise(r => setTimeout(r, 20));
 
+      await _ensureLibs();
       const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
+      const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
+
       if (!PDFLib) {
         alert('Biblioteca PDFLib não disponível.');
         _setViewState('empty');
@@ -168,11 +178,42 @@ export default {
         let totalPages = 0;
 
         for (const item of _filesQueue) {
-          const srcDoc = await PDFLib.PDFDocument.load(item.buffer.slice(0), { ignoreEncryption: true });
-          const pageIndices = srcDoc.getPageIndices();
-          const copiedPages = await mergedDoc.copyPages(srcDoc, pageIndices);
-          copiedPages.forEach(page => mergedDoc.addPage(page));
-          totalPages += pageIndices.length;
+          try {
+            const srcDoc = await PDFLib.PDFDocument.load(item.buffer.slice(0), { ignoreEncryption: true });
+            const pageIndices = srcDoc.getPageIndices();
+            const copiedPages = await mergedDoc.copyPages(srcDoc, pageIndices);
+            copiedPages.forEach(page => mergedDoc.addPage(page));
+            totalPages += pageIndices.length;
+          } catch (loadErr) {
+            // Se falhar no pdf-lib direto (ex: criptografia forte), tenta com pdf.js
+            if (pdfjsLib) {
+              const loadingTask = pdfjsLib.getDocument({ data: item.buffer.slice(0) });
+              const jsDoc = await loadingTask.promise;
+              const numPgs = jsDoc.numPages;
+              for (let p = 1; p <= numPgs; p++) {
+                const page = await jsDoc.getPage(p);
+                const vp = page.getViewport({ scale: 1.5 });
+                const canvas = document.createElement('canvas');
+                canvas.width = vp.width;
+                canvas.height = vp.height;
+                const ctx = canvas.getContext('2d');
+                await page.render({ canvasContext: ctx, viewport: vp }).promise;
+
+                const imgDataUrl = canvas.toDataURL('image/jpeg', 0.90);
+                const parts = imgDataUrl.split(',');
+                const bin = atob(parts[1]);
+                const bytes = new Uint8Array(bin.length);
+                for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
+
+                const embedded = await mergedDoc.embedJpg(bytes);
+                const newPg = mergedDoc.addPage([vp.width, vp.height]);
+                newPg.drawImage(embedded, { x: 0, y: 0, width: vp.width, height: vp.height });
+                totalPages++;
+              }
+            } else {
+              throw loadErr;
+            }
+          }
         }
 
         const mergedBytes = await mergedDoc.save();
@@ -183,19 +224,21 @@ export default {
         metaSize.textContent = _formatBytes(_mergedPdfBlob.size);
 
         // Renderiza thumbnail da primeira página no canvas
-        try {
-          const previewDoc = await pdfjsLib.getDocument({ data: mergedBytes.slice(0) }).promise;
-          const firstPage = await previewDoc.getPage(1);
-          const stageVp = firstPage.getViewport({ scale: 1 });
-          const scale = Math.min(260 / stageVp.width, 230 / stageVp.height);
-          const scaledVp = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
+        if (pdfjsLib) {
+          try {
+            const previewDoc = await pdfjsLib.getDocument({ data: mergedBytes.slice(0) }).promise;
+            const firstPage = await previewDoc.getPage(1);
+            const stageVp = firstPage.getViewport({ scale: 1 });
+            const scale = Math.min(260 / stageVp.width, 230 / stageVp.height);
+            const scaledVp = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
 
-          previewCanvas.width = scaledVp.width;
-          previewCanvas.height = scaledVp.height;
-          const ctx = previewCanvas.getContext('2d');
-          await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
-        } catch (e) {
-          console.warn('Erro ao renderizar miniatura mesclada:', e);
+            previewCanvas.width = scaledVp.width;
+            previewCanvas.height = scaledVp.height;
+            const ctx = previewCanvas.getContext('2d');
+            await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
+          } catch (e) {
+            console.warn('Erro ao renderizar miniatura mesclada:', e);
+          }
         }
 
         _setViewState('result');
@@ -206,6 +249,17 @@ export default {
         alert('Erro ao mesclar documentos. Um dos arquivos pode ter criptografia pesada.');
       }
     }
+
+    _on(dropzone, 'click', () => {
+      fileInput.click();
+    });
+
+    _on(dropzone, 'keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
 
     _on(fileInput, 'change', (e) => {
       if (e.target.files && e.target.files.length) {
@@ -224,8 +278,9 @@ export default {
     _on(dropzone, 'drop', (e) => {
       e.preventDefault();
       dropzone.classList.remove('pdf-drag-over');
-      if (e.dataTransfer.files && e.dataTransfer.files.length) {
-        _addFiles(Array.from(e.dataTransfer.files));
+      const files = e.dataTransfer?.files;
+      if (files && files.length) {
+        _addFiles(Array.from(files));
       }
     });
 
@@ -251,6 +306,9 @@ export default {
         URL.revokeObjectURL(url);
       }, 500);
     });
+
+    // Inicia carregamento em background sem travar o mount
+    _ensureLibs().catch(err => console.warn('Carregamento de bibliotecas PDF:', err));
   },
 
   unmount() {

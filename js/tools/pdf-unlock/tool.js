@@ -25,6 +25,34 @@ function _formatBytes(bytes) {
   return (bytes / 1048576).toFixed(2) + ' MB';
 }
 
+function _dataUrlToBytes(dataUrl) {
+  const parts = dataUrl.split(',');
+  const bin = atob(parts[1]);
+  const len = bin.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = bin.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function _ensureLibs() {
+  const promises = [];
+  if (typeof window === 'undefined' || !window.PDFLib) {
+    promises.push(loadScript('js/lib/pdf-lib.min.js').catch(e => console.warn('pdf-lib load:', e)));
+  }
+  if (typeof window === 'undefined' || !window.pdfjsLib) {
+    promises.push(loadScript(APP_CONFIG.CDN.PDFJS).catch(e => console.warn('pdf.js load:', e)));
+  }
+  if (promises.length > 0) {
+    await Promise.all(promises);
+  }
+  const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
+  if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+  }
+}
+
 export default {
   id: 'pdf-unlock',
   label: 'Desbloquear PDF',
@@ -39,17 +67,6 @@ export default {
     _currentArrayBuffer = null;
     _unlockedPdfBlob = null;
     _requiresPassword = false;
-
-    // Garante bibliotecas carregadas
-    await Promise.all([
-      loadScript('js/lib/pdf-lib.min.js'),
-      loadScript(APP_CONFIG.CDN.PDFJS)
-    ]);
-
-    const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
-    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
-    }
 
     // Elementos DOM
     const dropzone        = container.querySelector('#u-dropzone');
@@ -95,10 +112,21 @@ export default {
       dropPrompt.style.display = 'none';
       fileLoadedBox.style.display = 'flex';
 
-      // Testa se precisa de senha via PDF.js
       _requiresPassword = false;
       passwordGroup.style.display = 'none';
       passwordInput.value = '';
+
+      await _ensureLibs();
+      const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
+
+      if (!pdfjsLib) {
+        lockBadge.textContent = 'PDF Carregado';
+        lockBadge.className = 'pdf-badge';
+        statusDesc.textContent = 'Pronto para remoção de restrições de impressão e edição.';
+        unlockBtn.disabled = false;
+        unlockBtnText.textContent = 'Desbloquear PDF';
+        return;
+      }
 
       try {
         const loadingTask = pdfjsLib.getDocument({ data: _currentArrayBuffer.slice(0) });
@@ -114,7 +142,6 @@ export default {
         };
 
         const doc = await loadingTask.promise;
-        // Se abriu sem pedir senha de leitura:
         lockBadge.textContent = 'Restrição de Permissões';
         lockBadge.className = 'pdf-badge pdf-badge--info';
         statusDesc.textContent = 'Documento protegido contra cópia/edição ou sem restrição de leitura. Pronto para desbloqueio.';
@@ -169,7 +196,10 @@ export default {
       _setViewState('loading');
       await new Promise(r => setTimeout(r, 30));
 
+      await _ensureLibs();
       const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
+      const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
+
       if (!PDFLib) {
         alert('Biblioteca PDFLib não carregada.');
         _setViewState('empty');
@@ -180,18 +210,17 @@ export default {
 
       try {
         let pdfDoc = null;
+        let unlockedBytes = null;
         const copyBuf = _currentArrayBuffer.slice(0);
 
         if (_requiresPassword) {
-          // Tenta abrir com senha informada via PDF.js e reconstruir via PDFLib
+          // Descriptografa com a senha fornecida via PDF.js e reconstrói via PDFLib
           const loadingTask = pdfjsLib.getDocument({ data: copyBuf, password });
           const jsDoc = await loadingTask.promise;
           const numPages = jsDoc.numPages;
 
-          // Cria novo documento limpo
           pdfDoc = await PDFLib.PDFDocument.create();
 
-          // Renderiza e insere as páginas desprotegidas
           for (let i = 1; i <= numPages; i++) {
             const page = await jsDoc.getPage(i);
             const viewport = page.getViewport({ scale: 1.5 });
@@ -202,7 +231,7 @@ export default {
             await page.render({ canvasContext: ctx, viewport }).promise;
 
             const imgDataUrl = canvas.toDataURL('image/jpeg', 0.92);
-            const imgBytes = await fetch(imgDataUrl).then(r => r.arrayBuffer());
+            const imgBytes = _dataUrlToBytes(imgDataUrl);
             const embeddedImg = await pdfDoc.embedJpg(imgBytes);
 
             const newPage = pdfDoc.addPage([viewport.width, viewport.height]);
@@ -213,33 +242,71 @@ export default {
               height: viewport.height
             });
           }
+          unlockedBytes = await pdfDoc.save();
         } else {
-          // Desbloqueio direto de restrições de permissão / proprietário
-          pdfDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+          // Tenta desbloqueio direto de restrições
+          try {
+            pdfDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+            unlockedBytes = await pdfDoc.save();
+          } catch (errIgnore) {
+            // Fallback: se pdf-lib não conseguir salvar por causa de criptografia nos fluxos internos, usa PDF.js
+            if (pdfjsLib) {
+              const loadingTask = pdfjsLib.getDocument({ data: copyBuf });
+              const jsDoc = await loadingTask.promise;
+              const numPages = jsDoc.numPages;
+
+              pdfDoc = await PDFLib.PDFDocument.create();
+
+              for (let i = 1; i <= numPages; i++) {
+                const page = await jsDoc.getPage(i);
+                const viewport = page.getViewport({ scale: 1.5 });
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const ctx = canvas.getContext('2d');
+                await page.render({ canvasContext: ctx, viewport }).promise;
+
+                const imgDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+                const imgBytes = _dataUrlToBytes(imgDataUrl);
+                const embeddedImg = await pdfDoc.embedJpg(imgBytes);
+
+                const newPage = pdfDoc.addPage([viewport.width, viewport.height]);
+                newPage.drawImage(embeddedImg, {
+                  x: 0,
+                  y: 0,
+                  width: viewport.width,
+                  height: viewport.height
+                });
+              }
+              unlockedBytes = await pdfDoc.save();
+            } else {
+              throw errIgnore;
+            }
+          }
         }
 
-        // Salva sem criptografia
-        const unlockedBytes = await pdfDoc.save();
         _unlockedPdfBlob = new Blob([unlockedBytes], { type: 'application/pdf' });
 
         metaPages.textContent = pdfDoc.getPageCount ? pdfDoc.getPageCount() : '1+';
         metaSize.textContent = _formatBytes(_unlockedPdfBlob.size);
 
         // Renderiza thumbnail da primeira página no canvas
-        try {
-          const previewTask = pdfjsLib.getDocument({ data: unlockedBytes.slice(0) });
-          const previewDoc = await previewTask.promise;
-          const firstPage = await previewDoc.getPage(1);
-          const stageViewport = firstPage.getViewport({ scale: 1 });
-          const scale = Math.min(260 / stageViewport.width, 240 / stageViewport.height);
-          const scaledViewport = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
+        if (pdfjsLib) {
+          try {
+            const previewTask = pdfjsLib.getDocument({ data: unlockedBytes.slice(0) });
+            const previewDoc = await previewTask.promise;
+            const firstPage = await previewDoc.getPage(1);
+            const stageViewport = firstPage.getViewport({ scale: 1 });
+            const scale = Math.min(260 / stageViewport.width, 240 / stageViewport.height);
+            const scaledViewport = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
 
-          previewCanvas.width = scaledViewport.width;
-          previewCanvas.height = scaledViewport.height;
-          const ctx = previewCanvas.getContext('2d');
-          await firstPage.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
-        } catch (e) {
-          console.warn('Miniatura preview não disponível:', e);
+            previewCanvas.width = scaledViewport.width;
+            previewCanvas.height = scaledViewport.height;
+            const ctx = previewCanvas.getContext('2d');
+            await firstPage.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+          } catch (e) {
+            console.warn('Miniatura preview não disponível:', e);
+          }
         }
 
         _setViewState('result');
@@ -252,6 +319,19 @@ export default {
     }
 
     // Eventos
+    _on(dropzone, 'click', (e) => {
+      if (e.target !== removeBtn && !removeBtn?.contains(e.target)) {
+        fileInput.click();
+      }
+    });
+
+    _on(dropzone, 'keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+
     _on(fileInput, 'change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (file) _inspectPdf(file);
@@ -267,8 +347,10 @@ export default {
     _on(dropzone, 'drop', (e) => {
       e.preventDefault();
       dropzone.classList.remove('pdf-drag-over');
-      const file = e.dataTransfer.files && e.dataTransfer.files[0];
-      if (file && file.type === 'application/pdf') _inspectPdf(file);
+      const file = e.dataTransfer?.files?.[0];
+      if (file && (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))) {
+        _inspectPdf(file);
+      }
     });
 
     _on(removeBtn, 'click', (e) => {
@@ -298,6 +380,9 @@ export default {
         URL.revokeObjectURL(url);
       }, 500);
     });
+
+    // Inicia carregamento em background sem travar o mount
+    _ensureLibs().catch(err => console.warn('Carregamento de bibliotecas PDF:', err));
   },
 
   unmount() {

@@ -33,7 +33,7 @@ export function getPdfCompressHTML() {
 
           <!-- Dropzone Compacto -->
           <div class="pdf-dropzone" id="c-dropzone" tabindex="0" role="button" aria-label="Carregar arquivo PDF para comprimir">
-            <input type="file" id="c-file-input" accept="application/pdf" class="pdf-hidden-input">
+            <input type="file" id="c-file-input" accept="application/pdf,.pdf" class="pdf-hidden-input">
             <div class="pdf-dropzone-content" id="c-dropzone-prompt">
               <div class="pdf-dropzone-icon">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
