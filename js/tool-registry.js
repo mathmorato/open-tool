@@ -8,6 +8,7 @@ import { APP_CONFIG } from './config.js';
 import doc2mdTool from './tools/doc2md/tool.js';
 import qrcodeTool from './tools/qrcode/tool.js';
 import hubTool from './tools/hub/tool.js';
+import img2vectorTool from './tools/img2vector/tool.js';
 
 const STORAGE_KEY_ACTIVE_TOOL = 'opentool_active_tool';
 
@@ -15,7 +16,8 @@ const STORAGE_KEY_ACTIVE_TOOL = 'opentool_active_tool';
 export const BUILTIN_TOOLS = {
   hub: hubTool,
   doc2md: doc2mdTool,
-  qrcode: qrcodeTool
+  qrcode: qrcodeTool,
+  img2vector: img2vectorTool
 };
 
 // Base path para imports dinâmicos caso necessário
@@ -74,6 +76,16 @@ export const TOOL_CATALOG = [
       <path d="M17 17h4"/>
       <path d="M17 21v-4"/>
       <path d="M21 17v4"/>
+    </svg>`
+  },
+  {
+    id: 'img2vector',
+    label: 'Image to Vector',
+    description: 'Vetorize imagens rasterizadas (PNG, JPG, WEBP) para SVG com curvas Bézier 100% local',
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+      <polyline points="2 17 12 22 22 17"/>
+      <polyline points="2 12 12 17 22 12"/>
     </svg>`
   }
 ];

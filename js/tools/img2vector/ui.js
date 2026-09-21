@@ -1,0 +1,239 @@
+/**
+ * Open Tool — Ferramenta: Image to Vector — Template HTML
+ * Inspirado no ut-vector (raster to SVG vectorizer) e ImageTracer.
+ * @version v.2.1.0
+ */
+
+export function getImageToVectorHTML() {
+  return `
+    <div class="img2vector-tool-root">
+
+      <section class="img2vector-hero">
+        <header class="hero-header">
+          <div class="img2vector-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+            Vetorização Baseada em Curvas Bézier
+          </div>
+          <h2 class="hero-title">Image to Vector</h2>
+          <p class="hero-subtitle">
+            Transforme imagens rasterizadas (PNG, JPG, WEBP, BMP) em gráficos vetoriais SVG escaláveis com fidelidade matemática. 100% local — nenhuma imagem sai do seu dispositivo.
+          </p>
+        </header>
+      </section>
+
+      <div class="img2vector-workspace">
+
+        <!-- Coluna Esquerda: Entrada & Controles -->
+        <div class="img2vector-controls-panel">
+
+          <!-- Dropzone de Imagem -->
+          <div class="img2vector-dropzone" id="v-dropzone" tabindex="0" role="button" aria-label="Carregar imagem para vetorização">
+            <input type="file" id="v-file-input" accept="image/png,image/jpeg,image/webp,image/bmp,image/gif" class="v-hidden-input">
+            <div class="v-dropzone-content" id="v-dropzone-prompt">
+              <div class="v-dropzone-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+              </div>
+              <p class="v-dropzone-title">Arraste uma imagem ou <span class="v-link">selecione</span></p>
+              <p class="v-dropzone-sub">PNG, JPG, WEBP, BMP até 20MB • Cole com Ctrl+V</p>
+            </div>
+
+            <!-- Preview da Imagem Carregada -->
+            <div class="v-image-loaded" id="v-image-loaded" style="display: none;">
+              <img id="v-preview-img" alt="Imagem original carregada" class="v-thumbnail">
+              <div class="v-loaded-info">
+                <span class="v-filename" id="v-filename">imagem.png</span>
+                <span class="v-filesize" id="v-filesize">0 KB</span>
+              </div>
+              <button type="button" class="v-remove-btn" id="v-remove-btn" title="Trocar imagem">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Presets de Vetorização -->
+          <div class="img2vector-field-group">
+            <label class="img2vector-label">Modo / Preset</label>
+            <div class="v-preset-grid" id="v-preset-grid">
+              <button type="button" class="v-preset-btn v-preset-btn--active" data-preset="bw">
+                <span class="v-preset-icon">⬛</span>
+                <span class="v-preset-title">Logotipo / P&B</span>
+                <span class="v-preset-desc">2 cores, traço limpo para silhuetas</span>
+              </button>
+              <button type="button" class="v-preset-btn" data-preset="balanced">
+                <span class="v-preset-icon">🎨</span>
+                <span class="v-preset-title">Equilibrado</span>
+                <span class="v-preset-desc">16 cores, curvas e ilustrações</span>
+              </button>
+              <button type="button" class="v-preset-btn" data-preset="detailed">
+                <span class="v-preset-icon">✨</span>
+                <span class="v-preset-title">Alta Fidelidade</span>
+                <span class="v-preset-desc">32 cores, máxima nitidez</span>
+              </button>
+              <button type="button" class="v-preset-btn" data-preset="curvy">
+                <span class="v-preset-icon">〰️</span>
+                <span class="v-preset-title">Curvas Suaves</span>
+                <span class="v-preset-desc">Béziers arredondadas e orgânicas</span>
+              </button>
+              <button type="button" class="v-preset-btn" data-preset="posterized">
+                <span class="v-preset-icon">🖼️</span>
+                <span class="v-preset-title">Posterizado</span>
+                <span class="v-preset-desc">Cores sólidas estilo pôster</span>
+              </button>
+              <button type="button" class="v-preset-btn" data-preset="grayscale">
+                <span class="v-preset-icon">🩶</span>
+                <span class="v-preset-title">Escala de Cinza</span>
+                <span class="v-preset-desc">Tons graduais monocromáticos</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Ajustes Avançados -->
+          <details class="v-advanced-details">
+            <summary class="v-advanced-summary">
+              <span>Configurações Avançadas de Traçado</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </summary>
+            <div class="v-advanced-body">
+              <div class="v-range-row">
+                <div class="v-range-header">
+                  <label for="v-colors-range">Número de Cores</label>
+                  <span id="v-colors-val" class="v-val-badge">2</span>
+                </div>
+                <input type="range" id="v-colors-range" min="2" max="64" value="2" class="v-slider">
+              </div>
+
+              <div class="v-range-row">
+                <div class="v-range-header">
+                  <label for="v-blur-range">Filtro de Ruído / Suavização</label>
+                  <span id="v-blur-val" class="v-val-badge">0</span>
+                </div>
+                <input type="range" id="v-blur-range" min="0" max="8" value="0" class="v-slider">
+              </div>
+
+              <div class="v-range-row">
+                <div class="v-range-header">
+                  <label for="v-omit-range">Omitir Ruídos Menores (pixels)</label>
+                  <span id="v-omit-val" class="v-val-badge">8</span>
+                </div>
+                <input type="range" id="v-omit-range" min="0" max="64" value="8" class="v-slider">
+              </div>
+            </div>
+          </details>
+
+          <!-- Botão Principal de Conversão -->
+          <button type="button" id="v-convert-btn" class="img2vector-primary-btn" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+            <span>Vetorizar Imagem para SVG</span>
+          </button>
+        </div>
+
+        <!-- Coluna Direita: Painel de Visualização & Exportação -->
+        <div class="img2vector-preview-panel">
+
+          <!-- Estado Vazio -->
+          <div class="v-empty-view" id="v-empty-view">
+            <div class="v-empty-illustration">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+            </div>
+            <h3 class="v-empty-title">Nenhum vetor gerado</h3>
+            <p class="v-empty-desc">Carregue uma imagem rasterizada e clique em "Vetorizar Imagem para SVG" para visualizar o resultado.</p>
+          </div>
+
+          <!-- Estado Processando -->
+          <div class="v-loading-view" id="v-loading-view" style="display: none;">
+            <div class="v-spinner"></div>
+            <h3 class="v-loading-title">Extraindo contornos e traçando curvas Bézier...</h3>
+            <p class="v-loading-desc">Quantizando cores e calculando splines vetoriais no navegador.</p>
+          </div>
+
+          <!-- Resultado do Vetor -->
+          <div class="v-result-view" id="v-result-view" style="display: none;">
+            <!-- Barra de Modos de Visualização -->
+            <div class="v-view-modes">
+              <div class="v-segmented-ctrl">
+                <button type="button" class="v-mode-btn v-mode-btn--active" data-mode="vector">Vetor SVG</button>
+                <button type="button" class="v-mode-btn" data-mode="original">Original</button>
+                <button type="button" class="v-mode-btn" data-mode="side">Lado a Lado</button>
+              </div>
+              <div class="v-zoom-ctrls">
+                <button type="button" id="v-zoom-out" class="v-zoom-btn" title="Diminuir Zoom">−</button>
+                <span id="v-zoom-val">100%</span>
+                <button type="button" id="v-zoom-in" class="v-zoom-btn" title="Aumentar Zoom">+</button>
+              </div>
+            </div>
+
+            <!-- Palco de Renderização -->
+            <div class="v-stage" id="v-stage">
+              <div class="v-stage-content" id="v-stage-content">
+                <div id="v-svg-output" class="v-svg-container"></div>
+                <img id="v-orig-output" class="v-orig-container" alt="Imagem original" style="display: none;">
+              </div>
+            </div>
+
+            <!-- Metadados do Vetor -->
+            <div class="v-meta-bar">
+              <div class="v-meta-item">
+                <span class="v-meta-label">Caminhos / Paths:</span>
+                <strong id="v-meta-paths" class="v-meta-val">0</strong>
+              </div>
+              <div class="v-meta-item">
+                <span class="v-meta-label">Cores na Paleta:</span>
+                <strong id="v-meta-colors" class="v-meta-val">0</strong>
+              </div>
+              <div class="v-meta-item">
+                <span class="v-meta-label">Tamanho SVG:</span>
+                <strong id="v-meta-size" class="v-meta-val">0 KB</strong>
+              </div>
+            </div>
+
+            <!-- Ações de Exportação -->
+            <div class="v-actions-bar">
+              <button type="button" id="v-download-svg" class="v-export-btn v-export-btn--primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Baixar SVG
+              </button>
+
+              <button type="button" id="v-copy-svg" class="v-export-btn v-export-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copiar Código SVG
+              </button>
+            </div>
+
+            <div id="v-copy-feedback" class="v-copy-feedback" style="display: none;"></div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}

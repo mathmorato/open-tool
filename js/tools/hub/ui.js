@@ -26,12 +26,14 @@ export function getHubHTML(catalog = []) {
       <!-- Grade de Ferramentas (PDF24 Tools Style) -->
       <div class="hub-grid" id="hub-tools-grid">
         ${tools.map(tool => {
-          const badge = tool.id === 'doc2md' ? 'CONVERSOR' : (tool.id === 'qrcode' ? 'GERADOR' : 'FERRAMENTA');
+          const badge = tool.id === 'doc2md' ? 'CONVERSOR' : (tool.id === 'qrcode' ? 'GERADOR' : (tool.id === 'img2vector' ? 'VETORIZADOR' : 'FERRAMENTA'));
           const features = tool.id === 'doc2md'
             ? ['Word (.docx), Excel (.xlsx), PDF, PPTX', 'Extração automática de pacotes .ZIP e .RAR', 'Geração de Markdown limpo e formatado']
             : (tool.id === 'qrcode'
               ? ['Geração imediata para Links e Textos', 'Exportação em PNG de alta resolução e SVG', 'Customização de cores, tamanho e margem']
-              : ['Processamento 100% no navegador', 'Zero telemetria de dados']);
+              : (tool.id === 'img2vector'
+                ? ['Raster para SVG vetorial (PNG, JPG, WEBP, BMP)', 'Curvas Bézier matemáticas e ajuste fino de cores', 'Exportação e cópia direta de código SVG']
+                : ['Processamento 100% no navegador', 'Zero telemetria de dados']));
 
           return `
             <article class="hub-card" data-tool-card="${tool.id}" tabindex="0" role="button" aria-label="Abrir ferramenta ${tool.label}">
