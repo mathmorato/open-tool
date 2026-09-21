@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.2.0",
+    VERSION: "v.2.2.1",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
