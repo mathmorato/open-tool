@@ -12,6 +12,7 @@ import img2vectorTool from './tools/img2vector/tool.js';
 import pdfUnlockTool from './tools/pdf-unlock/tool.js';
 import pdfCompressTool from './tools/pdf-compress/tool.js';
 import pdfMergeTool from './tools/pdf-merge/tool.js';
+import pdfSplitTool from './tools/pdf-split/tool.js';
 
 const STORAGE_KEY_ACTIVE_TOOL = 'opentool_active_tool';
 
@@ -23,7 +24,8 @@ export const BUILTIN_TOOLS = {
   img2vector: img2vectorTool,
   'pdf-unlock': pdfUnlockTool,
   'pdf-compress': pdfCompressTool,
-  'pdf-merge': pdfMergeTool
+  'pdf-merge': pdfMergeTool,
+  'pdf-split': pdfSplitTool
 };
 
 // Base path para imports dinâmicos caso necessário
@@ -122,6 +124,18 @@ export const TOOL_CATALOG = [
       <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
       <line x1="12" y1="11" x2="12" y2="17"/>
       <line x1="9" y1="14" x2="15" y2="14"/>
+    </svg>`
+  },
+  {
+    id: 'pdf-split',
+    label: 'Dividir PDF',
+    description: 'Separe páginas, extraia intervalos específicos ou desmembre cada página em arquivos individuais 100% local',
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="6" cy="6" r="3"/>
+      <circle cx="6" cy="18" r="3"/>
+      <line x1="20" y1="4" x2="8.12" y2="15.88"/>
+      <line x1="14.47" y1="14.48" x2="20" y2="20"/>
+      <line x1="8.12" y1="8.12" x2="12" y2="12"/>
     </svg>`
   }
 ];

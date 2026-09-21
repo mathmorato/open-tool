@@ -17,8 +17,8 @@ if (!semverDecimalRegex.test(APP_CONFIG.VERSION)) {
   console.error(`[ERRO] Versão ${APP_CONFIG.VERSION} viola a regra de base decimal estrita (Y e Z devem ser de 0 a 9)`);
   process.exit(1);
 }
-if (APP_CONFIG.VERSION !== 'v.2.3.1') {
-  console.error('[ERRO] Versão diferente de v.2.3.1');
+if (APP_CONFIG.VERSION !== 'v.2.4.0') {
+  console.error('[ERRO] Versão diferente de v.2.4.0');
   process.exit(1);
 }
 if (APP_CONFIG.APP_NAME !== 'Open Tool') {
@@ -47,7 +47,7 @@ console.log(`[OK] Pacotes compactados configurados: ${APP_CONFIG.ARCHIVE_EXTENSI
 
 // 2. Verifica package.json
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
-if (pkg.version !== '2.3.1' || !/^[0-9]\.[0-9]\.[0-9]$/.test(pkg.version)) {
+if (pkg.version !== '2.4.0' || !/^[0-9]\.[0-9]\.[0-9]$/.test(pkg.version)) {
   console.error('[ERRO] package.json version incompatível ou fora da base decimal');
   process.exit(1);
 }
@@ -62,10 +62,11 @@ const img2vectorUi = fs.readFileSync('./js/tools/img2vector/ui.js', 'utf8');
 const pdfUnlockUi = fs.readFileSync('./js/tools/pdf-unlock/ui.js', 'utf8');
 const pdfCompressUi = fs.readFileSync('./js/tools/pdf-compress/ui.js', 'utf8');
 const pdfMergeUi = fs.readFileSync('./js/tools/pdf-merge/ui.js', 'utf8');
-const fullAppHtml = indexHtml + '\n' + doc2mdUi + '\n' + qrcodeUi + '\n' + hubUi + '\n' + img2vectorUi + '\n' + pdfUnlockUi + '\n' + pdfCompressUi + '\n' + pdfMergeUi;
+const pdfSplitUi = fs.readFileSync('./js/tools/pdf-split/ui.js', 'utf8');
+const fullAppHtml = indexHtml + '\n' + doc2mdUi + '\n' + qrcodeUi + '\n' + hubUi + '\n' + img2vectorUi + '\n' + pdfUnlockUi + '\n' + pdfCompressUi + '\n' + pdfMergeUi + '\n' + pdfSplitUi;
 
-if (!indexHtml.includes('v.2.3.1')) {
-  console.error('[ERRO] index.html não contém v.2.3.1');
+if (!indexHtml.includes('v.2.4.0')) {
+  console.error('[ERRO] index.html não contém v.2.4.0');
   process.exit(1);
 }
 if (!indexHtml.includes('brand-logo-svg') || !indexHtml.includes('Open <span class="accent">Tool</span>')) {
@@ -177,7 +178,7 @@ if (!fullAppHtml.includes('+algumas linguagens de código')) {
   console.error('[ERRO] UI não contém a badge destacada +algumas linguagens de código');
   process.exit(1);
 }
-console.log('[OK] index.html e UI modulares contêm v.2.3.1, layout Open Tool com logo SVG e badge Tamanho do MD');
+console.log('[OK] index.html e UI modulares contêm v.2.4.0, layout Open Tool com logo SVG e badge Tamanho do MD');
 
 // 3.1. Verifica concorrência dinâmica de 1000 workers e otimização requestAnimationFrame
 const configJs = fs.readFileSync('./js/config.js', 'utf8');
@@ -474,8 +475,8 @@ console.log('[OK] css/styles.css contém layout travado de cabeçalho (CLS=0), b
 
 // 6. Verifica README.md
 const readme = fs.readFileSync('./README.md', 'utf8');
-if (!readme.includes('v.2.3.1')) {
-  console.error('[ERRO] README.md não contém v.2.3.1');
+if (!readme.includes('v.2.4.0')) {
+  console.error('[ERRO] README.md não contém v.2.4.0');
   process.exit(1);
 }
 if (!readme.includes('# Open Tool')) {
@@ -486,7 +487,7 @@ if (!readme.includes('https://mathmorato.github.io/open-tool/#')) {
   console.error('[ERRO] README.md não contém o link de acesso online oficial (https://mathmorato.github.io/open-tool/#)');
   process.exit(1);
 }
-console.log('[OK] README.md contém cabeçalho v.2.3.1, título # Open Tool e link de acesso online imediato');
+console.log('[OK] README.md contém cabeçalho v.2.4.0, título # Open Tool e link de acesso online imediato');
 
 // 5. Verifica existência de todos os arquivos do projeto (incluindo módulos e ferramentas)
 const requiredFiles = [
@@ -500,6 +501,7 @@ const requiredFiles = [
   'css/tools/pdf-unlock.css',
   'css/tools/pdf-compress.css',
   'css/tools/pdf-merge.css',
+  'css/tools/pdf-split.css',
   'js/config.js',
   'js/main.js',
   'js/tool-registry.js',
@@ -509,6 +511,7 @@ const requiredFiles = [
   'js/lib/qrcodegen.js',
   'js/lib/imagetracer.js',
   'js/lib/pdf-lib.min.js',
+  'js/lib/jszip.min.js',
   'js/tools/hub/tool.js',
   'js/tools/hub/ui.js',
   'js/tools/doc2md/tool.js',
@@ -523,6 +526,8 @@ const requiredFiles = [
   'js/tools/pdf-compress/ui.js',
   'js/tools/pdf-merge/tool.js',
   'js/tools/pdf-merge/ui.js',
+  'js/tools/pdf-split/tool.js',
+  'js/tools/pdf-split/ui.js',
   'js/parsers/docx-parser.js',
   'js/parsers/xlsx-parser.js',
   'js/parsers/pptx-parser.js',

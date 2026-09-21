@@ -47,6 +47,9 @@ export function getHubHTML(catalog = []) {
           } else if (tool.id === 'pdf-merge') {
             badge = 'MESCLADOR';
             features = ['Junção de múltiplos PDFs em arquivo único', 'Reordenação sequencial de documentos', 'Geração instantânea e download único'];
+          } else if (tool.id === 'pdf-split') {
+            badge = 'DIVISOR';
+            features = ['Separação por intervalos, páginas ou blocos', 'Desmembramento em 1 PDF por página em .ZIP', 'Extração cirúrgica de páginas selecionadas'];
           }
 
           return `

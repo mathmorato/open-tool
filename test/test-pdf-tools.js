@@ -6,9 +6,9 @@
 import fs from 'fs';
 import path from 'path';
 
-console.log('--- Testando integridade das 3 ferramentas PDF ---');
+console.log('--- Testando integridade das 4 ferramentas PDF ---');
 
-const tools = ['pdf-unlock', 'pdf-compress', 'pdf-merge'];
+const tools = ['pdf-unlock', 'pdf-compress', 'pdf-merge', 'pdf-split'];
 for (const t of tools) {
   const uiPath = path.join('js', 'tools', t, 'ui.js');
   const toolPath = path.join('js', 'tools', t, 'tool.js');

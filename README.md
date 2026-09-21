@@ -1,6 +1,6 @@
-# Open Tool `v.2.3.1`
+# Open Tool `v.2.4.0`
 
-[![Version](https://img.shields.io/badge/version-v.2.3.1-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v.2.4.0-blue.svg)](package.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![Architecture: 100% Client--Side](https://img.shields.io/badge/Architecture-100%25%20Client--Side-informational.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
 [![Privacy: Zero Server Upload](https://img.shields.io/badge/Privacy-Zero%20Server%20Upload-green.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
@@ -62,6 +62,15 @@ O Open Tool adota uma experiência visual unificada inspirada no modelo *PDF24 T
 * **Pré-visualização Dinâmica:** Exibição imediata da capa do documento resultante na coluna de pré-visualização.
 * **Geração Rápida:** Montagem e download instantâneo do PDF unificado em milissegundos sem qualquer transmissão de dados.
 
+### 8. Dividir PDF (`pdf-split`)
+* **Divisão Multimodo Flexível:** Quatro estratégias de particionamento adaptadas a qualquer fluxo de trabalho:
+  * *Por Intervalos*: Separação por faixas customizadas (ex: `1-3, 4-6, 7-10` ou `1-2, 3-5`).
+  * *Extrair Páginas*: Seleção cirúrgica de páginas (ex: `1, 3, 5`) unificadas em um único PDF novo.
+  * *Todas as Páginas*: Desmembramento completo gerando 1 arquivo PDF por página em um pacote `.zip`.
+  * *A cada N Páginas*: Divisão em blocos fixos de páginas (ex: a cada 2 páginas).
+* **Pacote Compactado Automático (.ZIP):** Quando múltiplos arquivos são produzidos, o sistema empacota tudo em um único `.zip` organizado via `JSZip` client-side.
+* **Pré-visualização em Tempo Real:** Renderização imediata da primeira página extraída e cálculo da contagem de arquivos e páginas.
+
 ---
 
 ## 📊 Matriz Universal de Formatos Suportados (Doc → MD)
@@ -111,7 +120,8 @@ open-tool/
 │       ├── img2vector.css       # Estilos específicos do vetorizador de imagens
 │       ├── pdf-unlock.css       # Estilos específicos do desbloqueador de PDF
 │       ├── pdf-compress.css     # Estilos específicos do compressor de PDF
-│       └── pdf-merge.css        # Estilos específicos do mesclador de PDF
+│       ├── pdf-merge.css        # Estilos específicos do mesclador de PDF
+│       └── pdf-split.css        # Estilos específicos do divisor de PDF
 ├── js/
 │   ├── config.js                # Configurações globais, mapa de MIME types e SemVer
 │   ├── main.js                  # Ponto de entrada (bootstrap) e inicialização de temas
@@ -123,7 +133,8 @@ open-tool/
 │   ├── lib/                     # Bibliotecas locais 100% offline
 │   │   ├── qrcodegen.js         # Motor Nayuki QR Code Generator
 │   │   ├── imagetracer.js       # Motor ImageTracer para vetorização raster → SVG
-│   │   └── pdf-lib.min.js       # Motor pdf-lib para manipulação/desbloqueio/compressão/fusão PDF
+│   │   ├── pdf-lib.min.js       # Motor pdf-lib para manipulação/desbloqueio/compressão/fusão PDF
+│   │   └── jszip.min.js         # Motor JSZip para empacotamento compactado local
 │   ├── tools/                   # Módulos plugáveis de ferramentas
 │   │   ├── hub/                 # Ferramenta: Vitrine / Catálogo de ferramentas
 │   │   │   ├── tool.js          # Controlador do Hub
@@ -143,9 +154,12 @@ open-tool/
 │   │   ├── pdf-compress/        # Ferramenta: Compressor de PDF
 │   │   │   ├── tool.js          # Reamostragem raster por DPI e otimização JPEG
 │   │   │   └── ui.js            # Template HTML com presets de DPI e telemetria
-│   │   └── pdf-merge/           # Ferramenta: Mesclador de PDF
-│   │       ├── tool.js          # Fusão sequencial de páginas com pdf-lib
-│   │       └── ui.js            # Template HTML de ordenação e fila
+│   │   ├── pdf-merge/           # Ferramenta: Mesclador de PDF
+│   │   │   ├── tool.js          # Fusão sequencial de páginas com pdf-lib
+│   │   │   └── ui.js            # Template HTML de ordenação e fila
+│   │   └── pdf-split/           # Ferramenta: Divisor de PDF
+│   │       ├── tool.js          # Particionamento por intervalos/páginas com pdf-lib e JSZip
+│   │       └── ui.js            # Template HTML com modos de divisão e palco
 │   ├── parsers/                 # Parsers especializados do Doc → MD
 │   │   ├── docx-parser.js       # Mammoth + Turndown para DOCX/ODT
 │   │   ├── xlsx-parser.js       # SheetJS para planilhas e tabelas
@@ -205,9 +219,9 @@ O projeto está totalmente preparado para publicação contínua e direta via Gi
 
 ## 🏷️ Licença e Versionamento SemVer
 
-* **Controle SemVer:** O projeto segue o padrão [Semantic Versioning 2.0.0](https://semver.org/). A versão atual é **`v.2.3.1`**, sincronizada em todos os pontos de governança:
+* **Controle SemVer:** O projeto segue o padrão [Semantic Versioning 2.0.0](https://semver.org/). A versão atual é **`v.2.4.0`**, sincronizada em todos os pontos de governança:
   1. Interface principal (`index.html`).
-  2. Arquivo `package.json` (`"version": "2.3.1"`).
+  2. Arquivo `package.json` (`"version": "2.4.0"`).
   3. Constante `APP_CONFIG.VERSION` em `js/config.js`.
   4. Badges e cabeçalho deste `README.md`.
 * **Licença de Uso:** Distribuído sob os termos da licença **MIT**. Para maiores detalhes, consulte o arquivo [LICENSE](LICENSE).

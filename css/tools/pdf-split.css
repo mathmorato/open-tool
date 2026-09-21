@@ -1,0 +1,176 @@
+/**
+ * Open Tool — Ferramenta: Dividir PDF (pdf-split) Styles
+ * Segue a Diretriz 2.4 (Single-Viewport e Alinhamento Perfeito)
+ * @version v.2.4.0
+ */
+
+.pdf-split-root {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem 1.5rem;
+  animation: fadeInTool 0.3s ease;
+}
+
+/* ── Grid de Modos de Divisão (4 Colunas Compactas) ────────────────────────── */
+.pdf-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.35rem;
+}
+
+.pdf-mode-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.45rem 0.35rem;
+  background: var(--surface-input, var(--bg-primary));
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.pdf-mode-btn:hover {
+  border-color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 5%, var(--surface-input, var(--bg-primary)));
+}
+
+.pdf-mode-btn--active {
+  border-color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 12%, var(--surface-input, var(--bg-primary)));
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--accent-primary) 30%, transparent);
+}
+
+.pdf-mode-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.pdf-mode-desc {
+  font-size: 0.625rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ── Campos e Entradas Dinâmicas ─────────────────────────────────────────── */
+.pdf-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.pdf-field-hint {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.pdf-input-help {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.pdf-number-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pdf-number-input {
+  width: 70px;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.4rem;
+  background: var(--surface-input, var(--bg-primary));
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.pdf-number-unit {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.pdf-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding: 0.5rem 0.65rem;
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-primary));
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  border-radius: 0.45rem;
+  font-size: 0.7188rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.pdf-info-banner svg {
+  color: var(--accent-primary);
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+/* ── Card de Resumo de Divisão ───────────────────────────────────────────── */
+.pdf-summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.75rem;
+  background: var(--surface-input, var(--bg-primary));
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+}
+
+.pdf-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.pdf-summary-label {
+  font-size: 0.625rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pdf-summary-val {
+  font-size: 0.8125rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.pdf-summary-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-subtle);
+}
+
+.pdf-summary-badge {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  color: var(--accent-primary);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
+}
+
+@media (max-width: 768px) {
+  .pdf-mode-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

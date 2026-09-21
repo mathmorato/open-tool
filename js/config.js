@@ -1,7 +1,7 @@
 /**
  * Open Tool
  * Configuração Central & Versionamento SemVer
- * @version v.2.3.1
+ * @version v.2.4.0
  */
 
 export const CODE_EXTENSIONS_MAP = {
@@ -179,7 +179,7 @@ export const MIME_TYPE_MAP = {
 };
 
 export const APP_CONFIG = {
-  VERSION: 'v.2.3.1',
+  VERSION: 'v.2.4.0',
   APP_NAME: 'Open Tool',
   TAGLINE: 'Open Tool • Ferramentas Universais 100% Client-Side',
   REPO_URL: 'https://github.com/mathmorato/open-tool',
@@ -316,6 +316,10 @@ export function loadScript(src) {
       return Promise.resolve();
     }
     if (src.includes('imagetracer') && window.ImageTracer) {
+      if (existing) existing.dataset.loaded = 'true';
+      return Promise.resolve();
+    }
+    if ((src.includes('jszip') || src.includes('JSZip')) && window.JSZip) {
       if (existing) existing.dataset.loaded = 'true';
       return Promise.resolve();
     }

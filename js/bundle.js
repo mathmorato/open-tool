@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.3.1",
+    VERSION: "v.2.4.0",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -2799,6 +2799,10 @@
         return Promise.resolve();
       }
       if (src.includes("imagetracer") && window.ImageTracer) {
+        if (existing) existing.dataset.loaded = "true";
+        return Promise.resolve();
+      }
+      if ((src.includes("jszip") || src.includes("JSZip")) && window.JSZip) {
         if (existing) existing.dataset.loaded = "true";
         return Promise.resolve();
       }
@@ -6838,6 +6842,9 @@ ${footerDelimiter}
       } else if (tool4.id === "pdf-merge") {
         badge = "MESCLADOR";
         features = ["Jun\xE7\xE3o de m\xFAltiplos PDFs em arquivo \xFAnico", "Reordena\xE7\xE3o sequencial de documentos", "Gera\xE7\xE3o instant\xE2nea e download \xFAnico"];
+      } else if (tool4.id === "pdf-split") {
+        badge = "DIVISOR";
+        features = ["Separa\xE7\xE3o por intervalos, p\xE1ginas ou blocos", "Desmembramento em 1 PDF por p\xE1gina em .ZIP", "Extra\xE7\xE3o cir\xFArgica de p\xE1ginas selecionadas"];
       }
       return `
             <article class="hub-card" data-tool-card="${tool4.id}" tabindex="0" role="button" aria-label="Abrir ferramenta ${tool4.label}">
@@ -7506,7 +7513,7 @@ ${footerDelimiter}
         previewImg.src = _currentImageSrc;
         origOutput.src = _currentImageSrc;
         filenameEl.textContent = file.name;
-        filesizeEl.textContent = _formatBytes4(file.size);
+        filesizeEl.textContent = _formatBytes5(file.size);
         removeBgBtn.disabled = false;
         removeBgBtn.classList.remove("v-bg-btn--active");
         removeBgBtnText.textContent = "Remover Fundo";
@@ -7595,7 +7602,7 @@ ${footerDelimiter}
           }
         }
       }
-      function _formatBytes4(bytes) {
+      function _formatBytes5(bytes) {
         if (bytes < 1024) return bytes + " B";
         if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
         return (bytes / 1048576).toFixed(2) + " MB";
@@ -7673,7 +7680,7 @@ ${footerDelimiter}
             const svgBytes = new Blob([svgStr], { type: "image/svg+xml" }).size;
             metaPaths.textContent = pathCount.toLocaleString("pt-BR");
             metaColors.textContent = numColors;
-            metaSize.textContent = _formatBytes4(svgBytes);
+            metaSize.textContent = _formatBytes5(svgBytes);
             _setViewState("result");
             _applyViewMode("vector");
           } catch (err) {
@@ -9230,6 +9237,684 @@ ${footerDelimiter}
     }
   };
 
+  // js/tools/pdf-split/ui.js
+  function getPdfSplitHTML() {
+    return `
+    <div class="pdf-split-root">
+
+      <section class="pdf-tool-hero">
+        <header class="hero-header">
+          <div class="pdf-tool-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="6" cy="6" r="3"></circle>
+              <circle cx="6" cy="18" r="3"></circle>
+              <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+              <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+              <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+            </svg>
+            Divis\xE3o &amp; Extra\xE7\xE3o Local
+          </div>
+          <h2 class="hero-title">Dividir PDF</h2>
+          <p class="hero-subtitle">
+            Separe p\xE1ginas, extraia intervalos espec\xEDficos ou desmembre cada p\xE1gina em arquivos individuais. 100% local \u2014 zero envio a servidores.
+          </p>
+        </header>
+      </section>
+
+      <div class="pdf-workspace">
+
+        <!-- Coluna Esquerda: Entrada & Controles de Divis\xE3o -->
+        <div class="pdf-controls-panel">
+
+          <!-- Dropzone Compacto -->
+          <div class="pdf-dropzone" id="s-dropzone" tabindex="0" role="button" aria-label="Carregar arquivo PDF para dividir">
+            <input type="file" id="s-file-input" accept="application/pdf,.pdf" class="pdf-hidden-input">
+            <div class="pdf-dropzone-content" id="s-dropzone-prompt">
+              <div class="pdf-dropzone-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <circle cx="6" cy="14" r="2"></circle>
+                  <line x1="14" y1="14" x2="8" y2="14"></line>
+                </svg>
+              </div>
+              <div class="pdf-dropzone-text">
+                <p class="pdf-dropzone-title">Arraste um PDF ou <span class="pdf-link">selecione</span></p>
+                <p class="pdf-dropzone-sub">Qualquer arquivo .PDF com m\xFAltiplas p\xE1ginas</p>
+              </div>
+            </div>
+
+            <!-- Preview do Arquivo Carregado -->
+            <div class="pdf-file-loaded" id="s-file-loaded" style="display: none;">
+              <div class="pdf-icon-badge">PDF</div>
+              <div class="pdf-loaded-info">
+                <span class="pdf-filename" id="s-filename">documento.pdf</span>
+                <span class="pdf-filesize" id="s-filesize">0 KB</span>
+              </div>
+              <button type="button" class="pdf-remove-btn" id="s-remove-btn" title="Trocar arquivo">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Modos de Divis\xE3o (4 Op\xE7\xF5es Compactas) -->
+          <div class="pdf-ctrl-group">
+            <label class="pdf-label">Modo de Divis\xE3o</label>
+            <div class="pdf-mode-grid">
+              <button type="button" class="pdf-mode-btn pdf-mode-btn--active" data-mode="ranges">
+                <span class="pdf-mode-title">Intervalos</span>
+                <span class="pdf-mode-desc">Ex: 1-3, 4-6</span>
+              </button>
+              <button type="button" class="pdf-mode-btn" data-mode="extract">
+                <span class="pdf-mode-title">Extrair</span>
+                <span class="pdf-mode-desc">Ex: 1, 3, 5</span>
+              </button>
+              <button type="button" class="pdf-mode-btn" data-mode="all">
+                <span class="pdf-mode-title">Todas</span>
+                <span class="pdf-mode-desc">1 por p\xE1gina</span>
+              </button>
+              <button type="button" class="pdf-mode-btn" data-mode="every">
+                <span class="pdf-mode-title">A cada N</span>
+                <span class="pdf-mode-desc">Blocos fixos</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Configura\xE7\xE3o Espec\xEDfica do Modo Ativo -->
+          <div class="pdf-ctrl-group" id="s-mode-param-group">
+            <div id="s-param-ranges">
+              <div class="pdf-field-header">
+                <label for="s-ranges-input" class="pdf-label">Intervalos de P\xE1ginas</label>
+                <span class="pdf-field-hint" id="s-max-pages-hint">Total: - p\xE1gs</span>
+              </div>
+              <input type="text" id="s-ranges-input" class="pdf-text-input" placeholder="Ex: 1-2, 3-5" value="1-2">
+              <p class="pdf-input-help">Separe intervalos com v\xEDrgula (ex: 1-3, 4-6, 7-10).</p>
+            </div>
+
+            <div id="s-param-extract" style="display: none;">
+              <div class="pdf-field-header">
+                <label for="s-extract-input" class="pdf-label">P\xE1ginas para Extrair</label>
+                <span class="pdf-field-hint" id="s-extract-hint">Total: - p\xE1gs</span>
+              </div>
+              <input type="text" id="s-extract-input" class="pdf-text-input" placeholder="Ex: 1, 3, 5" value="1">
+              <p class="pdf-input-help">Gera 1 \xFAnico PDF com as p\xE1ginas escolhidas.</p>
+            </div>
+
+            <div id="s-param-all" style="display: none;">
+              <div class="pdf-info-banner">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>Cada p\xE1gina ser\xE1 exportada como um PDF separado compactado em um \xFAnico pacote .ZIP.</span>
+              </div>
+            </div>
+
+            <div id="s-param-every" style="display: none;">
+              <div class="pdf-field-header">
+                <label for="s-every-input" class="pdf-label">Dividir a cada quantas p\xE1ginas?</label>
+              </div>
+              <div class="pdf-number-row">
+                <input type="number" id="s-every-input" class="pdf-number-input" min="1" max="100" value="2">
+                <span class="pdf-number-unit">p\xE1ginas por arquivo</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card de Resumo de Sa\xEDda -->
+          <div class="pdf-summary-card" id="s-summary-card">
+            <div class="pdf-summary-item">
+              <span class="pdf-summary-label">Documento Original</span>
+              <span class="pdf-summary-val" id="s-sum-orig-pages">0 p\xE1ginas</span>
+            </div>
+            <div class="pdf-summary-divider"></div>
+            <div class="pdf-summary-item">
+              <span class="pdf-summary-label">Arquivos de Sa\xEDda</span>
+              <span class="pdf-summary-badge" id="s-sum-out-count">0 arquivos</span>
+            </div>
+          </div>
+
+          <!-- CTA Prim\xE1rio (Sempre Vis\xEDvel) -->
+          <button type="button" id="s-split-btn" class="btn-primary pdf-action-cta" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="6" cy="6" r="3"></circle>
+              <circle cx="6" cy="18" r="3"></circle>
+              <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+              <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+              <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+            </svg>
+            <span id="s-split-btn-text">Dividir PDF Agora</span>
+          </button>
+
+        </div>
+
+        <!-- Coluna Direita: Pr\xE9-visualiza\xE7\xE3o & Sa\xEDda -->
+        <div class="pdf-preview-panel">
+
+          <!-- Estado Vazio -->
+          <div class="pdf-stage-empty" id="s-empty-view">
+            <div class="pdf-empty-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="8" y1="12" x2="16" y2="12"></line>
+                <line x1="8" y1="16" x2="12" y2="16"></line>
+              </svg>
+            </div>
+            <p class="pdf-empty-text">Carregue um documento PDF \xE0 esquerda para configurar as p\xE1ginas e dividir</p>
+          </div>
+
+          <!-- Estado Processando -->
+          <div class="pdf-stage-loading" id="s-loading-view" style="display: none;">
+            <div class="batch-spinner-icon">
+              <svg class="radial-spinner-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <p class="pdf-loading-text" id="s-loading-progress">Dividindo documento PDF...</p>
+            <span class="pdf-loading-sub">Extra\xE7\xE3o direta na mem\xF3ria do navegador</span>
+          </div>
+
+          <!-- Estado Resultado -->
+          <div class="pdf-stage-result" id="s-result-view" style="display: none;">
+            <div class="pdf-result-header">
+              <div class="pdf-badge pdf-badge--success" id="s-result-badge">Divis\xE3o Conclu\xEDda</div>
+              <span class="pdf-result-sub" id="s-result-summary">Arquivos gerados com sucesso</span>
+            </div>
+
+            <!-- Canvas com miniatura da primeira p\xE1gina gerada -->
+            <div class="pdf-canvas-wrap">
+              <canvas id="s-preview-canvas" class="pdf-preview-canvas"></canvas>
+            </div>
+
+            <!-- M\xE9tricas T\xE9cnicas -->
+            <div class="pdf-meta-grid">
+              <div class="pdf-meta-item">
+                <span class="pdf-meta-label">Arquivos Criados</span>
+                <span class="pdf-meta-val" id="s-meta-files">1</span>
+              </div>
+              <div class="pdf-meta-item">
+                <span class="pdf-meta-label">P\xE1ginas Extra\xEDdas</span>
+                <span class="pdf-meta-val" id="s-meta-pages">1</span>
+              </div>
+              <div class="pdf-meta-item">
+                <span class="pdf-meta-label">Tamanho do Pacote</span>
+                <span class="pdf-meta-val" id="s-meta-size">0 KB</span>
+              </div>
+            </div>
+
+            <!-- Download -->
+            <div class="pdf-result-actions">
+              <button type="button" id="s-download-btn" class="btn-primary pdf-download-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span id="s-download-btn-text">Baixar Arquivos</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+  }
+
+  // js/tools/pdf-split/tool.js
+  var _listeners7 = [];
+  var _currentFile4 = null;
+  var _currentArrayBuffer3 = null;
+  var _currentNumPages = 0;
+  var _currentMode = "ranges";
+  var _outputBlob = null;
+  var _isZip = false;
+  var _downloadName = "documentos_divididos.zip";
+  function _on6(element, event, handler) {
+    if (!element) return;
+    element.addEventListener(event, handler);
+    _listeners7.push({ element, event, handler });
+  }
+  function _formatBytes4(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / 1048576).toFixed(2) + " MB";
+  }
+  function _dataUrlToBytes3(dataUrl) {
+    const parts = dataUrl.split(",");
+    const bin = atob(parts[1]);
+    const len = bin.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = bin.charCodeAt(i);
+    }
+    return bytes;
+  }
+  async function _ensureLibs4() {
+    const promises = [];
+    if (typeof window === "undefined" || !window.PDFLib) {
+      promises.push(loadScript("js/lib/pdf-lib.min.js").catch((e) => console.warn("pdf-lib load:", e)));
+    }
+    if (typeof window === "undefined" || !window.pdfjsLib) {
+      promises.push(loadScript(APP_CONFIG.CDN.PDFJS).catch((e) => console.warn("pdf.js load:", e)));
+    }
+    if (typeof window === "undefined" || !window.JSZip) {
+      promises.push(loadScript(APP_CONFIG.CDN.JSZIP).catch((e) => console.warn("jszip load:", e)));
+    }
+    if (promises.length > 0) {
+      await Promise.all(promises);
+    }
+    const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+    }
+  }
+  var tool_default8 = {
+    id: "pdf-split",
+    label: "Dividir PDF",
+    render(container) {
+      container.innerHTML = getPdfSplitHTML();
+    },
+    async mount(container) {
+      _listeners7 = [];
+      _currentFile4 = null;
+      _currentArrayBuffer3 = null;
+      _currentNumPages = 0;
+      _currentMode = "ranges";
+      _outputBlob = null;
+      _isZip = false;
+      const dropzone = container.querySelector("#s-dropzone");
+      const fileInput = container.querySelector("#s-file-input");
+      const dropPrompt = container.querySelector("#s-dropzone-prompt");
+      const fileLoadedBox = container.querySelector("#s-file-loaded");
+      const filenameEl = container.querySelector("#s-filename");
+      const filesizeEl = container.querySelector("#s-filesize");
+      const removeBtn = container.querySelector("#s-remove-btn");
+      const modeBtns = container.querySelectorAll(".pdf-mode-btn");
+      const paramRanges = container.querySelector("#s-param-ranges");
+      const paramExtract = container.querySelector("#s-param-extract");
+      const paramAll = container.querySelector("#s-param-all");
+      const paramEvery = container.querySelector("#s-param-every");
+      const rangesInput = container.querySelector("#s-ranges-input");
+      const extractInput = container.querySelector("#s-extract-input");
+      const everyInput = container.querySelector("#s-every-input");
+      const maxPagesHint = container.querySelector("#s-max-pages-hint");
+      const extractHint = container.querySelector("#s-extract-hint");
+      const sumOrigPages = container.querySelector("#s-sum-orig-pages");
+      const sumOutCount = container.querySelector("#s-sum-out-count");
+      const splitBtn = container.querySelector("#s-split-btn");
+      const splitBtnText = container.querySelector("#s-split-btn-text");
+      const emptyView = container.querySelector("#s-empty-view");
+      const loadingView = container.querySelector("#s-loading-view");
+      const loadingProgress = container.querySelector("#s-loading-progress");
+      const resultView = container.querySelector("#s-result-view");
+      const resultBadge = container.querySelector("#s-result-badge");
+      const resultSummary = container.querySelector("#s-result-summary");
+      const previewCanvas = container.querySelector("#s-preview-canvas");
+      const metaFiles = container.querySelector("#s-meta-files");
+      const metaPages = container.querySelector("#s-meta-pages");
+      const metaSize = container.querySelector("#s-meta-size");
+      const downloadBtn = container.querySelector("#s-download-btn");
+      const downloadBtnText = container.querySelector("#s-download-btn-text");
+      function _setViewState(state2) {
+        emptyView.style.display = state2 === "empty" ? "flex" : "none";
+        loadingView.style.display = state2 === "loading" ? "flex" : "none";
+        resultView.style.display = state2 === "result" ? "flex" : "none";
+      }
+      function _calcPartitions() {
+        if (_currentNumPages <= 0) return [];
+        if (_currentMode === "all") {
+          const parts2 = [];
+          for (let i = 0; i < _currentNumPages; i++) {
+            parts2.push({ label: `pag_${i + 1}`, indices: [i] });
+          }
+          return parts2;
+        }
+        if (_currentMode === "every") {
+          const n = Math.max(1, parseInt(everyInput.value, 10) || 1);
+          const parts2 = [];
+          for (let i = 0; i < _currentNumPages; i += n) {
+            const end = Math.min(i + n, _currentNumPages);
+            const indices = [];
+            for (let k = i; k < end; k++) indices.push(k);
+            parts2.push({ label: `pg${i + 1}-${end}`, indices });
+          }
+          return parts2;
+        }
+        if (_currentMode === "extract") {
+          const text2 = extractInput.value.trim();
+          if (!text2) return [];
+          const rawItems = text2.split(",");
+          const indicesSet = /* @__PURE__ */ new Set();
+          rawItems.forEach((item) => {
+            const trimmed = item.trim();
+            if (trimmed.includes("-")) {
+              const [s, e] = trimmed.split("-").map((x) => parseInt(x.trim(), 10));
+              if (!isNaN(s) && !isNaN(e)) {
+                const start = Math.max(1, Math.min(s, e));
+                const end = Math.min(_currentNumPages, Math.max(s, e));
+                for (let p = start; p <= end; p++) indicesSet.add(p - 1);
+              }
+            } else {
+              const p = parseInt(trimmed, 10);
+              if (!isNaN(p) && p >= 1 && p <= _currentNumPages) {
+                indicesSet.add(p - 1);
+              }
+            }
+          });
+          const sorted = Array.from(indicesSet).sort((a, b) => a - b);
+          if (sorted.length === 0) return [];
+          return [{ label: "paginas_selecionadas", indices: sorted }];
+        }
+        const text = rangesInput.value.trim();
+        if (!text) return [];
+        const chunks = text.split(",");
+        const parts = [];
+        chunks.forEach((chk, idx) => {
+          const trimmed = chk.trim();
+          if (!trimmed) return;
+          if (trimmed.includes("-")) {
+            const [s, e] = trimmed.split("-").map((x) => parseInt(x.trim(), 10));
+            if (!isNaN(s) && !isNaN(e)) {
+              const start = Math.max(1, Math.min(s, e));
+              const end = Math.min(_currentNumPages, Math.max(s, e));
+              const indices = [];
+              for (let p = start; p <= end; p++) indices.push(p - 1);
+              if (indices.length > 0) parts.push({ label: `parte_${idx + 1}_pg${start}-${end}`, indices });
+            }
+          } else {
+            const p = parseInt(trimmed, 10);
+            if (!isNaN(p) && p >= 1 && p <= _currentNumPages) {
+              parts.push({ label: `parte_${idx + 1}_pg${p}`, indices: [p - 1] });
+            }
+          }
+        });
+        return parts;
+      }
+      function _updateSummary() {
+        sumOrigPages.textContent = _currentNumPages > 0 ? `${_currentNumPages} p\xE1ginas` : "0 p\xE1ginas";
+        const parts = _calcPartitions();
+        const count = parts.length;
+        sumOutCount.textContent = `${count} ${count === 1 ? "arquivo" : "arquivos"}`;
+        if (_currentNumPages > 0 && count > 0) {
+          splitBtn.disabled = false;
+          splitBtnText.textContent = count === 1 ? "Extrair PDF Agora" : `Dividir em ${count} PDFs`;
+        } else {
+          splitBtn.disabled = true;
+          splitBtnText.textContent = "Dividir PDF";
+        }
+      }
+      function _switchMode(newMode) {
+        _currentMode = newMode;
+        modeBtns.forEach((btn) => {
+          btn.classList.toggle("pdf-mode-btn--active", btn.dataset.mode === newMode);
+        });
+        paramRanges.style.display = newMode === "ranges" ? "block" : "none";
+        paramExtract.style.display = newMode === "extract" ? "block" : "none";
+        paramAll.style.display = newMode === "all" ? "block" : "none";
+        paramEvery.style.display = newMode === "every" ? "block" : "none";
+        _updateSummary();
+      }
+      async function _handleFile(file) {
+        _currentFile4 = file;
+        _currentArrayBuffer3 = await file.arrayBuffer();
+        filenameEl.textContent = file.name;
+        filesizeEl.textContent = _formatBytes4(file.size);
+        dropPrompt.style.display = "none";
+        fileLoadedBox.style.display = "flex";
+        await _ensureLibs4();
+        const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+        try {
+          const copyBuf = _currentArrayBuffer3.slice(0);
+          let numPgs = 1;
+          if (pdfjsLib) {
+            const task = pdfjsLib.getDocument({ data: copyBuf });
+            const doc = await task.promise;
+            numPgs = doc.numPages;
+            try {
+              const firstPage = await doc.getPage(1);
+              const stageVp = firstPage.getViewport({ scale: 1 });
+              const scale = Math.min(260 / stageVp.width, 230 / stageVp.height);
+              const scaledVp = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
+              previewCanvas.width = scaledVp.width;
+              previewCanvas.height = scaledVp.height;
+              const ctx = previewCanvas.getContext("2d");
+              await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
+            } catch (e) {
+              console.warn("Miniatura preview n\xE3o dispon\xEDvel:", e);
+            }
+          } else {
+            const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
+            if (PDFLib) {
+              const pdfDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+              numPgs = pdfDoc.getPageCount();
+            }
+          }
+          _currentNumPages = numPgs;
+          maxPagesHint.textContent = `Total: ${numPgs} p\xE1gs`;
+          extractHint.textContent = `Total: ${numPgs} p\xE1gs`;
+          if (numPgs === 1) {
+            rangesInput.value = "1";
+            extractInput.value = "1";
+          } else if (numPgs <= 3) {
+            rangesInput.value = `1, 2-${numPgs}`;
+            extractInput.value = "1";
+          } else {
+            const mid = Math.floor(numPgs / 2);
+            rangesInput.value = `1-${mid}, ${mid + 1}-${numPgs}`;
+            extractInput.value = `1, ${numPgs}`;
+          }
+          _updateSummary();
+        } catch (err) {
+          console.error("Erro ao ler PDF:", err);
+          alert("N\xE3o foi poss\xEDvel ler as p\xE1ginas do documento. O arquivo pode estar protegido por senha.");
+          _reset();
+        }
+      }
+      function _reset() {
+        _currentFile4 = null;
+        _currentArrayBuffer3 = null;
+        _currentNumPages = 0;
+        _outputBlob = null;
+        _isZip = false;
+        fileInput.value = "";
+        dropPrompt.style.display = "flex";
+        fileLoadedBox.style.display = "none";
+        maxPagesHint.textContent = "Total: - p\xE1gs";
+        extractHint.textContent = "Total: - p\xE1gs";
+        splitBtn.disabled = true;
+        splitBtnText.textContent = "Dividir PDF";
+        _updateSummary();
+        _setViewState("empty");
+      }
+      async function _doSplit() {
+        const partitions = _calcPartitions();
+        if (!_currentArrayBuffer3 || partitions.length === 0) return;
+        _setViewState("loading");
+        await new Promise((r) => setTimeout(r, 20));
+        await _ensureLibs4();
+        const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
+        const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+        const JSZip = typeof window !== "undefined" && window.JSZip || globalThis.JSZip;
+        if (!PDFLib) {
+          alert("Biblioteca PDFLib n\xE3o dispon\xEDvel.");
+          _setViewState("empty");
+          return;
+        }
+        try {
+          const copyBuf = _currentArrayBuffer3.slice(0);
+          let srcDoc = null;
+          let usePdfJsFallback = false;
+          try {
+            srcDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+          } catch (loadErr) {
+            usePdfJsFallback = true;
+          }
+          const generatedFiles = [];
+          let totalPagesExtracted = 0;
+          const baseName = _currentFile4 ? _currentFile4.name.replace(/\.pdf$/i, "") : "documento";
+          for (let i = 0; i < partitions.length; i++) {
+            const part = partitions[i];
+            if (loadingProgress) {
+              loadingProgress.textContent = `Gerando arquivo ${i + 1} de ${partitions.length} (${part.indices.length} p\xE1g)...`;
+            }
+            const newDoc = await PDFLib.PDFDocument.create();
+            if (!usePdfJsFallback && srcDoc) {
+              const copiedPages = await newDoc.copyPages(srcDoc, part.indices);
+              copiedPages.forEach((p) => newDoc.addPage(p));
+            } else if (pdfjsLib) {
+              const loadingTask = pdfjsLib.getDocument({ data: copyBuf.slice(0) });
+              const jsDoc = await loadingTask.promise;
+              for (const pageIdx of part.indices) {
+                const page = await jsDoc.getPage(pageIdx + 1);
+                const viewport = page.getViewport({ scale: 1.5 });
+                const canvas = document.createElement("canvas");
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const ctx = canvas.getContext("2d");
+                await page.render({ canvasContext: ctx, viewport }).promise;
+                const imgDataUrl = canvas.toDataURL("image/jpeg", 0.9);
+                const bytes = _dataUrlToBytes3(imgDataUrl);
+                const embedded = await newDoc.embedJpg(bytes);
+                const newPage = newDoc.addPage([viewport.width, viewport.height]);
+                newPage.drawImage(embedded, {
+                  x: 0,
+                  y: 0,
+                  width: viewport.width,
+                  height: viewport.height
+                });
+              }
+            }
+            const outBytes = await newDoc.save();
+            const fileName = `${baseName}_${part.label}.pdf`;
+            generatedFiles.push({ name: fileName, bytes: outBytes });
+            totalPagesExtracted += part.indices.length;
+          }
+          if (generatedFiles.length === 1) {
+            _outputBlob = new Blob([generatedFiles[0].bytes], { type: "application/pdf" });
+            _isZip = false;
+            _downloadName = generatedFiles[0].name;
+            resultBadge.textContent = "1 Arquivo Extra\xEDdo";
+            resultSummary.textContent = `${totalPagesExtracted} p\xE1gina(s) extra\xEDda(s)`;
+            downloadBtnText.textContent = "Baixar Documento (.PDF)";
+          } else {
+            if (!JSZip) {
+              throw new Error("Biblioteca JSZip necess\xE1ria para pacote compactado.");
+            }
+            const zip = new JSZip();
+            generatedFiles.forEach((f) => {
+              zip.file(f.name, f.bytes);
+            });
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+            _outputBlob = zipBlob;
+            _isZip = true;
+            _downloadName = `${baseName}_dividido.zip`;
+            resultBadge.textContent = `${generatedFiles.length} Arquivos Gerados`;
+            resultSummary.textContent = `${totalPagesExtracted} p\xE1ginas distribu\xEDdas em ${generatedFiles.length} arquivos`;
+            downloadBtnText.textContent = `Baixar Pacote (${generatedFiles.length} PDFs em .ZIP)`;
+          }
+          metaFiles.textContent = generatedFiles.length;
+          metaPages.textContent = totalPagesExtracted;
+          metaSize.textContent = _formatBytes4(_outputBlob.size);
+          if (pdfjsLib && generatedFiles[0]) {
+            try {
+              const previewTask = pdfjsLib.getDocument({ data: generatedFiles[0].bytes.slice(0) });
+              const previewDoc = await previewTask.promise;
+              const firstPage = await previewDoc.getPage(1);
+              const stageVp = firstPage.getViewport({ scale: 1 });
+              const scale = Math.min(260 / stageVp.width, 230 / stageVp.height);
+              const scaledVp = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
+              previewCanvas.width = scaledVp.width;
+              previewCanvas.height = scaledVp.height;
+              const ctx = previewCanvas.getContext("2d");
+              await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
+            } catch (e) {
+              console.warn("Erro ao renderizar thumbnail gerada:", e);
+            }
+          }
+          _setViewState("result");
+        } catch (err) {
+          console.error("Falha ao dividir PDF:", err);
+          _setViewState("empty");
+          alert("Erro ao processar a divis\xE3o do PDF. Verifique os intervalos informados.");
+        }
+      }
+      _on6(dropzone, "click", (e) => {
+        if (e.target !== removeBtn && !removeBtn?.contains(e.target)) {
+          fileInput.click();
+        }
+      });
+      _on6(dropzone, "keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          fileInput.click();
+        }
+      });
+      _on6(fileInput, "change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) _handleFile(file);
+      });
+      _on6(dropzone, "dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("pdf-drag-over");
+      });
+      _on6(dropzone, "dragleave", () => dropzone.classList.remove("pdf-drag-over"));
+      _on6(dropzone, "drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("pdf-drag-over");
+        const file = e.dataTransfer?.files?.[0];
+        if (file && (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf"))) {
+          _handleFile(file);
+        }
+      });
+      _on6(removeBtn, "click", (e) => {
+        e.stopPropagation();
+        _reset();
+      });
+      modeBtns.forEach((btn) => {
+        _on6(btn, "click", () => {
+          _switchMode(btn.dataset.mode);
+        });
+      });
+      _on6(rangesInput, "input", _updateSummary);
+      _on6(extractInput, "input", _updateSummary);
+      _on6(everyInput, "input", _updateSummary);
+      _on6(splitBtn, "click", _doSplit);
+      _on6(downloadBtn, "click", () => {
+        if (!_outputBlob) return;
+        const url = URL.createObjectURL(_outputBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = _downloadName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 500);
+      });
+      _ensureLibs4().catch((err) => console.warn("Carregamento de bibliotecas PDF:", err));
+    },
+    unmount() {
+      _listeners7.forEach(({ element, event, handler }) => {
+        if (element) element.removeEventListener(event, handler);
+      });
+      _listeners7 = [];
+      _currentFile4 = null;
+      _currentArrayBuffer3 = null;
+      _currentNumPages = 0;
+      _outputBlob = null;
+      _isZip = false;
+    }
+  };
+
   // js/tool-registry.js
   var STORAGE_KEY_ACTIVE_TOOL = "opentool_active_tool";
   var BUILTIN_TOOLS = {
@@ -9239,7 +9924,8 @@ ${footerDelimiter}
     img2vector: tool_default4,
     "pdf-unlock": tool_default5,
     "pdf-compress": tool_default6,
-    "pdf-merge": tool_default7
+    "pdf-merge": tool_default7,
+    "pdf-split": tool_default8
   };
   var _preloadedModules = /* @__PURE__ */ new Map();
   var TOOL_CATALOG = [
@@ -9320,6 +10006,18 @@ ${footerDelimiter}
       <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
       <line x1="12" y1="11" x2="12" y2="17"/>
       <line x1="9" y1="14" x2="15" y2="14"/>
+    </svg>`
+    },
+    {
+      id: "pdf-split",
+      label: "Dividir PDF",
+      description: "Separe p\xE1ginas, extraia intervalos espec\xEDficos ou desmembre cada p\xE1gina em arquivos individuais 100% local",
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="6" cy="6" r="3"/>
+      <circle cx="6" cy="18" r="3"/>
+      <line x1="20" y1="4" x2="8.12" y2="15.88"/>
+      <line x1="14.47" y1="14.48" x2="20" y2="20"/>
+      <line x1="8.12" y1="8.12" x2="12" y2="12"/>
     </svg>`
     }
   ];
