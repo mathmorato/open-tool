@@ -1,8 +1,10 @@
 /**
  * Open Tool — Hub: Todas as Ferramentas (Template HTML)
  * Interface visual inspirada no PDF24 Tools com catálogo em cards modernos
- * @version v.2.0.2
+ * @version v.2.4.3
  */
+
+import { ICONS } from '../../icons.js';
 
 export function getHubHTML(catalog = []) {
   const tools = catalog.filter(t => t.id !== 'hub');
@@ -12,9 +14,7 @@ export function getHubHTML(catalog = []) {
       <!-- Cabeçalho Principal do Hub -->
       <section class="hub-hero">
         <div class="hub-hero-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
+          ${ICONS.shield(14)}
           Plataforma 100% Local &amp; Segura
         </div>
         <h1 class="hub-hero-title">Todas as Ferramentas Open Tool</h1>
@@ -68,9 +68,7 @@ export function getHubHTML(catalog = []) {
                 <ul class="hub-card-features">
                   ${features.map(f => `
                     <li>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
+                      ${ICONS.check(14)}
                       <span>${f}</span>
                     </li>
                   `).join('')}
@@ -80,10 +78,7 @@ export function getHubHTML(catalog = []) {
               <div class="hub-card-action">
                 <button type="button" class="btn btn-primary hub-card-btn" data-open-tool="${tool.id}">
                   <span>Abrir Ferramenta</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                    <polyline points="12 5 19 12 12 19"/>
-                  </svg>
+                  ${ICONS.arrowRight(16)}
                 </button>
               </div>
             </article>
@@ -94,10 +89,7 @@ export function getHubHTML(catalog = []) {
         <article class="hub-card hub-card--extensible" title="Arquitetura modular aberta para novas ferramentas">
           <div class="hub-card-top">
             <div class="hub-card-icon-wrap hub-card-icon-wrap--dashed" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
+              ${ICONS.plus(20)}
             </div>
             <span class="hub-card-badge hub-card-badge--neutral">MODULAR</span>
           </div>

@@ -705,7 +705,9 @@ export default {
     _on(zoomIn, 'click', () => _setZoom(_currentZoom + 0.2));
     _on(zoomOut, 'click', () => _setZoom(_currentZoom - 0.2));
 
-    // Exportação
+    // Exportação e Limpeza
+    const clearBtn = container.querySelector('#v-clear-btn');
+    if (clearBtn) _on(clearBtn, 'click', _resetFile);
     _on(downloadSvg, 'click', _downloadSvgFile);
     _on(copySvg, 'click', _copySvgCode);
 

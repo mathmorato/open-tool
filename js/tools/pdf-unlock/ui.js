@@ -1,8 +1,10 @@
 /**
  * Open Tool — Ferramenta: Desbloquear PDF (pdf-unlock) — Template HTML
  * Inspirado em fadeltd/pdfunlock e Stirling-PDF (100% Client-Side).
- * @version v.2.3.0
+ * @version v.2.4.3
  */
+
+import { ICONS } from '../../icons.js';
 
 export function getPdfUnlockHTML() {
   return `
@@ -11,10 +13,7 @@ export function getPdfUnlockHTML() {
       <section class="pdf-tool-hero">
         <header class="hero-header">
           <div class="pdf-tool-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-            </svg>
+            ${ICONS.unlock(12)}
             Desbloqueio Criptográfico Local
           </div>
           <h2 class="hero-title">Desbloquear PDF</h2>
@@ -34,12 +33,7 @@ export function getPdfUnlockHTML() {
             <input type="file" id="u-file-input" accept="application/pdf,.pdf" class="pdf-hidden-input">
             <div class="pdf-dropzone-content" id="u-dropzone-prompt">
               <div class="pdf-dropzone-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                </svg>
+                ${ICONS.filePdf(22)}
               </div>
               <div class="pdf-dropzone-text">
                 <p class="pdf-dropzone-title">Arraste um PDF ou <span class="pdf-link">selecione</span></p>
@@ -54,11 +48,8 @@ export function getPdfUnlockHTML() {
                 <span class="pdf-filename" id="u-filename">documento.pdf</span>
                 <span class="pdf-filesize" id="u-filesize">0 KB</span>
               </div>
-              <button type="button" class="pdf-remove-btn" id="u-remove-btn" title="Trocar arquivo">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+              <button type="button" class="pdf-remove-btn" id="u-remove-btn" title="Remover e trocar arquivo">
+                ${ICONS.x(14)}
               </button>
             </div>
           </div>
@@ -67,10 +58,7 @@ export function getPdfUnlockHTML() {
           <div class="pdf-status-card" id="u-status-card">
             <div class="pdf-status-header">
               <div class="pdf-status-title-wrap">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pdf-status-icon">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
+                <span class="pdf-status-icon">${ICONS.lock(16)}</span>
                 <span class="pdf-status-title">Status da Criptografia</span>
               </div>
               <span class="pdf-badge" id="u-lock-badge">Aguardando Arquivo</span>
@@ -86,23 +74,23 @@ export function getPdfUnlockHTML() {
             <div class="pdf-password-wrap">
               <input type="password" id="u-password-input" class="pdf-input" placeholder="Digite a senha do PDF...">
               <button type="button" id="u-toggle-pwd-btn" class="pdf-pwd-toggle" title="Exibir/ocultar senha">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
+                ${ICONS.eye(16)}
               </button>
             </div>
             <span class="pdf-hint">A senha será testada exclusivamente no seu navegador para descriptografar os streams.</span>
           </div>
 
-          <!-- Botão Principal de Desbloqueio -->
-          <button type="button" id="u-unlock-btn" class="pdf-primary-btn" disabled>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-            </svg>
-            <span id="u-unlock-btn-text">Desbloquear PDF</span>
-          </button>
+          <!-- Ações de Entrada: Limpar e Desbloquear -->
+          <div class="pdf-controls-actions" id="u-controls-actions">
+            <button type="button" id="u-clear-input-btn" class="pdf-secondary-btn" style="display: none;" title="Limpar arquivo e carregar outro">
+              ${ICONS.trash(15)}
+              <span>Limpar</span>
+            </button>
+            <button type="button" id="u-unlock-btn" class="pdf-primary-btn" disabled>
+              ${ICONS.unlock(16)}
+              <span id="u-unlock-btn-text">Desbloquear PDF</span>
+            </button>
+          </div>
 
         </div>
 
@@ -112,10 +100,7 @@ export function getPdfUnlockHTML() {
           <!-- Estado Vazio -->
           <div class="pdf-empty-view" id="u-empty-view">
             <div class="pdf-empty-illustration">
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-              </svg>
+              ${ICONS.unlock(44)}
             </div>
             <h3 class="pdf-empty-title">Nenhum PDF processado</h3>
             <p class="pdf-empty-desc">Carregue um arquivo PDF protegido para visualizar a prévia da página e remover as restrições.</p>
@@ -171,22 +156,19 @@ export function getPdfUnlockHTML() {
               </div>
             </div>
 
-            <!-- Ações de Download e Cópia -->
+            <!-- Ações de Download, Cópia e Limpeza para Novo Arquivo -->
             <div class="pdf-actions-bar">
+              <button type="button" id="u-result-clear-btn" class="pdf-export-btn pdf-export-btn--secondary" title="Limpar e desbloquear outro PDF">
+                ${ICONS.refresh(15)}
+                <span>Novo PDF</span>
+              </button>
               <button type="button" id="u-copy-text-btn" class="pdf-export-btn pdf-export-btn--secondary" title="Copiar todo o texto do PDF">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
+                ${ICONS.copy(15)}
                 <span id="u-copy-btn-text">Copiar Texto</span>
               </button>
-              <button type="button" id="u-download-btn" class="pdf-export-btn pdf-export-btn--primary">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                Baixar PDF Desbloqueado
+              <button type="button" id="u-download-btn" class="pdf-export-btn pdf-export-btn--primary" title="Baixar arquivo PDF totalmente desbloqueado">
+                ${ICONS.download(15)}
+                <span>Baixar PDF</span>
               </button>
             </div>
 

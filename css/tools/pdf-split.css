@@ -233,8 +233,92 @@
   stroke: #94A3B8 !important;
 }
 
+/* ── Controles de Ação (Limpar e Dividir) ────────────────────────────────── */
+.pdf-split-root .pdf-controls-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: auto;
+}
+
+.pdf-split-root .pdf-controls-actions .pdf-action-cta {
+  flex: 1;
+}
+
+.pdf-split-root .pdf-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.6875rem 1rem;
+  background: var(--surface-input, var(--bg-primary));
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pdf-split-root .pdf-secondary-btn svg {
+  color: var(--text-secondary);
+  stroke: var(--text-secondary);
+  transition: stroke 0.2s;
+}
+
+.pdf-split-root .pdf-secondary-btn:hover {
+  background: var(--surface-card);
+  border-color: var(--error, #ef4444);
+  color: var(--error, #ef4444);
+}
+
+.pdf-split-root .pdf-secondary-btn:hover svg {
+  color: var(--error, #ef4444);
+  stroke: var(--error, #ef4444);
+}
+
+.pdf-split-root .pdf-result-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: auto;
+}
+
+.pdf-split-root .pdf-result-actions button {
+  flex: 1;
+}
+
+.pdf-split-root .pdf-export-btn--secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.6875rem 1rem;
+  background: var(--surface-input, var(--bg-primary));
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pdf-split-root .pdf-export-btn--secondary:hover {
+  background: var(--surface-card);
+  border-color: var(--blue-primary, #2563EB);
+  color: var(--blue-primary, #2563EB);
+}
+
 @media (max-width: 768px) {
   .pdf-mode-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+

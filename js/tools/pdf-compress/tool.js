@@ -90,6 +90,8 @@ export default {
     const qualityVal      = container.querySelector('#c-quality-val');
 
     const compressBtn     = container.querySelector('#c-compress-btn');
+    const clearInputBtn   = container.querySelector('#c-clear-input-btn');
+    const resultClearBtn  = container.querySelector('#c-result-clear-btn');
 
     const emptyView       = container.querySelector('#c-empty-view');
     const loadingView     = container.querySelector('#c-loading-view');
@@ -141,6 +143,7 @@ export default {
       dropPrompt.style.display = 'none';
       fileLoadedBox.style.display = 'flex';
       compressBtn.disabled = false;
+      if (clearInputBtn) clearInputBtn.style.display = 'inline-flex';
     }
 
     function _reset() {
@@ -152,6 +155,7 @@ export default {
       dropPrompt.style.display = 'flex';
       fileLoadedBox.style.display = 'none';
       compressBtn.disabled = true;
+      if (clearInputBtn) clearInputBtn.style.display = 'none';
 
       _setViewState('empty');
     }
@@ -343,6 +347,8 @@ export default {
     });
 
     _on(compressBtn, 'click', _doCompress);
+    if (clearInputBtn) _on(clearInputBtn, 'click', _reset);
+    if (resultClearBtn) _on(resultClearBtn, 'click', _reset);
 
     _on(downloadBtn, 'click', () => {
       if (!_compressedPdfBlob) return;

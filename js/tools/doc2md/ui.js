@@ -5,6 +5,8 @@
  * @version v.2.0.0
  */
 
+import { ICONS } from '../../icons.js';
+
 export function getDoc2mdHTML() {
   return `
     <div class="doc2md-tool-root">
@@ -23,11 +25,7 @@ export function getDoc2mdHTML() {
         <div class="dropzone-container">
           <label for="file-input" class="dropzone" id="dropzone" tabindex="0">
             <div class="dropzone-icon dropzone-icon-wrap" aria-hidden="true">
-              <svg class="upload-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
+              ${ICONS.upload(28, 'upload-icon-svg')}
             </div>
 
             <p class="dropzone-main-text dropzone-prompt">
@@ -35,11 +33,7 @@ export function getDoc2mdHTML() {
             </p>
 
             <button type="button" id="btn-browse" class="btn btn-primary btn-browse">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
+              ${ICONS.upload(16)}
               Selecionar Arquivo do Computador
             </button>
 
@@ -93,13 +87,7 @@ export function getDoc2mdHTML() {
             <div class="queue-header-main">
               <div class="file-queue-title-wrap queue-header-title">
                 <div class="file-queue-icon icon-queue" aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
-                  </svg>
+                  ${ICONS.fileText(18)}
                 </div>
                 <h3 class="file-queue-title">
                   Fila de Documentos
@@ -116,19 +104,11 @@ export function getDoc2mdHTML() {
 
                 <div class="queue-buttons-group queue-static-buttons">
                   <button type="button" id="btn-queue-download-all" class="btn btn-secondary btn-sm" title="Baixar todos os documentos convertidos em arquivo .zip">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                      <polyline points="7 10 12 15 17 10"/>
-                      <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
+                    ${ICONS.download(14)}
                     Baixar Todos (.zip)
                   </button>
                   <button type="button" id="btn-queue-clear" class="btn btn-ghost btn-sm" title="Limpar todos os arquivos da fila">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 6h18"/>
-                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                    </svg>
+                    ${ICONS.trash(14)}
                     Limpar Todos
                   </button>
                 </div>
@@ -160,12 +140,7 @@ export function getDoc2mdHTML() {
               </div>
               <button type="button" id="btn-download-unified" class="btn btn-primary btn-sm btn-unified btn-unified-pulse btn-queue-download-merged" title="Baixar todos os documentos mesclados em um único arquivo .md">
                 <span class="icon-merge">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="12" y1="18" x2="12" y2="12"/>
-                    <polyline points="9 15 12 18 15 15"/>
-                  </svg>
+                  ${ICONS.download(14)}
                 </span>
                 Baixar Markdown Unificado (.md)
               </button>
@@ -173,12 +148,7 @@ export function getDoc2mdHTML() {
               <!-- CARD DE TELEMETRIA DE TOTAL DE BYTES DO MD -->
               <div id="queue-total-bytes-card" class="queue-total-bytes-card">
                 <span class="total-bytes-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                  </svg>
+                  ${ICONS.fileText(16)}
                 </span>
                 <span class="total-bytes-label">Tamanho do MD:</span>
                 <span class="total-bytes-values">

@@ -102,6 +102,8 @@ export default {
     const sumOutCount     = container.querySelector('#s-sum-out-count');
     const splitBtn        = container.querySelector('#s-split-btn');
     const splitBtnText    = container.querySelector('#s-split-btn-text');
+    const clearInputBtn   = container.querySelector('#s-clear-input-btn');
+    const resultClearBtn  = container.querySelector('#s-result-clear-btn');
 
     const emptyView       = container.querySelector('#s-empty-view');
     const loadingView     = container.querySelector('#s-loading-view');
@@ -255,6 +257,7 @@ export default {
       filesizeEl.textContent = _formatBytes(file.size);
       dropPrompt.style.display = 'none';
       fileLoadedBox.style.display = 'flex';
+      if (clearInputBtn) clearInputBtn.style.display = 'inline-flex';
 
       await _ensureLibs();
       const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
@@ -326,6 +329,7 @@ export default {
       fileInput.value = '';
       dropPrompt.style.display = 'flex';
       fileLoadedBox.style.display = 'none';
+      if (clearInputBtn) clearInputBtn.style.display = 'none';
 
       maxPagesHint.textContent = 'Total: - págs';
       extractHint.textContent = 'Total: - págs';
@@ -538,6 +542,8 @@ export default {
     _on(everyInput, 'input', _updateSummary);
 
     _on(splitBtn, 'click', _doSplit);
+    if (clearInputBtn) _on(clearInputBtn, 'click', _reset);
+    if (resultClearBtn) _on(resultClearBtn, 'click', _reset);
 
     _on(downloadBtn, 'click', () => {
       if (!_outputBlob) return;

@@ -3,6 +3,8 @@
  * @version v.2.0.0
  */
 
+import { ICONS } from '../../icons.js';
+
 export function getQRCodeHTML() {
   return `
     <div class="qrcode-tool-root">
@@ -25,17 +27,11 @@ export function getQRCodeHTML() {
           <div class="qrcode-field-group">
             <div class="qrcode-label-row">
               <label class="qrcode-label" for="qr-input">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                </svg>
+                ${ICONS.link(15)}
                 URL ou texto
               </label>
               <button type="button" id="qr-paste-btn" class="qrcode-paste-btn" title="Colar link ou texto da área de transferência">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                </svg>
+                ${ICONS.clipboard(13)}
                 <span>Colar</span>
               </button>
             </div>
@@ -135,15 +131,8 @@ export function getQRCodeHTML() {
 
           <!-- Botão gerar -->
           <button id="qr-generate-btn" class="btn btn-primary qrcode-generate-btn" disabled>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="3" y="3" width="7" height="7" rx="1"/>
-              <rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/>
-              <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-              <rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-              <rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/>
-            </svg>
-            Gerar QR Code
+            ${ICONS.toolQrcode(16)}
+            <span>Gerar QR Code</span>
           </button>
 
         </div>
@@ -154,18 +143,7 @@ export function getQRCodeHTML() {
           <!-- Estado vazio -->
           <div id="qr-empty-state" class="qrcode-empty-state">
             <div class="qrcode-empty-icon" aria-hidden="true">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.3">
-                <rect x="3" y="3" width="7" height="7" rx="1"/>
-                <rect x="14" y="3" width="7" height="7" rx="1"/>
-                <rect x="3" y="14" width="7" height="7" rx="1"/>
-                <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-                <rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-                <rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/>
-                <path d="M14 14h3v3h-3z" fill="currentColor" stroke="none"/>
-                <path d="M17 17h4"/>
-                <path d="M17 21v-4"/>
-                <path d="M21 17v4"/>
-              </svg>
+              ${ICONS.toolQrcode(56)}
             </div>
             <p class="qrcode-empty-text">Digite uma URL ou texto e clique em <strong>Gerar QR Code</strong></p>
           </div>
@@ -204,29 +182,23 @@ export function getQRCodeHTML() {
 
             <!-- Ações de exportação -->
             <div class="qrcode-actions-row">
+              <button id="qr-clear-btn" class="btn btn-ghost qrcode-action-btn" title="Limpar e criar novo QR Code">
+                ${ICONS.refresh(14)}
+                Limpar
+              </button>
+
               <button id="qr-download-png" class="btn btn-primary qrcode-action-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
+                ${ICONS.download(14)}
                 Baixar PNG
               </button>
 
               <button id="qr-download-svg" class="btn btn-secondary qrcode-action-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
+                ${ICONS.download(14)}
                 Baixar SVG
               </button>
 
               <button id="qr-copy-clipboard" class="btn btn-ghost qrcode-action-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <rect x="9" y="9" width="13" height="13" rx="2"/>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
+                ${ICONS.copy(14)}
                 Copiar Imagem
               </button>
             </div>

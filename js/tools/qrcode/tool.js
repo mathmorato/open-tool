@@ -384,7 +384,20 @@ const tool = {
     // Botão gerar
     _on(generateBtn, 'click', _generate);
 
-    // Exportação
+    // Exportação e Limpeza
+    const clearBtn = container.querySelector('#qr-clear-btn');
+    if (clearBtn) {
+      _on(clearBtn, 'click', () => {
+        inputEl.value = '';
+        charCountEl.textContent = '0';
+        urlFeedbackEl.textContent = '';
+        generateBtn.disabled = true;
+        _lastQr = null;
+        _setState('empty');
+        inputEl.focus();
+      });
+    }
+
     _on(downloadPng,   'click', _downloadPng);
     _on(downloadSvg,   'click', _downloadSvg);
     _on(copyClipboard, 'click', _copyToClipboard);

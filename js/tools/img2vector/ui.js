@@ -4,6 +4,8 @@
  * @version v.2.1.0
  */
 
+import { ICONS } from '../../icons.js';
+
 export function getImageToVectorHTML() {
   return `
     <div class="img2vector-tool-root">
@@ -11,11 +13,7 @@ export function getImageToVectorHTML() {
       <section class="img2vector-hero">
         <header class="hero-header">
           <div class="img2vector-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-              <polyline points="2 17 12 22 22 17"></polyline>
-              <polyline points="2 12 12 17 22 12"></polyline>
-            </svg>
+            ${ICONS.toolVector(12)}
             Vetorização Curvas Bézier
           </div>
           <h2 class="hero-title">Image to Vector</h2>
@@ -35,11 +33,7 @@ export function getImageToVectorHTML() {
             <input type="file" id="v-file-input" accept="image/png,image/jpeg,image/webp,image/bmp,image/gif" class="v-hidden-input">
             <div class="v-dropzone-content" id="v-dropzone-prompt">
               <div class="v-dropzone-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
+                ${ICONS.image(22)}
               </div>
               <div class="v-dropzone-text">
                 <p class="v-dropzone-title">Arraste uma imagem ou <span class="v-link">selecione</span></p>
@@ -55,10 +49,7 @@ export function getImageToVectorHTML() {
                 <span class="v-filesize" id="v-filesize">0 KB</span>
               </div>
               <button type="button" class="v-remove-btn" id="v-remove-btn" title="Trocar imagem">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+                ${ICONS.x(14)}
               </button>
             </div>
           </div>
@@ -180,11 +171,7 @@ export function getImageToVectorHTML() {
 
           <!-- Botão Principal de Conversão -->
           <button type="button" id="v-convert-btn" class="img2vector-primary-btn" disabled>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-              <polyline points="2 17 12 22 22 17"></polyline>
-              <polyline points="2 12 12 17 22 12"></polyline>
-            </svg>
+            ${ICONS.toolVector(18)}
             <span>Vetorizar Imagem para SVG</span>
           </button>
         </div>
@@ -195,11 +182,7 @@ export function getImageToVectorHTML() {
           <!-- Estado Vazio -->
           <div class="v-empty-view" id="v-empty-view">
             <div class="v-empty-illustration">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                <polyline points="2 17 12 22 22 17"></polyline>
-                <polyline points="2 12 12 17 22 12"></polyline>
-              </svg>
+              ${ICONS.toolVector(48)}
             </div>
             <h3 class="v-empty-title">Nenhum vetor gerado</h3>
             <p class="v-empty-desc">Carregue uma imagem rasterizada e clique em "Vetorizar Imagem para SVG" para visualizar o resultado.</p>
@@ -266,22 +249,20 @@ export function getImageToVectorHTML() {
               </div>
             </div>
 
-            <!-- Ações de Exportação -->
+            <!-- Ações de Exportação e Limpeza -->
             <div class="v-actions-bar">
+              <button type="button" id="v-clear-btn" class="v-export-btn v-export-btn--secondary" title="Limpar e vetorizar outra imagem">
+                ${ICONS.refresh(15)}
+                Nova Imagem
+              </button>
+
               <button type="button" id="v-download-svg" class="v-export-btn v-export-btn--primary">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
+                ${ICONS.download(15)}
                 Baixar SVG
               </button>
 
               <button type="button" id="v-copy-svg" class="v-export-btn v-export-btn--secondary">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
+                ${ICONS.copy(15)}
                 Copiar Código SVG
               </button>
             </div>

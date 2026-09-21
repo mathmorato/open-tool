@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.4.2",
+    VERSION: "v.2.4.3",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -2861,6 +2861,193 @@
     return APP_CONFIG.CONCURRENCY?.DEFAULT || 4;
   }
 
+  // js/icons.js
+  var ICONS = {
+    // Ações Universais
+    trash: (size = 15, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M3 6h18"/>
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+      <line x1="10" y1="11" x2="10" y2="17"/>
+      <line x1="14" y1="11" x2="14" y2="17"/>
+    </svg>`,
+    x: (size = 14, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>`,
+    refresh: (size = 15, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+      <path d="M3 3v5h5"/>
+    </svg>`,
+    download: (size = 15, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>`,
+    copy: (size = 15, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    </svg>`,
+    link: (size = 15, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+    </svg>`,
+    clipboard: (size = 15, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+    </svg>`,
+    palette: (size = 15, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+      <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+      <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+      <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+    </svg>`,
+    check: (size = 14, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>`,
+    plus: (size = 15, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>`,
+    upload: (size = 20, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="17 8 12 3 7 8"/>
+      <line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>`,
+    // Criptografia e Segurança
+    lock: (size = 16, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>`,
+    unlock: (size = 16, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+    </svg>`,
+    eye: (size = 16, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>`,
+    shield: (size = 14, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>`,
+    // Arquivos e Conteúdo
+    fileText: (size = 20, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>`,
+    filePdf: (size = 20, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="9" y1="13" x2="15" y2="13"/>
+      <line x1="9" y1="17" x2="13" y2="17"/>
+    </svg>`,
+    image: (size = 20, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+      <circle cx="8.5" cy="8.5" r="1.5"/>
+      <polyline points="21 15 16 10 5 21"/>
+    </svg>`,
+    // Ferramentas Navbar & Hub (100% Linear)
+    toolHub: (size = 18, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+    </svg>`,
+    toolDoc2md: (size = 18, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+    </svg>`,
+    toolQrcode: (size = 18, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <rect x="3" y="3" width="7" height="7" rx="1"/>
+      <rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/>
+      <line x1="14" y1="14" x2="14" y2="14.01"/>
+      <line x1="17" y1="14" x2="20" y2="14"/>
+      <line x1="14" y1="17" x2="14" y2="20"/>
+      <line x1="20" y1="17" x2="20" y2="20"/>
+      <line x1="17" y1="20" x2="20" y2="20"/>
+    </svg>`,
+    toolVector: (size = 18, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+      <polyline points="2 17 12 22 22 17"/>
+      <polyline points="2 12 12 17 22 12"/>
+    </svg>`,
+    toolUnlock: (size = 18, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+    </svg>`,
+    toolCompress: (size = 18, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <polyline points="4 14 10 14 10 20"/>
+      <polyline points="20 10 14 10 14 4"/>
+      <line x1="14" y1="10" x2="21" y2="3"/>
+      <line x1="3" y1="21" x2="10" y2="14"/>
+    </svg>`,
+    toolMerge: (size = 18, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+      <line x1="12" y1="11" x2="12" y2="17"/>
+      <line x1="9" y1="14" x2="15" y2="14"/>
+    </svg>`,
+    toolSplit: (size = 18, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <circle cx="6" cy="6" r="3"/>
+      <circle cx="6" cy="18" r="3"/>
+      <line x1="20" y1="4" x2="8.12" y2="15.88"/>
+      <line x1="14.47" y1="14.48" x2="20" y2="20"/>
+      <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+    </svg>`,
+    arrowRight: (size = 16, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <line x1="5" y1="12" x2="19" y2="12"/>
+      <polyline points="12 5 19 12 12 19"/>
+    </svg>`,
+    sun: (size = 18, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2"/>
+      <path d="M12 20v2"/>
+      <path d="m4.93 4.93 1.41 1.41"/>
+      <path d="m17.66 17.66 1.41 1.41"/>
+      <path d="M2 12h2"/>
+      <path d="M20 12h2"/>
+      <path d="m6.34 17.66-1.41 1.41"/>
+      <path d="m19.07 4.93-1.41 1.41"/>
+    </svg>`,
+    moon: (size = 18, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+    </svg>`
+  };
+
   // js/tools/doc2md/ui.js
   function getDoc2mdHTML() {
     return `
@@ -2880,11 +3067,7 @@
         <div class="dropzone-container">
           <label for="file-input" class="dropzone" id="dropzone" tabindex="0">
             <div class="dropzone-icon dropzone-icon-wrap" aria-hidden="true">
-              <svg class="upload-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
+              ${ICONS.upload(28, "upload-icon-svg")}
             </div>
 
             <p class="dropzone-main-text dropzone-prompt">
@@ -2892,11 +3075,7 @@
             </p>
 
             <button type="button" id="btn-browse" class="btn btn-primary btn-browse">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
+              ${ICONS.upload(16)}
               Selecionar Arquivo do Computador
             </button>
 
@@ -2950,13 +3129,7 @@
             <div class="queue-header-main">
               <div class="file-queue-title-wrap queue-header-title">
                 <div class="file-queue-icon icon-queue" aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
-                  </svg>
+                  ${ICONS.fileText(18)}
                 </div>
                 <h3 class="file-queue-title">
                   Fila de Documentos
@@ -2973,19 +3146,11 @@
 
                 <div class="queue-buttons-group queue-static-buttons">
                   <button type="button" id="btn-queue-download-all" class="btn btn-secondary btn-sm" title="Baixar todos os documentos convertidos em arquivo .zip">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                      <polyline points="7 10 12 15 17 10"/>
-                      <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
+                    ${ICONS.download(14)}
                     Baixar Todos (.zip)
                   </button>
                   <button type="button" id="btn-queue-clear" class="btn btn-ghost btn-sm" title="Limpar todos os arquivos da fila">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M3 6h18"/>
-                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                    </svg>
+                    ${ICONS.trash(14)}
                     Limpar Todos
                   </button>
                 </div>
@@ -3017,12 +3182,7 @@
               </div>
               <button type="button" id="btn-download-unified" class="btn btn-primary btn-sm btn-unified btn-unified-pulse btn-queue-download-merged" title="Baixar todos os documentos mesclados em um \xFAnico arquivo .md">
                 <span class="icon-merge">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="12" y1="18" x2="12" y2="12"/>
-                    <polyline points="9 15 12 18 15 15"/>
-                  </svg>
+                  ${ICONS.download(14)}
                 </span>
                 Baixar Markdown Unificado (.md)
               </button>
@@ -3030,12 +3190,7 @@
               <!-- CARD DE TELEMETRIA DE TOTAL DE BYTES DO MD -->
               <div id="queue-total-bytes-card" class="queue-total-bytes-card">
                 <span class="total-bytes-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                  </svg>
+                  ${ICONS.fileText(16)}
                 </span>
                 <span class="total-bytes-label">Tamanho do MD:</span>
                 <span class="total-bytes-values">
@@ -6276,17 +6431,11 @@ ${footerDelimiter}
           <div class="qrcode-field-group">
             <div class="qrcode-label-row">
               <label class="qrcode-label" for="qr-input">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                </svg>
+                ${ICONS.link(15)}
                 URL ou texto
               </label>
               <button type="button" id="qr-paste-btn" class="qrcode-paste-btn" title="Colar link ou texto da \xE1rea de transfer\xEAncia">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                </svg>
+                ${ICONS.clipboard(13)}
                 <span>Colar</span>
               </button>
             </div>
@@ -6386,15 +6535,8 @@ ${footerDelimiter}
 
           <!-- Bot\xE3o gerar -->
           <button id="qr-generate-btn" class="btn btn-primary qrcode-generate-btn" disabled>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="3" y="3" width="7" height="7" rx="1"/>
-              <rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/>
-              <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-              <rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-              <rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/>
-            </svg>
-            Gerar QR Code
+            ${ICONS.toolQrcode(16)}
+            <span>Gerar QR Code</span>
           </button>
 
         </div>
@@ -6405,18 +6547,7 @@ ${footerDelimiter}
           <!-- Estado vazio -->
           <div id="qr-empty-state" class="qrcode-empty-state">
             <div class="qrcode-empty-icon" aria-hidden="true">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.3">
-                <rect x="3" y="3" width="7" height="7" rx="1"/>
-                <rect x="14" y="3" width="7" height="7" rx="1"/>
-                <rect x="3" y="14" width="7" height="7" rx="1"/>
-                <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-                <rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-                <rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/>
-                <path d="M14 14h3v3h-3z" fill="currentColor" stroke="none"/>
-                <path d="M17 17h4"/>
-                <path d="M17 21v-4"/>
-                <path d="M21 17v4"/>
-              </svg>
+              ${ICONS.toolQrcode(56)}
             </div>
             <p class="qrcode-empty-text">Digite uma URL ou texto e clique em <strong>Gerar QR Code</strong></p>
           </div>
@@ -6455,29 +6586,23 @@ ${footerDelimiter}
 
             <!-- A\xE7\xF5es de exporta\xE7\xE3o -->
             <div class="qrcode-actions-row">
+              <button id="qr-clear-btn" class="btn btn-ghost qrcode-action-btn" title="Limpar e criar novo QR Code">
+                ${ICONS.refresh(14)}
+                Limpar
+              </button>
+
               <button id="qr-download-png" class="btn btn-primary qrcode-action-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
+                ${ICONS.download(14)}
                 Baixar PNG
               </button>
 
               <button id="qr-download-svg" class="btn btn-secondary qrcode-action-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" y1="15" x2="12" y2="3"/>
-                </svg>
+                ${ICONS.download(14)}
                 Baixar SVG
               </button>
 
               <button id="qr-copy-clipboard" class="btn btn-ghost qrcode-action-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <rect x="9" y="9" width="13" height="13" rx="2"/>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
+                ${ICONS.copy(14)}
                 Copiar Imagem
               </button>
             </div>
@@ -6781,6 +6906,18 @@ ${footerDelimiter}
       _on(colorBgEl, "input", () => _syncColorFromPicker(colorBgEl, colorBgHexEl, colorBgPrev));
       _on(colorBgHexEl, "input", () => _syncColorFromHex(colorBgHexEl, colorBgEl, colorBgPrev));
       _on(generateBtn, "click", _generate);
+      const clearBtn = container.querySelector("#qr-clear-btn");
+      if (clearBtn) {
+        _on(clearBtn, "click", () => {
+          inputEl.value = "";
+          charCountEl.textContent = "0";
+          urlFeedbackEl.textContent = "";
+          generateBtn.disabled = true;
+          _lastQr = null;
+          _setState("empty");
+          inputEl.focus();
+        });
+      }
       _on(downloadPng, "click", _downloadPng);
       _on(downloadSvg, "click", _downloadSvg);
       _on(copyClipboard, "click", _copyToClipboard);
@@ -6812,9 +6949,7 @@ ${footerDelimiter}
       <!-- Cabe\xE7alho Principal do Hub -->
       <section class="hub-hero">
         <div class="hub-hero-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
+          ${ICONS.shield(14)}
           Plataforma 100% Local &amp; Segura
         </div>
         <h1 class="hub-hero-title">Todas as Ferramentas Open Tool</h1>
@@ -6866,9 +7001,7 @@ ${footerDelimiter}
                 <ul class="hub-card-features">
                   ${features.map((f) => `
                     <li>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
+                      ${ICONS.check(14)}
                       <span>${f}</span>
                     </li>
                   `).join("")}
@@ -6878,10 +7011,7 @@ ${footerDelimiter}
               <div class="hub-card-action">
                 <button type="button" class="btn btn-primary hub-card-btn" data-open-tool="${tool4.id}">
                   <span>Abrir Ferramenta</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                    <polyline points="12 5 19 12 12 19"/>
-                  </svg>
+                  ${ICONS.arrowRight(16)}
                 </button>
               </div>
             </article>
@@ -6892,10 +7022,7 @@ ${footerDelimiter}
         <article class="hub-card hub-card--extensible" title="Arquitetura modular aberta para novas ferramentas">
           <div class="hub-card-top">
             <div class="hub-card-icon-wrap hub-card-icon-wrap--dashed" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
+              ${ICONS.plus(20)}
             </div>
             <span class="hub-card-badge hub-card-badge--neutral">MODULAR</span>
           </div>
@@ -6979,11 +7106,7 @@ ${footerDelimiter}
       <section class="img2vector-hero">
         <header class="hero-header">
           <div class="img2vector-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-              <polyline points="2 17 12 22 22 17"></polyline>
-              <polyline points="2 12 12 17 22 12"></polyline>
-            </svg>
+            ${ICONS.toolVector(12)}
             Vetoriza\xE7\xE3o Curvas B\xE9zier
           </div>
           <h2 class="hero-title">Image to Vector</h2>
@@ -7003,11 +7126,7 @@ ${footerDelimiter}
             <input type="file" id="v-file-input" accept="image/png,image/jpeg,image/webp,image/bmp,image/gif" class="v-hidden-input">
             <div class="v-dropzone-content" id="v-dropzone-prompt">
               <div class="v-dropzone-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
+                ${ICONS.image(22)}
               </div>
               <div class="v-dropzone-text">
                 <p class="v-dropzone-title">Arraste uma imagem ou <span class="v-link">selecione</span></p>
@@ -7023,10 +7142,7 @@ ${footerDelimiter}
                 <span class="v-filesize" id="v-filesize">0 KB</span>
               </div>
               <button type="button" class="v-remove-btn" id="v-remove-btn" title="Trocar imagem">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+                ${ICONS.x(14)}
               </button>
             </div>
           </div>
@@ -7148,11 +7264,7 @@ ${footerDelimiter}
 
           <!-- Bot\xE3o Principal de Convers\xE3o -->
           <button type="button" id="v-convert-btn" class="img2vector-primary-btn" disabled>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-              <polyline points="2 17 12 22 22 17"></polyline>
-              <polyline points="2 12 12 17 22 12"></polyline>
-            </svg>
+            ${ICONS.toolVector(18)}
             <span>Vetorizar Imagem para SVG</span>
           </button>
         </div>
@@ -7163,11 +7275,7 @@ ${footerDelimiter}
           <!-- Estado Vazio -->
           <div class="v-empty-view" id="v-empty-view">
             <div class="v-empty-illustration">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                <polyline points="2 17 12 22 22 17"></polyline>
-                <polyline points="2 12 12 17 22 12"></polyline>
-              </svg>
+              ${ICONS.toolVector(48)}
             </div>
             <h3 class="v-empty-title">Nenhum vetor gerado</h3>
             <p class="v-empty-desc">Carregue uma imagem rasterizada e clique em "Vetorizar Imagem para SVG" para visualizar o resultado.</p>
@@ -7234,22 +7342,20 @@ ${footerDelimiter}
               </div>
             </div>
 
-            <!-- A\xE7\xF5es de Exporta\xE7\xE3o -->
+            <!-- A\xE7\xF5es de Exporta\xE7\xE3o e Limpeza -->
             <div class="v-actions-bar">
+              <button type="button" id="v-clear-btn" class="v-export-btn v-export-btn--secondary" title="Limpar e vetorizar outra imagem">
+                ${ICONS.refresh(15)}
+                Nova Imagem
+              </button>
+
               <button type="button" id="v-download-svg" class="v-export-btn v-export-btn--primary">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
+                ${ICONS.download(15)}
                 Baixar SVG
               </button>
 
               <button type="button" id="v-copy-svg" class="v-export-btn v-export-btn--secondary">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
+                ${ICONS.copy(15)}
                 Copiar C\xF3digo SVG
               </button>
             </div>
@@ -7849,6 +7955,8 @@ ${footerDelimiter}
       });
       _on2(zoomIn, "click", () => _setZoom(_currentZoom + 0.2));
       _on2(zoomOut, "click", () => _setZoom(_currentZoom - 0.2));
+      const clearBtn = container.querySelector("#v-clear-btn");
+      if (clearBtn) _on2(clearBtn, "click", _resetFile);
       _on2(downloadSvg, "click", _downloadSvgFile);
       _on2(copySvg, "click", _copySvgCode);
       _on2(removeBgBtn, "click", _toggleBgRemoval);
@@ -7900,10 +8008,7 @@ ${footerDelimiter}
       <section class="pdf-tool-hero">
         <header class="hero-header">
           <div class="pdf-tool-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-            </svg>
+            ${ICONS.unlock(12)}
             Desbloqueio Criptogr\xE1fico Local
           </div>
           <h2 class="hero-title">Desbloquear PDF</h2>
@@ -7923,12 +8028,7 @@ ${footerDelimiter}
             <input type="file" id="u-file-input" accept="application/pdf,.pdf" class="pdf-hidden-input">
             <div class="pdf-dropzone-content" id="u-dropzone-prompt">
               <div class="pdf-dropzone-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                </svg>
+                ${ICONS.filePdf(22)}
               </div>
               <div class="pdf-dropzone-text">
                 <p class="pdf-dropzone-title">Arraste um PDF ou <span class="pdf-link">selecione</span></p>
@@ -7943,11 +8043,8 @@ ${footerDelimiter}
                 <span class="pdf-filename" id="u-filename">documento.pdf</span>
                 <span class="pdf-filesize" id="u-filesize">0 KB</span>
               </div>
-              <button type="button" class="pdf-remove-btn" id="u-remove-btn" title="Trocar arquivo">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+              <button type="button" class="pdf-remove-btn" id="u-remove-btn" title="Remover e trocar arquivo">
+                ${ICONS.x(14)}
               </button>
             </div>
           </div>
@@ -7956,10 +8053,7 @@ ${footerDelimiter}
           <div class="pdf-status-card" id="u-status-card">
             <div class="pdf-status-header">
               <div class="pdf-status-title-wrap">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pdf-status-icon">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
+                <span class="pdf-status-icon">${ICONS.lock(16)}</span>
                 <span class="pdf-status-title">Status da Criptografia</span>
               </div>
               <span class="pdf-badge" id="u-lock-badge">Aguardando Arquivo</span>
@@ -7975,23 +8069,23 @@ ${footerDelimiter}
             <div class="pdf-password-wrap">
               <input type="password" id="u-password-input" class="pdf-input" placeholder="Digite a senha do PDF...">
               <button type="button" id="u-toggle-pwd-btn" class="pdf-pwd-toggle" title="Exibir/ocultar senha">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
+                ${ICONS.eye(16)}
               </button>
             </div>
             <span class="pdf-hint">A senha ser\xE1 testada exclusivamente no seu navegador para descriptografar os streams.</span>
           </div>
 
-          <!-- Bot\xE3o Principal de Desbloqueio -->
-          <button type="button" id="u-unlock-btn" class="pdf-primary-btn" disabled>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-            </svg>
-            <span id="u-unlock-btn-text">Desbloquear PDF</span>
-          </button>
+          <!-- A\xE7\xF5es de Entrada: Limpar e Desbloquear -->
+          <div class="pdf-controls-actions" id="u-controls-actions">
+            <button type="button" id="u-clear-input-btn" class="pdf-secondary-btn" style="display: none;" title="Limpar arquivo e carregar outro">
+              ${ICONS.trash(15)}
+              <span>Limpar</span>
+            </button>
+            <button type="button" id="u-unlock-btn" class="pdf-primary-btn" disabled>
+              ${ICONS.unlock(16)}
+              <span id="u-unlock-btn-text">Desbloquear PDF</span>
+            </button>
+          </div>
 
         </div>
 
@@ -8001,10 +8095,7 @@ ${footerDelimiter}
           <!-- Estado Vazio -->
           <div class="pdf-empty-view" id="u-empty-view">
             <div class="pdf-empty-illustration">
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
-              </svg>
+              ${ICONS.unlock(44)}
             </div>
             <h3 class="pdf-empty-title">Nenhum PDF processado</h3>
             <p class="pdf-empty-desc">Carregue um arquivo PDF protegido para visualizar a pr\xE9via da p\xE1gina e remover as restri\xE7\xF5es.</p>
@@ -8060,22 +8151,19 @@ ${footerDelimiter}
               </div>
             </div>
 
-            <!-- A\xE7\xF5es de Download e C\xF3pia -->
+            <!-- A\xE7\xF5es de Download, C\xF3pia e Limpeza para Novo Arquivo -->
             <div class="pdf-actions-bar">
+              <button type="button" id="u-result-clear-btn" class="pdf-export-btn pdf-export-btn--secondary" title="Limpar e desbloquear outro PDF">
+                ${ICONS.refresh(15)}
+                <span>Novo PDF</span>
+              </button>
               <button type="button" id="u-copy-text-btn" class="pdf-export-btn pdf-export-btn--secondary" title="Copiar todo o texto do PDF">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
+                ${ICONS.copy(15)}
                 <span id="u-copy-btn-text">Copiar Texto</span>
               </button>
-              <button type="button" id="u-download-btn" class="pdf-export-btn pdf-export-btn--primary">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                Baixar PDF Desbloqueado
+              <button type="button" id="u-download-btn" class="pdf-export-btn pdf-export-btn--primary" title="Baixar arquivo PDF totalmente desbloqueado">
+                ${ICONS.download(15)}
+                <span>Baixar PDF</span>
               </button>
             </div>
 
@@ -8160,6 +8248,8 @@ ${footerDelimiter}
       const downloadBtn = container.querySelector("#u-download-btn");
       const copyTextBtn = container.querySelector("#u-copy-text-btn");
       const copyBtnText = container.querySelector("#u-copy-btn-text");
+      const clearInputBtn = container.querySelector("#u-clear-input-btn");
+      const resultClearBtn = container.querySelector("#u-result-clear-btn");
       const loadingTitle = container.querySelector("#u-loading-title");
       const progressPct = container.querySelector("#u-progress-pct");
       const progressFill = container.querySelector("#u-progress-fill");
@@ -8184,6 +8274,7 @@ ${footerDelimiter}
         filesizeEl.textContent = _formatBytes(file.size);
         dropPrompt.style.display = "none";
         fileLoadedBox.style.display = "flex";
+        if (clearInputBtn) clearInputBtn.style.display = "inline-flex";
         _requiresPassword = false;
         passwordGroup.style.display = "none";
         passwordInput.value = "";
@@ -8246,6 +8337,7 @@ ${footerDelimiter}
         statusDesc.textContent = "Carregue um PDF para inspecionar permiss\xF5es de impress\xE3o, c\xF3pia e prote\xE7\xE3o por chave criptogr\xE1fica.";
         passwordGroup.style.display = "none";
         passwordInput.value = "";
+        if (clearInputBtn) clearInputBtn.style.display = "none";
         unlockBtn.disabled = true;
         unlockBtnText.textContent = "Desbloquear PDF";
         _setViewState("empty");
@@ -8449,6 +8541,8 @@ ${pageStr}
           URL.revokeObjectURL(url);
         }, 500);
       });
+      _on3(clearInputBtn, "click", _reset);
+      _on3(resultClearBtn, "click", _reset);
       _ensureLibs().catch((err) => console.warn("Carregamento de bibliotecas PDF:", err));
     },
     unmount() {
@@ -8470,12 +8564,7 @@ ${pageStr}
       <section class="pdf-tool-hero">
         <header class="hero-header">
           <div class="pdf-tool-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="4 14 10 14 10 20"></polyline>
-              <polyline points="20 10 14 10 14 4"></polyline>
-              <line x1="14" y1="10" x2="21" y2="3"></line>
-              <line x1="3" y1="21" x2="10" y2="14"></line>
-            </svg>
+            ${ICONS.toolCompress(14)}
             Otimiza\xE7\xE3o por Renderiza\xE7\xE3o &amp; Reamostragem
           </div>
           <h2 class="hero-title">Comprimir PDF</h2>
@@ -8495,12 +8584,7 @@ ${pageStr}
             <input type="file" id="c-file-input" accept="application/pdf,.pdf" class="pdf-hidden-input">
             <div class="pdf-dropzone-content" id="c-dropzone-prompt">
               <div class="pdf-dropzone-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="12" y1="18" x2="12" y2="12"></line>
-                  <line x1="9" y1="15" x2="15" y2="15"></line>
-                </svg>
+                ${ICONS.filePdf(22)}
               </div>
               <div class="pdf-dropzone-text">
                 <p class="pdf-dropzone-title">Arraste um PDF ou <span class="pdf-link">selecione</span></p>
@@ -8515,11 +8599,8 @@ ${pageStr}
                 <span class="pdf-filename" id="c-filename">documento.pdf</span>
                 <span class="pdf-filesize" id="c-filesize">0 KB</span>
               </div>
-              <button type="button" class="pdf-remove-btn" id="c-remove-btn" title="Trocar arquivo">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+              <button type="button" class="pdf-remove-btn" id="c-remove-btn" title="Remover e carregar outro">
+                ${ICONS.x(14)}
               </button>
             </div>
           </div>
@@ -8573,16 +8654,17 @@ ${pageStr}
             </div>
           </details>
 
-          <!-- Bot\xE3o Principal de Compress\xE3o -->
-          <button type="button" id="c-compress-btn" class="pdf-primary-btn" disabled>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="4 14 10 14 10 20"></polyline>
-              <polyline points="20 10 14 10 14 4"></polyline>
-              <line x1="14" y1="10" x2="21" y2="3"></line>
-              <line x1="3" y1="21" x2="10" y2="14"></line>
-            </svg>
-            <span>Comprimir PDF</span>
-          </button>
+          <!-- A\xE7\xF5es de Entrada: Limpar e Comprimir -->
+          <div class="pdf-controls-actions" id="c-controls-actions">
+            <button type="button" id="c-clear-input-btn" class="pdf-secondary-btn" style="display: none;" title="Limpar arquivo e carregar outro">
+              ${ICONS.trash(15)}
+              <span>Limpar</span>
+            </button>
+            <button type="button" id="c-compress-btn" class="pdf-primary-btn" disabled>
+              ${ICONS.toolCompress(16)}
+              <span>Comprimir PDF</span>
+            </button>
+          </div>
 
         </div>
 
@@ -8592,12 +8674,7 @@ ${pageStr}
           <!-- Estado Vazio -->
           <div class="pdf-empty-view" id="c-empty-view">
             <div class="pdf-empty-illustration">
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="4 14 10 14 10 20"></polyline>
-                <polyline points="20 10 14 10 14 4"></polyline>
-                <line x1="14" y1="10" x2="21" y2="3"></line>
-                <line x1="3" y1="21" x2="10" y2="14"></line>
-              </svg>
+              ${ICONS.toolCompress(40)}
             </div>
             <h3 class="pdf-empty-title">Nenhum PDF comprimido</h3>
             <p class="pdf-empty-desc">Carregue um arquivo e selecione o n\xEDvel de compress\xE3o para otimizar o documento no navegador.</p>
@@ -8658,15 +8735,15 @@ ${pageStr}
               </div>
             </div>
 
-            <!-- A\xE7\xE3o de Download -->
+            <!-- A\xE7\xF5es do Resultado: Baixar e Novo PDF -->
             <div class="pdf-actions-bar">
+              <button type="button" id="c-result-clear-btn" class="pdf-export-btn pdf-export-btn--secondary" title="Comprimir outro arquivo PDF">
+                ${ICONS.refresh(15)}
+                <span>Novo PDF</span>
+              </button>
               <button type="button" id="c-download-btn" class="pdf-export-btn pdf-export-btn--primary">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                Baixar PDF Otimizado
+                ${ICONS.download(15)}
+                <span>Baixar PDF Otimizado</span>
               </button>
             </div>
 
@@ -8742,6 +8819,8 @@ ${pageStr}
       const qualityRange = container.querySelector("#c-quality-range");
       const qualityVal = container.querySelector("#c-quality-val");
       const compressBtn = container.querySelector("#c-compress-btn");
+      const clearInputBtn = container.querySelector("#c-clear-input-btn");
+      const resultClearBtn = container.querySelector("#c-result-clear-btn");
       const emptyView = container.querySelector("#c-empty-view");
       const loadingView = container.querySelector("#c-loading-view");
       const loadingProgress = container.querySelector("#c-loading-progress");
@@ -8786,6 +8865,7 @@ ${pageStr}
         dropPrompt.style.display = "none";
         fileLoadedBox.style.display = "flex";
         compressBtn.disabled = false;
+        if (clearInputBtn) clearInputBtn.style.display = "inline-flex";
       }
       function _reset() {
         _currentFile3 = null;
@@ -8795,6 +8875,7 @@ ${pageStr}
         dropPrompt.style.display = "flex";
         fileLoadedBox.style.display = "none";
         compressBtn.disabled = true;
+        if (clearInputBtn) clearInputBtn.style.display = "none";
         _setViewState("empty");
       }
       function _dataUrlToBytes2(dataUrl) {
@@ -8947,6 +9028,8 @@ ${pageStr}
         qualityVal.textContent = qualityRange.value + "%";
       });
       _on4(compressBtn, "click", _doCompress);
+      if (clearInputBtn) _on4(clearInputBtn, "click", _reset);
+      if (resultClearBtn) _on4(resultClearBtn, "click", _reset);
       _on4(downloadBtn, "click", () => {
         if (!_compressedPdfBlob) return;
         const originalName = _currentFile3 ? _currentFile3.name.replace(/\.pdf$/i, "") : "documento";
@@ -8983,12 +9066,7 @@ ${pageStr}
       <section class="pdf-tool-hero">
         <header class="hero-header">
           <div class="pdf-tool-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
-              <polyline points="10 9 9 9 8 9"></polyline>
-              <line x1="12" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-            </svg>
+            ${ICONS.toolMerge(14)}
             Jun\xE7\xE3o Sequencial de Documentos
           </div>
           <h2 class="hero-title">Mesclar PDF</h2>
@@ -9008,10 +9086,7 @@ ${pageStr}
             <input type="file" id="m-file-input" accept="application/pdf,.pdf" multiple class="pdf-hidden-input">
             <div class="pdf-dropzone-content" id="m-dropzone-prompt">
               <div class="pdf-dropzone-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
+                ${ICONS.plus(22)}
               </div>
               <div class="pdf-dropzone-text">
                 <p class="pdf-dropzone-title">Adicione PDFs ou <span class="pdf-link">selecione</span></p>
@@ -9024,7 +9099,10 @@ ${pageStr}
           <div class="pdf-merge-list-wrap">
             <div class="pdf-merge-list-header">
               <span class="pdf-label">Fila de Documentos (<span id="m-count-badge">0</span>)</span>
-              <button type="button" id="m-clear-btn" class="pdf-link-btn" style="display: none;">Limpar fila</button>
+              <button type="button" id="m-clear-btn" class="pdf-link-btn" style="display: none;" title="Limpar todos os arquivos da lista">
+                ${ICONS.trash(13)}
+                <span>Limpar fila</span>
+              </button>
             </div>
             <div class="pdf-merge-list" id="m-file-list">
               <div class="pdf-merge-empty-list" id="m-list-empty">
@@ -9035,11 +9113,7 @@ ${pageStr}
 
           <!-- Bot\xE3o Principal de Mesclagem -->
           <button type="button" id="m-merge-btn" class="pdf-primary-btn" disabled>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
-              <line x1="12" y1="11" x2="12" y2="17"></line>
-              <line x1="9" y1="14" x2="15" y2="14"></line>
-            </svg>
+            ${ICONS.toolMerge(16)}
             <span>Mesclar PDFs</span>
           </button>
 
@@ -9051,10 +9125,7 @@ ${pageStr}
           <!-- Estado Vazio -->
           <div class="pdf-empty-view" id="m-empty-view">
             <div class="pdf-empty-illustration">
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
+              ${ICONS.toolMerge(40)}
             </div>
             <h3 class="pdf-empty-title">Nenhum PDF mesclado</h3>
             <p class="pdf-empty-desc">Adicione ao menos dois arquivos na lista e clique em "Mesclar PDFs" para gerar o documento unificado.</p>
@@ -9085,7 +9156,7 @@ ${pageStr}
           <div class="pdf-result-view" id="m-result-view" style="display: none;">
 
             <div class="pdf-result-header">
-              <span class="pdf-badge pdf-badge--success">\u2713 PDFs Mesclados</span>
+              <span class="pdf-badge pdf-badge--success">${ICONS.check(13)} PDFs Mesclados</span>
               <span class="pdf-result-summary" id="m-result-summary">Documento unificado com sucesso</span>
             </div>
 
@@ -9110,15 +9181,15 @@ ${pageStr}
               </div>
             </div>
 
-            <!-- A\xE7\xE3o de Download -->
+            <!-- A\xE7\xF5es do Resultado: Baixar e Novos PDFs -->
             <div class="pdf-actions-bar">
+              <button type="button" id="m-result-clear-btn" class="pdf-export-btn pdf-export-btn--secondary" title="Mesclar outros documentos PDF">
+                ${ICONS.refresh(15)}
+                <span>Novos PDFs</span>
+              </button>
               <button type="button" id="m-download-btn" class="pdf-export-btn pdf-export-btn--primary">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                Baixar PDF Mesclado
+                ${ICONS.download(15)}
+                <span>Baixar PDF Mesclado</span>
               </button>
             </div>
 
@@ -9178,6 +9249,7 @@ ${pageStr}
       const listEmpty = container.querySelector("#m-list-empty");
       const countBadge = container.querySelector("#m-count-badge");
       const clearBtn = container.querySelector("#m-clear-btn");
+      const resultClearBtn = container.querySelector("#m-result-clear-btn");
       const mergeBtn = container.querySelector("#m-merge-btn");
       const emptyView = container.querySelector("#m-empty-view");
       const loadingView = container.querySelector("#m-loading-view");
@@ -9228,7 +9300,7 @@ ${pageStr}
           <div class="pdf-merge-item-actions">
             <button type="button" class="pdf-item-ctrl-btn btn-up" data-idx="${index}" title="Mover para cima" ${index === 0 ? "disabled" : ""}>\u2191</button>
             <button type="button" class="pdf-item-ctrl-btn btn-down" data-idx="${index}" title="Mover para baixo" ${index === _filesQueue.length - 1 ? "disabled" : ""}>\u2193</button>
-            <button type="button" class="pdf-item-ctrl-btn btn-del" data-idx="${index}" title="Remover">\u2715</button>
+            <button type="button" class="pdf-item-ctrl-btn btn-del" data-idx="${index}" title="Remover">${ICONS.x(13)}</button>
           </div>
         `;
           fileList.appendChild(row);
@@ -9403,11 +9475,13 @@ ${pageStr}
           _addFiles(Array.from(files));
         }
       });
-      _on5(clearBtn, "click", () => {
+      const _resetQueue = () => {
         _filesQueue = [];
         _renderList();
         _setViewState("empty");
-      });
+      };
+      _on5(clearBtn, "click", _resetQueue);
+      if (resultClearBtn) _on5(resultClearBtn, "click", _resetQueue);
       _on5(mergeBtn, "click", _doMerge);
       _on5(downloadBtn, "click", () => {
         if (!_mergedPdfBlob) return;
@@ -9443,13 +9517,7 @@ ${pageStr}
       <section class="pdf-tool-hero">
         <header class="hero-header">
           <div class="pdf-tool-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="6" cy="6" r="3"></circle>
-              <circle cx="6" cy="18" r="3"></circle>
-              <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
-              <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
-              <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
-            </svg>
+            ${ICONS.toolSplit(14)}
             Divis\xE3o &amp; Extra\xE7\xE3o Local
           </div>
           <h2 class="hero-title">Dividir PDF</h2>
@@ -9469,12 +9537,7 @@ ${pageStr}
             <input type="file" id="s-file-input" accept="application/pdf,.pdf" class="pdf-hidden-input">
             <div class="pdf-dropzone-content" id="s-dropzone-prompt">
               <div class="pdf-dropzone-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <circle cx="6" cy="14" r="2"></circle>
-                  <line x1="14" y1="14" x2="8" y2="14"></line>
-                </svg>
+                ${ICONS.filePdf(22)}
               </div>
               <div class="pdf-dropzone-text">
                 <p class="pdf-dropzone-title">Arraste um PDF ou <span class="pdf-link">selecione</span></p>
@@ -9489,11 +9552,8 @@ ${pageStr}
                 <span class="pdf-filename" id="s-filename">documento.pdf</span>
                 <span class="pdf-filesize" id="s-filesize">0 KB</span>
               </div>
-              <button type="button" class="pdf-remove-btn" id="s-remove-btn" title="Trocar arquivo">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+              <button type="button" class="pdf-remove-btn" id="s-remove-btn" title="Remover e carregar outro">
+                ${ICONS.x(14)}
               </button>
             </div>
           </div>
@@ -9543,7 +9603,7 @@ ${pageStr}
 
             <div id="s-param-all" style="display: none;">
               <div class="pdf-info-banner">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="16" x2="12" y2="12"></line>
                   <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -9576,17 +9636,17 @@ ${pageStr}
             </div>
           </div>
 
-          <!-- CTA Prim\xE1rio (Sempre Vis\xEDvel) -->
-          <button type="button" id="s-split-btn" class="btn-primary pdf-action-cta" disabled>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="6" cy="6" r="3"></circle>
-              <circle cx="6" cy="18" r="3"></circle>
-              <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
-              <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
-              <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
-            </svg>
-            <span id="s-split-btn-text">Dividir PDF Agora</span>
-          </button>
+          <!-- A\xE7\xF5es de Entrada: Limpar e Dividir -->
+          <div class="pdf-controls-actions" id="s-controls-actions">
+            <button type="button" id="s-clear-input-btn" class="pdf-secondary-btn" style="display: none;" title="Limpar arquivo e carregar outro">
+              ${ICONS.trash(15)}
+              <span>Limpar</span>
+            </button>
+            <button type="button" id="s-split-btn" class="btn-primary pdf-action-cta" disabled>
+              ${ICONS.toolSplit(16)}
+              <span id="s-split-btn-text">Dividir PDF Agora</span>
+            </button>
+          </div>
 
         </div>
 
@@ -9596,12 +9656,7 @@ ${pageStr}
           <!-- Estado Vazio -->
           <div class="pdf-stage-empty" id="s-empty-view">
             <div class="pdf-empty-icon">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="8" y1="12" x2="16" y2="12"></line>
-                <line x1="8" y1="16" x2="12" y2="16"></line>
-              </svg>
+              ${ICONS.toolSplit(36)}
             </div>
             <p class="pdf-empty-text">Carregue um documento PDF \xE0 esquerda para configurar as p\xE1ginas e dividir</p>
           </div>
@@ -9655,14 +9710,14 @@ ${pageStr}
               </div>
             </div>
 
-            <!-- Download -->
+            <!-- Download e Novo PDF -->
             <div class="pdf-result-actions">
+              <button type="button" id="s-result-clear-btn" class="pdf-export-btn pdf-export-btn--secondary" title="Dividir outro documento PDF">
+                ${ICONS.refresh(15)}
+                <span>Novo PDF</span>
+              </button>
               <button type="button" id="s-download-btn" class="btn-primary pdf-download-btn">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
+                ${ICONS.download(15)}
                 <span id="s-download-btn-text">Baixar Arquivos</span>
               </button>
             </div>
@@ -9759,6 +9814,8 @@ ${pageStr}
       const sumOutCount = container.querySelector("#s-sum-out-count");
       const splitBtn = container.querySelector("#s-split-btn");
       const splitBtnText = container.querySelector("#s-split-btn-text");
+      const clearInputBtn = container.querySelector("#s-clear-input-btn");
+      const resultClearBtn = container.querySelector("#s-result-clear-btn");
       const emptyView = container.querySelector("#s-empty-view");
       const loadingView = container.querySelector("#s-loading-view");
       const loadingProgress = container.querySelector("#s-loading-progress");
@@ -9889,6 +9946,7 @@ ${pageStr}
         filesizeEl.textContent = _formatBytes4(file.size);
         dropPrompt.style.display = "none";
         fileLoadedBox.style.display = "flex";
+        if (clearInputBtn) clearInputBtn.style.display = "inline-flex";
         await _ensureLibs4();
         const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
         try {
@@ -9947,6 +10005,7 @@ ${pageStr}
         fileInput.value = "";
         dropPrompt.style.display = "flex";
         fileLoadedBox.style.display = "none";
+        if (clearInputBtn) clearInputBtn.style.display = "none";
         maxPagesHint.textContent = "Total: - p\xE1gs";
         extractHint.textContent = "Total: - p\xE1gs";
         splitBtn.disabled = true;
@@ -10117,6 +10176,8 @@ ${pageStr}
       _on6(extractInput, "input", _updateSummary);
       _on6(everyInput, "input", _updateSummary);
       _on6(splitBtn, "click", _doSplit);
+      if (clearInputBtn) _on6(clearInputBtn, "click", _reset);
+      if (resultClearBtn) _on6(resultClearBtn, "click", _reset);
       _on6(downloadBtn, "click", () => {
         if (!_outputBlob) return;
         const url = URL.createObjectURL(_outputBlob);
@@ -10163,92 +10224,49 @@ ${pageStr}
       id: "hub",
       label: "Todas as Ferramentas",
       description: "Cat\xE1logo geral estilo PDF24 Tools com todas as ferramentas dispon\xEDveis",
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/>
-      <rect x="14" y="3" width="7" height="7" rx="1"/>
-      <rect x="14" y="14" width="7" height="7" rx="1"/>
-      <rect x="3" y="14" width="7" height="7" rx="1"/>
-    </svg>`
+      icon: ICONS.toolHub(18)
     },
     {
       id: "doc2md",
       label: "Doc \u2192 MD",
       description: "Converta documentos, planilhas, PDFs e c\xF3digo para Markdown estruturado",
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-      <polyline points="14 2 14 8 20 8"/>
-      <line x1="16" y1="13" x2="8" y2="13"/>
-      <line x1="16" y1="17" x2="8" y2="17"/>
-    </svg>`
+      icon: ICONS.toolDoc2md(18)
     },
     {
       id: "qrcode",
       label: "QR Code",
       description: "Gere QR Codes a partir de links e texto \u2014 100% local, sem servidores",
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/>
-      <rect x="14" y="3" width="7" height="7" rx="1"/>
-      <rect x="3" y="14" width="7" height="7" rx="1"/>
-      <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-      <rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-      <rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/>
-      <path d="M14 14h3v3h-3z" fill="currentColor" stroke="none"/>
-      <path d="M17 17h4"/>
-      <path d="M17 21v-4"/>
-      <path d="M21 17v4"/>
-    </svg>`
+      icon: ICONS.toolQrcode(18)
     },
     {
       id: "img2vector",
       label: "Image to Vector",
       description: "Vetorize imagens rasterizadas (PNG, JPG, WEBP) para SVG com curvas B\xE9zier 100% local",
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-      <polyline points="2 17 12 22 22 17"/>
-      <polyline points="2 12 12 17 22 12"/>
-    </svg>`
+      icon: ICONS.toolVector(18)
     },
     {
       id: "pdf-unlock",
       label: "Desbloquear PDF",
       description: "Remova senhas e restri\xE7\xF5es de permiss\xF5es (edi\xE7\xE3o, c\xF3pia, impress\xE3o) de arquivos PDF",
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-      <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
-    </svg>`
+      icon: ICONS.toolUnlock(18)
     },
     {
       id: "pdf-compress",
       label: "Comprimir PDF",
       description: "Reduza o tamanho de PDFs com reamostragem inteligente de imagens e ajuste de DPI",
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="4 14 10 14 10 20"/>
-      <polyline points="20 10 14 10 14 4"/>
-      <line x1="14" y1="10" x2="21" y2="3"/>
-      <line x1="3" y1="21" x2="10" y2="14"/>
-    </svg>`
+      icon: ICONS.toolCompress(18)
     },
     {
       id: "pdf-merge",
       label: "Mesclar PDF",
       description: "Junte m\xFAltiplos documentos PDF em um \xFAnico arquivo ordenado 100% local",
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
-      <line x1="12" y1="11" x2="12" y2="17"/>
-      <line x1="9" y1="14" x2="15" y2="14"/>
-    </svg>`
+      icon: ICONS.toolMerge(18)
     },
     {
       id: "pdf-split",
       label: "Dividir PDF",
       description: "Separe p\xE1ginas, extraia intervalos espec\xEDficos ou desmembre cada p\xE1gina em arquivos individuais 100% local",
-      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="6" cy="6" r="3"/>
-      <circle cx="6" cy="18" r="3"/>
-      <line x1="20" y1="4" x2="8.12" y2="15.88"/>
-      <line x1="14.47" y1="14.48" x2="20" y2="20"/>
-      <line x1="8.12" y1="8.12" x2="12" y2="12"/>
-    </svg>`
+      icon: ICONS.toolSplit(18)
     }
   ];
   var _activeModule = null;

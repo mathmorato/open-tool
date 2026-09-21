@@ -1,8 +1,10 @@
 /**
  * Open Tool — Ferramenta: Dividir PDF (pdf-split) — Template HTML
  * Inspirado em docnet e Stirling-PDF (100% Client-Side).
- * @version v.2.4.0
+ * @version v.2.4.3
  */
+
+import { ICONS } from '../../icons.js';
 
 export function getPdfSplitHTML() {
   return `
@@ -11,13 +13,7 @@ export function getPdfSplitHTML() {
       <section class="pdf-tool-hero">
         <header class="hero-header">
           <div class="pdf-tool-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="6" cy="6" r="3"></circle>
-              <circle cx="6" cy="18" r="3"></circle>
-              <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
-              <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
-              <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
-            </svg>
+            ${ICONS.toolSplit(14)}
             Divisão &amp; Extração Local
           </div>
           <h2 class="hero-title">Dividir PDF</h2>
@@ -37,12 +33,7 @@ export function getPdfSplitHTML() {
             <input type="file" id="s-file-input" accept="application/pdf,.pdf" class="pdf-hidden-input">
             <div class="pdf-dropzone-content" id="s-dropzone-prompt">
               <div class="pdf-dropzone-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <circle cx="6" cy="14" r="2"></circle>
-                  <line x1="14" y1="14" x2="8" y2="14"></line>
-                </svg>
+                ${ICONS.filePdf(22)}
               </div>
               <div class="pdf-dropzone-text">
                 <p class="pdf-dropzone-title">Arraste um PDF ou <span class="pdf-link">selecione</span></p>
@@ -57,11 +48,8 @@ export function getPdfSplitHTML() {
                 <span class="pdf-filename" id="s-filename">documento.pdf</span>
                 <span class="pdf-filesize" id="s-filesize">0 KB</span>
               </div>
-              <button type="button" class="pdf-remove-btn" id="s-remove-btn" title="Trocar arquivo">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+              <button type="button" class="pdf-remove-btn" id="s-remove-btn" title="Remover e carregar outro">
+                ${ICONS.x(14)}
               </button>
             </div>
           </div>
@@ -111,7 +99,7 @@ export function getPdfSplitHTML() {
 
             <div id="s-param-all" style="display: none;">
               <div class="pdf-info-banner">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="16" x2="12" y2="12"></line>
                   <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -144,17 +132,17 @@ export function getPdfSplitHTML() {
             </div>
           </div>
 
-          <!-- CTA Primário (Sempre Visível) -->
-          <button type="button" id="s-split-btn" class="btn-primary pdf-action-cta" disabled>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="6" cy="6" r="3"></circle>
-              <circle cx="6" cy="18" r="3"></circle>
-              <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
-              <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
-              <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
-            </svg>
-            <span id="s-split-btn-text">Dividir PDF Agora</span>
-          </button>
+          <!-- Ações de Entrada: Limpar e Dividir -->
+          <div class="pdf-controls-actions" id="s-controls-actions">
+            <button type="button" id="s-clear-input-btn" class="pdf-secondary-btn" style="display: none;" title="Limpar arquivo e carregar outro">
+              ${ICONS.trash(15)}
+              <span>Limpar</span>
+            </button>
+            <button type="button" id="s-split-btn" class="btn-primary pdf-action-cta" disabled>
+              ${ICONS.toolSplit(16)}
+              <span id="s-split-btn-text">Dividir PDF Agora</span>
+            </button>
+          </div>
 
         </div>
 
@@ -164,12 +152,7 @@ export function getPdfSplitHTML() {
           <!-- Estado Vazio -->
           <div class="pdf-stage-empty" id="s-empty-view">
             <div class="pdf-empty-icon">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="8" y1="12" x2="16" y2="12"></line>
-                <line x1="8" y1="16" x2="12" y2="16"></line>
-              </svg>
+              ${ICONS.toolSplit(36)}
             </div>
             <p class="pdf-empty-text">Carregue um documento PDF à esquerda para configurar as páginas e dividir</p>
           </div>
@@ -223,14 +206,14 @@ export function getPdfSplitHTML() {
               </div>
             </div>
 
-            <!-- Download -->
+            <!-- Download e Novo PDF -->
             <div class="pdf-result-actions">
+              <button type="button" id="s-result-clear-btn" class="pdf-export-btn pdf-export-btn--secondary" title="Dividir outro documento PDF">
+                ${ICONS.refresh(15)}
+                <span>Novo PDF</span>
+              </button>
               <button type="button" id="s-download-btn" class="btn-primary pdf-download-btn">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
+                ${ICONS.download(15)}
                 <span id="s-download-btn-text">Baixar Arquivos</span>
               </button>
             </div>

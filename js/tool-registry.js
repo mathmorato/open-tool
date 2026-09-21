@@ -43,6 +43,8 @@ export function registerToolModule(id, toolModule) {
   _preloadedModules.set(id, toolModule);
 }
 
+import { ICONS } from './icons.js';
+
 /**
  * Catálogo de ferramentas disponíveis na plataforma (estilo PDF24 Tools).
  */
@@ -51,92 +53,49 @@ export const TOOL_CATALOG = [
     id: 'hub',
     label: 'Todas as Ferramentas',
     description: 'Catálogo geral estilo PDF24 Tools com todas as ferramentas disponíveis',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/>
-      <rect x="14" y="3" width="7" height="7" rx="1"/>
-      <rect x="14" y="14" width="7" height="7" rx="1"/>
-      <rect x="3" y="14" width="7" height="7" rx="1"/>
-    </svg>`
+    icon: ICONS.toolHub(18)
   },
   {
     id: 'doc2md',
     label: 'Doc → MD',
     description: 'Converta documentos, planilhas, PDFs e código para Markdown estruturado',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-      <polyline points="14 2 14 8 20 8"/>
-      <line x1="16" y1="13" x2="8" y2="13"/>
-      <line x1="16" y1="17" x2="8" y2="17"/>
-    </svg>`
+    icon: ICONS.toolDoc2md(18)
   },
   {
     id: 'qrcode',
     label: 'QR Code',
     description: 'Gere QR Codes a partir de links e texto — 100% local, sem servidores',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/>
-      <rect x="14" y="3" width="7" height="7" rx="1"/>
-      <rect x="3" y="14" width="7" height="7" rx="1"/>
-      <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-      <rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
-      <rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/>
-      <path d="M14 14h3v3h-3z" fill="currentColor" stroke="none"/>
-      <path d="M17 17h4"/>
-      <path d="M17 21v-4"/>
-      <path d="M21 17v4"/>
-    </svg>`
+    icon: ICONS.toolQrcode(18)
   },
   {
     id: 'img2vector',
     label: 'Image to Vector',
     description: 'Vetorize imagens rasterizadas (PNG, JPG, WEBP) para SVG com curvas Bézier 100% local',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <polygon points="12 2 2 7 12 12 22 7 12 2"/>
-      <polyline points="2 17 12 22 22 17"/>
-      <polyline points="2 12 12 17 22 12"/>
-    </svg>`
+    icon: ICONS.toolVector(18)
   },
   {
     id: 'pdf-unlock',
     label: 'Desbloquear PDF',
     description: 'Remova senhas e restrições de permissões (edição, cópia, impressão) de arquivos PDF',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-      <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
-    </svg>`
+    icon: ICONS.toolUnlock(18)
   },
   {
     id: 'pdf-compress',
     label: 'Comprimir PDF',
     description: 'Reduza o tamanho de PDFs com reamostragem inteligente de imagens e ajuste de DPI',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="4 14 10 14 10 20"/>
-      <polyline points="20 10 14 10 14 4"/>
-      <line x1="14" y1="10" x2="21" y2="3"/>
-      <line x1="3" y1="21" x2="10" y2="14"/>
-    </svg>`
+    icon: ICONS.toolCompress(18)
   },
   {
     id: 'pdf-merge',
     label: 'Mesclar PDF',
     description: 'Junte múltiplos documentos PDF em um único arquivo ordenado 100% local',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
-      <line x1="12" y1="11" x2="12" y2="17"/>
-      <line x1="9" y1="14" x2="15" y2="14"/>
-    </svg>`
+    icon: ICONS.toolMerge(18)
   },
   {
     id: 'pdf-split',
     label: 'Dividir PDF',
     description: 'Separe páginas, extraia intervalos específicos ou desmembre cada página em arquivos individuais 100% local',
-    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="6" cy="6" r="3"/>
-      <circle cx="6" cy="18" r="3"/>
-      <line x1="20" y1="4" x2="8.12" y2="15.88"/>
-      <line x1="14.47" y1="14.48" x2="20" y2="20"/>
-      <line x1="8.12" y1="8.12" x2="12" y2="12"/>
-    </svg>`
+    icon: ICONS.toolSplit(18)
   }
 ];
 

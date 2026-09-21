@@ -5,6 +5,7 @@
  */
 
 import { getPdfMergeHTML } from './ui.js';
+import { ICONS } from '../../icons.js';
 import { APP_CONFIG, loadScript } from '../../config.js';
 
 let _listeners = [];
@@ -58,8 +59,9 @@ export default {
     const fileList      = container.querySelector('#m-file-list');
     const listEmpty     = container.querySelector('#m-list-empty');
     const countBadge    = container.querySelector('#m-count-badge');
-    const clearBtn      = container.querySelector('#m-clear-btn');
-    const mergeBtn      = container.querySelector('#m-merge-btn');
+    const clearBtn        = container.querySelector('#m-clear-btn');
+    const resultClearBtn  = container.querySelector('#m-result-clear-btn');
+    const mergeBtn        = container.querySelector('#m-merge-btn');
 
     const emptyView     = container.querySelector('#m-empty-view');
     const loadingView   = container.querySelector('#m-loading-view');
@@ -118,7 +120,7 @@ export default {
           <div class="pdf-merge-item-actions">
             <button type="button" class="pdf-item-ctrl-btn btn-up" data-idx="${index}" title="Mover para cima" ${index === 0 ? 'disabled' : ''}>↑</button>
             <button type="button" class="pdf-item-ctrl-btn btn-down" data-idx="${index}" title="Mover para baixo" ${index === _filesQueue.length - 1 ? 'disabled' : ''}>↓</button>
-            <button type="button" class="pdf-item-ctrl-btn btn-del" data-idx="${index}" title="Remover">✕</button>
+            <button type="button" class="pdf-item-ctrl-btn btn-del" data-idx="${index}" title="Remover">${ICONS.x(13)}</button>
           </div>
         `;
         fileList.appendChild(row);
@@ -325,11 +327,14 @@ export default {
       }
     });
 
-    _on(clearBtn, 'click', () => {
+    const _resetQueue = () => {
       _filesQueue = [];
       _renderList();
       _setViewState('empty');
-    });
+    };
+
+    _on(clearBtn, 'click', _resetQueue);
+    if (resultClearBtn) _on(resultClearBtn, 'click', _resetQueue);
 
     _on(mergeBtn, 'click', _doMerge);
 

@@ -101,6 +101,8 @@ export default {
     const downloadBtn     = container.querySelector('#u-download-btn');
     const copyTextBtn     = container.querySelector('#u-copy-text-btn');
     const copyBtnText     = container.querySelector('#u-copy-btn-text');
+    const clearInputBtn   = container.querySelector('#u-clear-input-btn');
+    const resultClearBtn  = container.querySelector('#u-result-clear-btn');
 
     const loadingTitle   = container.querySelector('#u-loading-title');
     const progressPct    = container.querySelector('#u-progress-pct');
@@ -130,6 +132,7 @@ export default {
       filesizeEl.textContent = _formatBytes(file.size);
       dropPrompt.style.display = 'none';
       fileLoadedBox.style.display = 'flex';
+      if (clearInputBtn) clearInputBtn.style.display = 'inline-flex';
 
       _requiresPassword = false;
       passwordGroup.style.display = 'none';
@@ -202,6 +205,7 @@ export default {
 
       passwordGroup.style.display = 'none';
       passwordInput.value = '';
+      if (clearInputBtn) clearInputBtn.style.display = 'none';
       unlockBtn.disabled = true;
       unlockBtnText.textContent = 'Desbloquear PDF';
 
@@ -427,6 +431,9 @@ export default {
         URL.revokeObjectURL(url);
       }, 500);
     });
+
+    _on(clearInputBtn, 'click', _reset);
+    _on(resultClearBtn, 'click', _reset);
 
     // Inicia carregamento em background sem travar o mount
     _ensureLibs().catch(err => console.warn('Carregamento de bibliotecas PDF:', err));
