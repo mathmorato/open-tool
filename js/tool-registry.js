@@ -9,6 +9,9 @@ import doc2mdTool from './tools/doc2md/tool.js';
 import qrcodeTool from './tools/qrcode/tool.js';
 import hubTool from './tools/hub/tool.js';
 import img2vectorTool from './tools/img2vector/tool.js';
+import pdfUnlockTool from './tools/pdf-unlock/tool.js';
+import pdfCompressTool from './tools/pdf-compress/tool.js';
+import pdfMergeTool from './tools/pdf-merge/tool.js';
 
 const STORAGE_KEY_ACTIVE_TOOL = 'opentool_active_tool';
 
@@ -17,7 +20,10 @@ export const BUILTIN_TOOLS = {
   hub: hubTool,
   doc2md: doc2mdTool,
   qrcode: qrcodeTool,
-  img2vector: img2vectorTool
+  img2vector: img2vectorTool,
+  'pdf-unlock': pdfUnlockTool,
+  'pdf-compress': pdfCompressTool,
+  'pdf-merge': pdfMergeTool
 };
 
 // Base path para imports dinâmicos caso necessário
@@ -86,6 +92,36 @@ export const TOOL_CATALOG = [
       <polygon points="12 2 2 7 12 12 22 7 12 2"/>
       <polyline points="2 17 12 22 22 17"/>
       <polyline points="2 12 12 17 22 12"/>
+    </svg>`
+  },
+  {
+    id: 'pdf-unlock',
+    label: 'Desbloquear PDF',
+    description: 'Remova senhas e restrições de permissões (edição, cópia, impressão) de arquivos PDF',
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+    </svg>`
+  },
+  {
+    id: 'pdf-compress',
+    label: 'Comprimir PDF',
+    description: 'Reduza o tamanho de PDFs com reamostragem inteligente de imagens e ajuste de DPI',
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="4 14 10 14 10 20"/>
+      <polyline points="20 10 14 10 14 4"/>
+      <line x1="14" y1="10" x2="21" y2="3"/>
+      <line x1="3" y1="21" x2="10" y2="14"/>
+    </svg>`
+  },
+  {
+    id: 'pdf-merge',
+    label: 'Mesclar PDF',
+    description: 'Junte múltiplos documentos PDF em um único arquivo ordenado 100% local',
+    icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+      <line x1="12" y1="11" x2="12" y2="17"/>
+      <line x1="9" y1="14" x2="15" y2="14"/>
     </svg>`
   }
 ];

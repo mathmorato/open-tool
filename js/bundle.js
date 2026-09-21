@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.2.2",
+    VERSION: "v.2.3.0",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -6785,8 +6785,27 @@ ${footerDelimiter}
       <!-- Grade de Ferramentas (PDF24 Tools Style) -->
       <div class="hub-grid" id="hub-tools-grid">
         ${tools.map((tool4) => {
-      const badge = tool4.id === "doc2md" ? "CONVERSOR" : tool4.id === "qrcode" ? "GERADOR" : tool4.id === "img2vector" ? "VETORIZADOR" : "FERRAMENTA";
-      const features = tool4.id === "doc2md" ? ["Word (.docx), Excel (.xlsx), PDF, PPTX", "Extra\xE7\xE3o autom\xE1tica de pacotes .ZIP e .RAR", "Gera\xE7\xE3o de Markdown limpo e formatado"] : tool4.id === "qrcode" ? ["Gera\xE7\xE3o imediata para Links e Textos", "Exporta\xE7\xE3o em PNG de alta resolu\xE7\xE3o e SVG", "Customiza\xE7\xE3o de cores, tamanho e margem"] : tool4.id === "img2vector" ? ["Raster para SVG vetorial (PNG, JPG, WEBP, BMP)", "Curvas B\xE9zier matem\xE1ticas e ajuste fino de cores", "Exporta\xE7\xE3o e c\xF3pia direta de c\xF3digo SVG"] : ["Processamento 100% no navegador", "Zero telemetria de dados"];
+      let badge = "FERRAMENTA";
+      let features = ["Processamento 100% no navegador", "Zero telemetria de dados"];
+      if (tool4.id === "doc2md") {
+        badge = "CONVERSOR";
+        features = ["Word (.docx), Excel (.xlsx), PDF, PPTX", "Extra\xE7\xE3o autom\xE1tica de pacotes .ZIP e .RAR", "Gera\xE7\xE3o de Markdown limpo e formatado"];
+      } else if (tool4.id === "qrcode") {
+        badge = "GERADOR";
+        features = ["Gera\xE7\xE3o imediata para Links e Textos", "Exporta\xE7\xE3o em PNG de alta resolu\xE7\xE3o e SVG", "Customiza\xE7\xE3o de cores, tamanho e margem"];
+      } else if (tool4.id === "img2vector") {
+        badge = "VETORIZADOR";
+        features = ["Raster para SVG vetorial (PNG, JPG, WEBP, BMP)", "Curvas B\xE9zier matem\xE1ticas e ajuste fino de cores", "Exporta\xE7\xE3o e c\xF3pia direta de c\xF3digo SVG"];
+      } else if (tool4.id === "pdf-unlock") {
+        badge = "DESBLOQUEADOR";
+        features = ["Remo\xE7\xE3o de senhas de leitura e restri\xE7\xF5es", "Desbloqueio de permiss\xF5es de c\xF3pia e impress\xE3o", "Descriptografia 100% local no navegador"];
+      } else if (tool4.id === "pdf-compress") {
+        badge = "COMPRESSOR";
+        features = ["Reamostragem inteligente de imagens", "Presets de 72, 100 e 150 DPI", "M\xE9tricas de redu\xE7\xE3o e economia de bytes"];
+      } else if (tool4.id === "pdf-merge") {
+        badge = "MESCLADOR";
+        features = ["Jun\xE7\xE3o de m\xFAltiplos PDFs em arquivo \xFAnico", "Reordena\xE7\xE3o sequencial de documentos", "Gera\xE7\xE3o instant\xE2nea e download \xFAnico"];
+      }
       return `
             <article class="hub-card" data-tool-card="${tool4.id}" tabindex="0" role="button" aria-label="Abrir ferramenta ${tool4.label}">
               <div class="hub-card-top">
@@ -7454,7 +7473,7 @@ ${footerDelimiter}
         previewImg.src = _currentImageSrc;
         origOutput.src = _currentImageSrc;
         filenameEl.textContent = file.name;
-        filesizeEl.textContent = _formatBytes(file.size);
+        filesizeEl.textContent = _formatBytes4(file.size);
         removeBgBtn.disabled = false;
         removeBgBtn.classList.remove("v-bg-btn--active");
         removeBgBtnText.textContent = "Remover Fundo";
@@ -7543,7 +7562,7 @@ ${footerDelimiter}
           }
         }
       }
-      function _formatBytes(bytes) {
+      function _formatBytes4(bytes) {
         if (bytes < 1024) return bytes + " B";
         if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
         return (bytes / 1048576).toFixed(2) + " MB";
@@ -7621,7 +7640,7 @@ ${footerDelimiter}
             const svgBytes = new Blob([svgStr], { type: "image/svg+xml" }).size;
             metaPaths.textContent = pathCount.toLocaleString("pt-BR");
             metaColors.textContent = numColors;
-            metaSize.textContent = _formatBytes(svgBytes);
+            metaSize.textContent = _formatBytes4(svgBytes);
             _setViewState("result");
             _applyViewMode("vector");
           } catch (err) {
@@ -7792,13 +7811,1238 @@ ${footerDelimiter}
     }
   };
 
+  // js/tools/pdf-unlock/ui.js
+  function getPdfUnlockHTML() {
+    return `
+    <div class="pdf-unlock-root">
+
+      <section class="pdf-tool-hero">
+        <header class="hero-header">
+          <div class="pdf-tool-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+            </svg>
+            Desbloqueio Criptogr\xE1fico Local
+          </div>
+          <h2 class="hero-title">Desbloquear PDF</h2>
+          <p class="hero-subtitle">
+            Remova senhas e restri\xE7\xF5es de permiss\xF5es (edi\xE7\xE3o, c\xF3pia, impress\xE3o) de documentos PDF. 100% local \u2014 zero envio a servidores.
+          </p>
+        </header>
+      </section>
+
+      <div class="pdf-workspace">
+
+        <!-- Coluna Esquerda: Entrada & Controles -->
+        <div class="pdf-controls-panel">
+
+          <!-- Dropzone Compacto -->
+          <div class="pdf-dropzone" id="u-dropzone" tabindex="0" role="button" aria-label="Carregar arquivo PDF para desbloquear">
+            <input type="file" id="u-file-input" accept="application/pdf" class="pdf-hidden-input">
+            <div class="pdf-dropzone-content" id="u-dropzone-prompt">
+              <div class="pdf-dropzone-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
+              <div class="pdf-dropzone-text">
+                <p class="pdf-dropzone-title">Arraste um PDF ou <span class="pdf-link">selecione</span></p>
+                <p class="pdf-dropzone-sub">Qualquer arquivo .PDF protegido ou restrito</p>
+              </div>
+            </div>
+
+            <!-- Preview do Arquivo Carregado -->
+            <div class="pdf-file-loaded" id="u-file-loaded" style="display: none;">
+              <div class="pdf-icon-badge">PDF</div>
+              <div class="pdf-loaded-info">
+                <span class="pdf-filename" id="u-filename">documento.pdf</span>
+                <span class="pdf-filesize" id="u-filesize">0 KB</span>
+              </div>
+              <button type="button" class="pdf-remove-btn" id="u-remove-btn" title="Trocar arquivo">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Card de Status da Prote\xE7\xE3o -->
+          <div class="pdf-status-card" id="u-status-card">
+            <div class="pdf-status-header">
+              <div class="pdf-status-title-wrap">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pdf-status-icon">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <span class="pdf-status-title">Status da Criptografia</span>
+              </div>
+              <span class="pdf-badge" id="u-lock-badge">Aguardando Arquivo</span>
+            </div>
+            <p class="pdf-status-desc" id="u-status-desc">
+              Carregue um PDF para inspecionar permiss\xF5es de impress\xE3o, c\xF3pia e prote\xE7\xE3o por chave criptogr\xE1fica.
+            </p>
+          </div>
+
+          <!-- Campo de Senha (Condicional/Din\xE2mico) -->
+          <div class="pdf-password-group" id="u-password-group" style="display: none;">
+            <label for="u-password-input" class="pdf-label">Senha de Abertura do Documento</label>
+            <div class="pdf-password-wrap">
+              <input type="password" id="u-password-input" class="pdf-input" placeholder="Digite a senha do PDF...">
+              <button type="button" id="u-toggle-pwd-btn" class="pdf-pwd-toggle" title="Exibir/ocultar senha">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+            <span class="pdf-hint">A senha ser\xE1 testada exclusivamente no seu navegador para descriptografar os streams.</span>
+          </div>
+
+          <!-- Bot\xE3o Principal de Desbloqueio -->
+          <button type="button" id="u-unlock-btn" class="pdf-primary-btn" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+            </svg>
+            <span id="u-unlock-btn-text">Desbloquear PDF</span>
+          </button>
+
+        </div>
+
+        <!-- Coluna Direita: Painel de Pr\xE9-visualiza\xE7\xE3o & Download -->
+        <div class="pdf-preview-panel">
+
+          <!-- Estado Vazio -->
+          <div class="pdf-empty-view" id="u-empty-view">
+            <div class="pdf-empty-illustration">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+              </svg>
+            </div>
+            <h3 class="pdf-empty-title">Nenhum PDF processado</h3>
+            <p class="pdf-empty-desc">Carregue um arquivo PDF protegido para visualizar a pr\xE9via da p\xE1gina e remover as restri\xE7\xF5es.</p>
+          </div>
+
+          <!-- Estado Processando -->
+          <div class="pdf-loading-view" id="u-loading-view" style="display: none;">
+            <div class="pdf-spinner"></div>
+            <h3 class="pdf-loading-title">Descriptografando fluxos do documento...</h3>
+            <p class="pdf-loading-desc">Removendo certificados de restri\xE7\xE3o e gerando vers\xE3o desprotegida.</p>
+          </div>
+
+          <!-- Estado Conclu\xEDdo / Resultado -->
+          <div class="pdf-result-view" id="u-result-view" style="display: none;">
+            
+            <div class="pdf-result-header">
+              <span class="pdf-badge pdf-badge--success">\u2713 100% Desbloqueado</span>
+              <span class="pdf-result-summary" id="u-result-summary">Pronto para salvar sem senha</span>
+            </div>
+
+            <!-- Palco de Renderiza\xE7\xE3o de P\xE1gina -->
+            <div class="pdf-stage" id="u-stage">
+              <canvas id="u-preview-canvas" class="pdf-preview-canvas"></canvas>
+            </div>
+
+            <!-- Metadados do Arquivo Desbloqueado -->
+            <div class="pdf-meta-bar">
+              <div class="pdf-meta-item">
+                <span class="pdf-meta-label">P\xE1ginas:</span>
+                <strong id="u-meta-pages" class="pdf-meta-val">0</strong>
+              </div>
+              <div class="pdf-meta-item">
+                <span class="pdf-meta-label">Permiss\xF5es:</span>
+                <strong class="pdf-meta-val" style="color:#10b981;">Totais</strong>
+              </div>
+              <div class="pdf-meta-item">
+                <span class="pdf-meta-label">Tamanho:</span>
+                <strong id="u-meta-size" class="pdf-meta-val">0 KB</strong>
+              </div>
+            </div>
+
+            <!-- A\xE7\xE3o de Download -->
+            <div class="pdf-actions-bar">
+              <button type="button" id="u-download-btn" class="pdf-export-btn pdf-export-btn--primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Baixar PDF Desbloqueado
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+  }
+
+  // js/tools/pdf-unlock/tool.js
+  var _listeners4 = [];
+  var _currentFile2 = null;
+  var _currentArrayBuffer = null;
+  var _unlockedPdfBlob = null;
+  var _requiresPassword = false;
+  function _on3(element, event, handler) {
+    if (!element) return;
+    element.addEventListener(event, handler);
+    _listeners4.push({ element, event, handler });
+  }
+  function _formatBytes(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / 1048576).toFixed(2) + " MB";
+  }
+  var tool_default5 = {
+    id: "pdf-unlock",
+    label: "Desbloquear PDF",
+    render(container) {
+      container.innerHTML = getPdfUnlockHTML();
+    },
+    async mount(container) {
+      _listeners4 = [];
+      _currentFile2 = null;
+      _currentArrayBuffer = null;
+      _unlockedPdfBlob = null;
+      _requiresPassword = false;
+      await Promise.all([
+        loadScript("js/lib/pdf-lib.min.js"),
+        loadScript(APP_CONFIG.CDN.PDFJS)
+      ]);
+      const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+      if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+      }
+      const dropzone = container.querySelector("#u-dropzone");
+      const fileInput = container.querySelector("#u-file-input");
+      const dropPrompt = container.querySelector("#u-dropzone-prompt");
+      const fileLoadedBox = container.querySelector("#u-file-loaded");
+      const filenameEl = container.querySelector("#u-filename");
+      const filesizeEl = container.querySelector("#u-filesize");
+      const removeBtn = container.querySelector("#u-remove-btn");
+      const statusCard = container.querySelector("#u-status-card");
+      const lockBadge = container.querySelector("#u-lock-badge");
+      const statusDesc = container.querySelector("#u-status-desc");
+      const passwordGroup = container.querySelector("#u-password-group");
+      const passwordInput = container.querySelector("#u-password-input");
+      const togglePwdBtn = container.querySelector("#u-toggle-pwd-btn");
+      const unlockBtn = container.querySelector("#u-unlock-btn");
+      const unlockBtnText = container.querySelector("#u-unlock-btn-text");
+      const emptyView = container.querySelector("#u-empty-view");
+      const loadingView = container.querySelector("#u-loading-view");
+      const resultView = container.querySelector("#u-result-view");
+      const previewCanvas = container.querySelector("#u-preview-canvas");
+      const metaPages = container.querySelector("#u-meta-pages");
+      const metaSize = container.querySelector("#u-meta-size");
+      const downloadBtn = container.querySelector("#u-download-btn");
+      function _setViewState(state2) {
+        emptyView.style.display = state2 === "empty" ? "flex" : "none";
+        loadingView.style.display = state2 === "loading" ? "flex" : "none";
+        resultView.style.display = state2 === "result" ? "flex" : "none";
+      }
+      async function _inspectPdf(file) {
+        _currentFile2 = file;
+        _currentArrayBuffer = await file.arrayBuffer();
+        filenameEl.textContent = file.name;
+        filesizeEl.textContent = _formatBytes(file.size);
+        dropPrompt.style.display = "none";
+        fileLoadedBox.style.display = "flex";
+        _requiresPassword = false;
+        passwordGroup.style.display = "none";
+        passwordInput.value = "";
+        try {
+          const loadingTask = pdfjsLib.getDocument({ data: _currentArrayBuffer.slice(0) });
+          loadingTask.onPassword = (callback, reason) => {
+            _requiresPassword = true;
+            lockBadge.textContent = "Senha de Abertura";
+            lockBadge.className = "pdf-badge pdf-badge--warning";
+            statusDesc.textContent = "Este arquivo possui uma senha de leitura. Digite a senha abaixo para descriptografar.";
+            passwordGroup.style.display = "flex";
+            unlockBtn.disabled = false;
+            unlockBtnText.textContent = "Descriptografar com Senha";
+            passwordInput.focus();
+          };
+          const doc = await loadingTask.promise;
+          lockBadge.textContent = "Restri\xE7\xE3o de Permiss\xF5es";
+          lockBadge.className = "pdf-badge pdf-badge--info";
+          statusDesc.textContent = "Documento protegido contra c\xF3pia/edi\xE7\xE3o ou sem restri\xE7\xE3o de leitura. Pronto para desbloqueio.";
+          unlockBtn.disabled = false;
+          unlockBtnText.textContent = "Desbloquear PDF Agora";
+        } catch (err) {
+          if (err.name === "PasswordException" || _requiresPassword) {
+            _requiresPassword = true;
+            lockBadge.textContent = "Senha de Abertura";
+            lockBadge.className = "pdf-badge pdf-badge--warning";
+            statusDesc.textContent = "Este arquivo exige senha para ser aberto. Insira a senha abaixo.";
+            passwordGroup.style.display = "flex";
+            unlockBtn.disabled = false;
+            unlockBtnText.textContent = "Descriptografar com Senha";
+          } else {
+            lockBadge.textContent = "PDF Carregado";
+            lockBadge.className = "pdf-badge";
+            statusDesc.textContent = "Pronto para remo\xE7\xE3o de restri\xE7\xF5es de impress\xE3o e edi\xE7\xE3o.";
+            unlockBtn.disabled = false;
+            unlockBtnText.textContent = "Desbloquear PDF";
+          }
+        }
+      }
+      function _reset() {
+        _currentFile2 = null;
+        _currentArrayBuffer = null;
+        _unlockedPdfBlob = null;
+        _requiresPassword = false;
+        fileInput.value = "";
+        dropPrompt.style.display = "flex";
+        fileLoadedBox.style.display = "none";
+        lockBadge.textContent = "Aguardando Arquivo";
+        lockBadge.className = "pdf-badge";
+        statusDesc.textContent = "Carregue um PDF para inspecionar permiss\xF5es de impress\xE3o, c\xF3pia e prote\xE7\xE3o por chave criptogr\xE1fica.";
+        passwordGroup.style.display = "none";
+        passwordInput.value = "";
+        unlockBtn.disabled = true;
+        unlockBtnText.textContent = "Desbloquear PDF";
+        _setViewState("empty");
+      }
+      async function _doUnlock() {
+        if (!_currentArrayBuffer) return;
+        _setViewState("loading");
+        await new Promise((r) => setTimeout(r, 30));
+        const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
+        if (!PDFLib) {
+          alert("Biblioteca PDFLib n\xE3o carregada.");
+          _setViewState("empty");
+          return;
+        }
+        const password = passwordInput.value.trim();
+        try {
+          let pdfDoc = null;
+          const copyBuf = _currentArrayBuffer.slice(0);
+          if (_requiresPassword) {
+            const loadingTask = pdfjsLib.getDocument({ data: copyBuf, password });
+            const jsDoc = await loadingTask.promise;
+            const numPages = jsDoc.numPages;
+            pdfDoc = await PDFLib.PDFDocument.create();
+            for (let i = 1; i <= numPages; i++) {
+              const page = await jsDoc.getPage(i);
+              const viewport = page.getViewport({ scale: 1.5 });
+              const canvas = document.createElement("canvas");
+              canvas.width = viewport.width;
+              canvas.height = viewport.height;
+              const ctx = canvas.getContext("2d");
+              await page.render({ canvasContext: ctx, viewport }).promise;
+              const imgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+              const imgBytes = await fetch(imgDataUrl).then((r) => r.arrayBuffer());
+              const embeddedImg = await pdfDoc.embedJpg(imgBytes);
+              const newPage = pdfDoc.addPage([viewport.width, viewport.height]);
+              newPage.drawImage(embeddedImg, {
+                x: 0,
+                y: 0,
+                width: viewport.width,
+                height: viewport.height
+              });
+            }
+          } else {
+            pdfDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+          }
+          const unlockedBytes = await pdfDoc.save();
+          _unlockedPdfBlob = new Blob([unlockedBytes], { type: "application/pdf" });
+          metaPages.textContent = pdfDoc.getPageCount ? pdfDoc.getPageCount() : "1+";
+          metaSize.textContent = _formatBytes(_unlockedPdfBlob.size);
+          try {
+            const previewTask = pdfjsLib.getDocument({ data: unlockedBytes.slice(0) });
+            const previewDoc = await previewTask.promise;
+            const firstPage = await previewDoc.getPage(1);
+            const stageViewport = firstPage.getViewport({ scale: 1 });
+            const scale = Math.min(260 / stageViewport.width, 240 / stageViewport.height);
+            const scaledViewport = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
+            previewCanvas.width = scaledViewport.width;
+            previewCanvas.height = scaledViewport.height;
+            const ctx = previewCanvas.getContext("2d");
+            await firstPage.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+          } catch (e) {
+            console.warn("Miniatura preview n\xE3o dispon\xEDvel:", e);
+          }
+          _setViewState("result");
+        } catch (err) {
+          console.error("Falha ao desbloquear PDF:", err);
+          _setViewState("empty");
+          alert("Senha incorreta ou PDF com prote\xE7\xE3o n\xE3o suportada pelo navegador.");
+        }
+      }
+      _on3(fileInput, "change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) _inspectPdf(file);
+      });
+      _on3(dropzone, "dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("pdf-drag-over");
+      });
+      _on3(dropzone, "dragleave", () => dropzone.classList.remove("pdf-drag-over"));
+      _on3(dropzone, "drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("pdf-drag-over");
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file && file.type === "application/pdf") _inspectPdf(file);
+      });
+      _on3(removeBtn, "click", (e) => {
+        e.stopPropagation();
+        _reset();
+      });
+      _on3(togglePwdBtn, "click", () => {
+        passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+      });
+      _on3(unlockBtn, "click", _doUnlock);
+      _on3(downloadBtn, "click", () => {
+        if (!_unlockedPdfBlob) return;
+        const originalName = _currentFile2 ? _currentFile2.name.replace(/\.pdf$/i, "") : "documento";
+        const outName = `${originalName}_desbloqueado.pdf`;
+        const url = URL.createObjectURL(_unlockedPdfBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = outName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 500);
+      });
+    },
+    unmount() {
+      _listeners4.forEach(({ element, event, handler }) => {
+        if (element) element.removeEventListener(event, handler);
+      });
+      _listeners4 = [];
+      _currentFile2 = null;
+      _currentArrayBuffer = null;
+      _unlockedPdfBlob = null;
+    }
+  };
+
+  // js/tools/pdf-compress/ui.js
+  function getPdfCompressHTML() {
+    return `
+    <div class="pdf-compress-root">
+
+      <section class="pdf-tool-hero">
+        <header class="hero-header">
+          <div class="pdf-tool-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 14 10 14 10 20"></polyline>
+              <polyline points="20 10 14 10 14 4"></polyline>
+              <line x1="14" y1="10" x2="21" y2="3"></line>
+              <line x1="3" y1="21" x2="10" y2="14"></line>
+            </svg>
+            Otimiza\xE7\xE3o por Renderiza\xE7\xE3o &amp; Reamostragem
+          </div>
+          <h2 class="hero-title">Comprimir PDF</h2>
+          <p class="hero-subtitle">
+            Reduza drasticamente o tamanho de arquivos PDF pesados e escaneados com reamostragem inteligente de imagens. 100% local no seu navegador.
+          </p>
+        </header>
+      </section>
+
+      <div class="pdf-workspace">
+
+        <!-- Coluna Esquerda: Entrada & Controles de Compress\xE3o -->
+        <div class="pdf-controls-panel">
+
+          <!-- Dropzone Compacto -->
+          <div class="pdf-dropzone" id="c-dropzone" tabindex="0" role="button" aria-label="Carregar arquivo PDF para comprimir">
+            <input type="file" id="c-file-input" accept="application/pdf" class="pdf-hidden-input">
+            <div class="pdf-dropzone-content" id="c-dropzone-prompt">
+              <div class="pdf-dropzone-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="12" y1="18" x2="12" y2="12"></line>
+                  <line x1="9" y1="15" x2="15" y2="15"></line>
+                </svg>
+              </div>
+              <div class="pdf-dropzone-text">
+                <p class="pdf-dropzone-title">Arraste um PDF ou <span class="pdf-link">selecione</span></p>
+                <p class="pdf-dropzone-sub">PDFs escaneados ou volumosos at\xE9 1,5 GB</p>
+              </div>
+            </div>
+
+            <!-- Preview do Arquivo Carregado -->
+            <div class="pdf-file-loaded" id="c-file-loaded" style="display: none;">
+              <div class="pdf-icon-badge">PDF</div>
+              <div class="pdf-loaded-info">
+                <span class="pdf-filename" id="c-filename">documento.pdf</span>
+                <span class="pdf-filesize" id="c-filesize">0 KB</span>
+              </div>
+              <button type="button" class="pdf-remove-btn" id="c-remove-btn" title="Trocar arquivo">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- N\xEDvel de Compress\xE3o (Presets 3 Colunas) -->
+          <div class="pdf-field-group">
+            <label class="pdf-label">N\xEDvel de Compress\xE3o</label>
+            <div class="pdf-preset-grid" id="c-preset-grid">
+              <button type="button" class="pdf-preset-btn" data-preset="extreme">
+                <span class="pdf-preset-icon">\u26A1</span>
+                <span class="pdf-preset-title">Extrema</span>
+                <span class="pdf-preset-desc">72 DPI \u2022 Menor peso</span>
+              </button>
+              <button type="button" class="pdf-preset-btn pdf-preset-btn--active" data-preset="balanced">
+                <span class="pdf-preset-icon">\u2696\uFE0F</span>
+                <span class="pdf-preset-title">Recomendada</span>
+                <span class="pdf-preset-desc">100 DPI \u2022 Equilibrado</span>
+              </button>
+              <button type="button" class="pdf-preset-btn" data-preset="light">
+                <span class="pdf-preset-icon">\u{1F48E}</span>
+                <span class="pdf-preset-title">Alta Nitidez</span>
+                <span class="pdf-preset-desc">150 DPI \u2022 Mais detalhe</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Ajustes Manuais Colaps\xE1veis -->
+          <details class="pdf-advanced-details">
+            <summary class="pdf-advanced-summary">
+              <span>Ajustes Finos de Qualidade</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </summary>
+            <div class="pdf-advanced-body">
+              <div class="pdf-range-row">
+                <div class="pdf-range-header">
+                  <label for="c-dpi-range">Resolu\xE7\xE3o (DPI)</label>
+                  <span id="c-dpi-val" class="pdf-val-badge">100 DPI</span>
+                </div>
+                <input type="range" id="c-dpi-range" min="50" max="200" value="100" step="10" class="pdf-slider">
+              </div>
+
+              <div class="pdf-range-row">
+                <div class="pdf-range-header">
+                  <label for="c-quality-range">Qualidade da Imagem</label>
+                  <span id="c-quality-val" class="pdf-val-badge">70%</span>
+                </div>
+                <input type="range" id="c-quality-range" min="20" max="95" value="70" step="5" class="pdf-slider">
+              </div>
+            </div>
+          </details>
+
+          <!-- Bot\xE3o Principal de Compress\xE3o -->
+          <button type="button" id="c-compress-btn" class="pdf-primary-btn" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 14 10 14 10 20"></polyline>
+              <polyline points="20 10 14 10 14 4"></polyline>
+              <line x1="14" y1="10" x2="21" y2="3"></line>
+              <line x1="3" y1="21" x2="10" y2="14"></line>
+            </svg>
+            <span>Comprimir PDF</span>
+          </button>
+
+        </div>
+
+        <!-- Coluna Direita: Pr\xE9-visualiza\xE7\xE3o & M\xE9tricas -->
+        <div class="pdf-preview-panel">
+
+          <!-- Estado Vazio -->
+          <div class="pdf-empty-view" id="c-empty-view">
+            <div class="pdf-empty-illustration">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="4 14 10 14 10 20"></polyline>
+                <polyline points="20 10 14 10 14 4"></polyline>
+                <line x1="14" y1="10" x2="21" y2="3"></line>
+                <line x1="3" y1="21" x2="10" y2="14"></line>
+              </svg>
+            </div>
+            <h3 class="pdf-empty-title">Nenhum PDF comprimido</h3>
+            <p class="pdf-empty-desc">Carregue um arquivo e selecione o n\xEDvel de compress\xE3o para otimizar o documento no navegador.</p>
+          </div>
+
+          <!-- Estado Processando -->
+          <div class="pdf-loading-view" id="c-loading-view" style="display: none;">
+            <div class="pdf-spinner"></div>
+            <h3 class="pdf-loading-title">Otimizando e reamostrando p\xE1ginas...</h3>
+            <p class="pdf-loading-desc" id="c-loading-progress">Processando p\xE1gina 1...</p>
+          </div>
+
+          <!-- Estado Resultado -->
+          <div class="pdf-result-view" id="c-result-view" style="display: none;">
+
+            <!-- Comparativo de Tamanhos -->
+            <div class="pdf-savings-card">
+              <div class="pdf-savings-stat">
+                <span class="pdf-savings-label">Original</span>
+                <strong id="c-stat-orig" class="pdf-savings-val">0 MB</strong>
+              </div>
+              <div class="pdf-savings-arrow">\u2192</div>
+              <div class="pdf-savings-stat">
+                <span class="pdf-savings-label">Comprimido</span>
+                <strong id="c-stat-new" class="pdf-savings-val" style="color:var(--accent-primary);">0 MB</strong>
+              </div>
+              <div class="pdf-savings-badge" id="c-stat-pct">-0%</div>
+            </div>
+
+            <!-- Palco de Preview -->
+            <div class="pdf-stage" id="c-stage">
+              <canvas id="c-preview-canvas" class="pdf-preview-canvas"></canvas>
+            </div>
+
+            <!-- Metadados -->
+            <div class="pdf-meta-bar">
+              <div class="pdf-meta-item">
+                <span class="pdf-meta-label">Total de P\xE1ginas:</span>
+                <strong id="c-meta-pages" class="pdf-meta-val">0</strong>
+              </div>
+              <div class="pdf-meta-item">
+                <span class="pdf-meta-label">Economia:</span>
+                <strong id="c-meta-saved" class="pdf-meta-val" style="color:#10b981;">0 KB</strong>
+              </div>
+            </div>
+
+            <!-- A\xE7\xE3o de Download -->
+            <div class="pdf-actions-bar">
+              <button type="button" id="c-download-btn" class="pdf-export-btn pdf-export-btn--primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Baixar PDF Otimizado
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+  }
+
+  // js/tools/pdf-compress/tool.js
+  var _listeners5 = [];
+  var _currentFile3 = null;
+  var _currentArrayBuffer2 = null;
+  var _compressedPdfBlob = null;
+  var _currentPreset = "balanced";
+  function _on4(element, event, handler) {
+    if (!element) return;
+    element.addEventListener(event, handler);
+    _listeners5.push({ element, event, handler });
+  }
+  function _formatBytes2(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / 1048576).toFixed(2) + " MB";
+  }
+  var PRESETS = {
+    extreme: { dpi: 72, quality: 0.5 },
+    balanced: { dpi: 100, quality: 0.7 },
+    light: { dpi: 150, quality: 0.85 }
+  };
+  var tool_default6 = {
+    id: "pdf-compress",
+    label: "Comprimir PDF",
+    render(container) {
+      container.innerHTML = getPdfCompressHTML();
+    },
+    async mount(container) {
+      _listeners5 = [];
+      _currentFile3 = null;
+      _currentArrayBuffer2 = null;
+      _compressedPdfBlob = null;
+      _currentPreset = "balanced";
+      await Promise.all([
+        loadScript("js/lib/pdf-lib.min.js"),
+        loadScript(APP_CONFIG.CDN.PDFJS)
+      ]);
+      const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+      if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+      }
+      const dropzone = container.querySelector("#c-dropzone");
+      const fileInput = container.querySelector("#c-file-input");
+      const dropPrompt = container.querySelector("#c-dropzone-prompt");
+      const fileLoadedBox = container.querySelector("#c-file-loaded");
+      const filenameEl = container.querySelector("#c-filename");
+      const filesizeEl = container.querySelector("#c-filesize");
+      const removeBtn = container.querySelector("#c-remove-btn");
+      const presetBtns = container.querySelectorAll(".pdf-preset-btn");
+      const dpiRange = container.querySelector("#c-dpi-range");
+      const dpiVal = container.querySelector("#c-dpi-val");
+      const qualityRange = container.querySelector("#c-quality-range");
+      const qualityVal = container.querySelector("#c-quality-val");
+      const compressBtn = container.querySelector("#c-compress-btn");
+      const emptyView = container.querySelector("#c-empty-view");
+      const loadingView = container.querySelector("#c-loading-view");
+      const loadingProgress = container.querySelector("#c-loading-progress");
+      const resultView = container.querySelector("#c-result-view");
+      const statOrig = container.querySelector("#c-stat-orig");
+      const statNew = container.querySelector("#c-stat-new");
+      const statPct = container.querySelector("#c-stat-pct");
+      const previewCanvas = container.querySelector("#c-preview-canvas");
+      const metaPages = container.querySelector("#c-meta-pages");
+      const metaSaved = container.querySelector("#c-meta-saved");
+      const downloadBtn = container.querySelector("#c-download-btn");
+      function _setViewState(state2) {
+        emptyView.style.display = state2 === "empty" ? "flex" : "none";
+        loadingView.style.display = state2 === "loading" ? "flex" : "none";
+        resultView.style.display = state2 === "result" ? "flex" : "none";
+      }
+      function _syncPresetControls(presetKey) {
+        const cfg = PRESETS[presetKey];
+        if (!cfg) return;
+        dpiRange.value = cfg.dpi;
+        dpiVal.textContent = cfg.dpi + " DPI";
+        qualityRange.value = Math.round(cfg.quality * 100);
+        qualityVal.textContent = Math.round(cfg.quality * 100) + "%";
+      }
+      async function _handleFile(file) {
+        _currentFile3 = file;
+        _currentArrayBuffer2 = await file.arrayBuffer();
+        filenameEl.textContent = file.name;
+        filesizeEl.textContent = _formatBytes2(file.size);
+        dropPrompt.style.display = "none";
+        fileLoadedBox.style.display = "flex";
+        compressBtn.disabled = false;
+      }
+      function _reset() {
+        _currentFile3 = null;
+        _currentArrayBuffer2 = null;
+        _compressedPdfBlob = null;
+        fileInput.value = "";
+        dropPrompt.style.display = "flex";
+        fileLoadedBox.style.display = "none";
+        compressBtn.disabled = true;
+        _setViewState("empty");
+      }
+      async function _doCompress() {
+        if (!_currentArrayBuffer2) return;
+        _setViewState("loading");
+        await new Promise((r) => setTimeout(r, 20));
+        const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
+        if (!PDFLib) {
+          alert("Biblioteca PDFLib n\xE3o dispon\xEDvel.");
+          _setViewState("empty");
+          return;
+        }
+        const dpi = parseInt(dpiRange.value, 10) || 100;
+        const quality = (parseInt(qualityRange.value, 10) || 70) / 100;
+        const renderScale = dpi / 72;
+        try {
+          const copyBuf = _currentArrayBuffer2.slice(0);
+          const loadingTask = pdfjsLib.getDocument({ data: copyBuf });
+          const jsDoc = await loadingTask.promise;
+          const numPages = jsDoc.numPages;
+          const newPdfDoc = await PDFLib.PDFDocument.create();
+          for (let i = 1; i <= numPages; i++) {
+            if (loadingProgress) {
+              loadingProgress.textContent = `Otimizando p\xE1gina ${i} de ${numPages}...`;
+            }
+            const page = await jsDoc.getPage(i);
+            const viewport = page.getViewport({ scale: renderScale });
+            const baseViewport = page.getViewport({ scale: 1 });
+            const canvas = document.createElement("canvas");
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            const ctx = canvas.getContext("2d");
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            const imgDataUrl = canvas.toDataURL("image/jpeg", quality);
+            const imgBytes = await fetch(imgDataUrl).then((r) => r.arrayBuffer());
+            const embeddedImg = await newPdfDoc.embedJpg(imgBytes);
+            const newPage = newPdfDoc.addPage([baseViewport.width, baseViewport.height]);
+            newPage.drawImage(embeddedImg, {
+              x: 0,
+              y: 0,
+              width: baseViewport.width,
+              height: baseViewport.height
+            });
+          }
+          const compressedBytes = await newPdfDoc.save();
+          _compressedPdfBlob = new Blob([compressedBytes], { type: "application/pdf" });
+          const origSize = _currentFile3.size;
+          const newSize = _compressedPdfBlob.size;
+          const diff = origSize - newSize;
+          const pct = origSize > 0 ? Math.round(diff / origSize * 100) : 0;
+          statOrig.textContent = _formatBytes2(origSize);
+          statNew.textContent = _formatBytes2(newSize);
+          if (pct >= 0) {
+            statPct.textContent = `-${pct}%`;
+            statPct.style.background = "color-mix(in srgb, #10b981 18%, transparent)";
+            statPct.style.color = "#10b981";
+            metaSaved.textContent = _formatBytes2(Math.max(0, diff));
+          } else {
+            statPct.textContent = `+${Math.abs(pct)}%`;
+            statPct.style.background = "color-mix(in srgb, #f59e0b 18%, transparent)";
+            statPct.style.color = "#f59e0b";
+            metaSaved.textContent = "0 B";
+          }
+          metaPages.textContent = numPages;
+          try {
+            const previewDoc = await pdfjsLib.getDocument({ data: compressedBytes.slice(0) }).promise;
+            const firstPage = await previewDoc.getPage(1);
+            const stageVp = firstPage.getViewport({ scale: 1 });
+            const scale = Math.min(260 / stageVp.width, 230 / stageVp.height);
+            const scaledVp = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
+            previewCanvas.width = scaledVp.width;
+            previewCanvas.height = scaledVp.height;
+            const ctx = previewCanvas.getContext("2d");
+            await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
+          } catch (e) {
+            console.warn("Erro ao renderizar miniatura comprimida:", e);
+          }
+          _setViewState("result");
+        } catch (err) {
+          console.error("Falha ao comprimir PDF:", err);
+          _setViewState("empty");
+          alert("Erro ao comprimir o PDF. O arquivo pode estar corrompido ou protegido por senha.");
+        }
+      }
+      _on4(fileInput, "change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) _handleFile(file);
+      });
+      _on4(dropzone, "dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("pdf-drag-over");
+      });
+      _on4(dropzone, "dragleave", () => dropzone.classList.remove("pdf-drag-over"));
+      _on4(dropzone, "drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("pdf-drag-over");
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file && file.type === "application/pdf") _handleFile(file);
+      });
+      _on4(removeBtn, "click", (e) => {
+        e.stopPropagation();
+        _reset();
+      });
+      presetBtns.forEach((btn) => {
+        _on4(btn, "click", () => {
+          presetBtns.forEach((b) => b.classList.remove("pdf-preset-btn--active"));
+          btn.classList.add("pdf-preset-btn--active");
+          _currentPreset = btn.dataset.preset;
+          _syncPresetControls(_currentPreset);
+        });
+      });
+      _on4(dpiRange, "input", () => {
+        dpiVal.textContent = dpiRange.value + " DPI";
+      });
+      _on4(qualityRange, "input", () => {
+        qualityVal.textContent = qualityRange.value + "%";
+      });
+      _on4(compressBtn, "click", _doCompress);
+      _on4(downloadBtn, "click", () => {
+        if (!_compressedPdfBlob) return;
+        const originalName = _currentFile3 ? _currentFile3.name.replace(/\.pdf$/i, "") : "documento";
+        const outName = `${originalName}_comprimido.pdf`;
+        const url = URL.createObjectURL(_compressedPdfBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = outName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 500);
+      });
+    },
+    unmount() {
+      _listeners5.forEach(({ element, event, handler }) => {
+        if (element) element.removeEventListener(event, handler);
+      });
+      _listeners5 = [];
+      _currentFile3 = null;
+      _currentArrayBuffer2 = null;
+      _compressedPdfBlob = null;
+    }
+  };
+
+  // js/tools/pdf-merge/ui.js
+  function getPdfMergeHTML() {
+    return `
+    <div class="pdf-merge-root">
+
+      <section class="pdf-tool-hero">
+        <header class="hero-header">
+          <div class="pdf-tool-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
+              <polyline points="10 9 9 9 8 9"></polyline>
+              <line x1="12" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            Jun\xE7\xE3o Sequencial de Documentos
+          </div>
+          <h2 class="hero-title">Mesclar PDF</h2>
+          <p class="hero-subtitle">
+            Combine m\xFAltiplos documentos PDF em um \xFAnico arquivo ordenado. Reorganize a sequ\xEAncia e junte tudo instantaneamente no seu navegador.
+          </p>
+        </header>
+      </section>
+
+      <div class="pdf-workspace">
+
+        <!-- Coluna Esquerda: Entrada & Fila de Mesclagem -->
+        <div class="pdf-controls-panel">
+
+          <!-- Dropzone para m\xFAltiplos arquivos -->
+          <div class="pdf-dropzone" id="m-dropzone" tabindex="0" role="button" aria-label="Adicionar arquivos PDF para mesclar">
+            <input type="file" id="m-file-input" accept="application/pdf" multiple class="pdf-hidden-input">
+            <div class="pdf-dropzone-content" id="m-dropzone-prompt">
+              <div class="pdf-dropzone-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </div>
+              <div class="pdf-dropzone-text">
+                <p class="pdf-dropzone-title">Adicione PDFs ou <span class="pdf-link">selecione</span></p>
+                <p class="pdf-dropzone-sub">Selecione 2 ou mais arquivos para juntar</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lista Compacta de Arquivos -->
+          <div class="pdf-merge-list-wrap">
+            <div class="pdf-merge-list-header">
+              <span class="pdf-label">Fila de Documentos (<span id="m-count-badge">0</span>)</span>
+              <button type="button" id="m-clear-btn" class="pdf-link-btn" style="display: none;">Limpar fila</button>
+            </div>
+            <div class="pdf-merge-list" id="m-file-list">
+              <div class="pdf-merge-empty-list" id="m-list-empty">
+                Nenhum PDF adicionado \xE0 lista.
+              </div>
+            </div>
+          </div>
+
+          <!-- Bot\xE3o Principal de Mesclagem -->
+          <button type="button" id="m-merge-btn" class="pdf-primary-btn" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
+              <line x1="12" y1="11" x2="12" y2="17"></line>
+              <line x1="9" y1="14" x2="15" y2="14"></line>
+            </svg>
+            <span>Mesclar PDFs</span>
+          </button>
+
+        </div>
+
+        <!-- Coluna Direita: Pr\xE9-visualiza\xE7\xE3o & Resultado -->
+        <div class="pdf-preview-panel">
+
+          <!-- Estado Vazio -->
+          <div class="pdf-empty-view" id="m-empty-view">
+            <div class="pdf-empty-illustration">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+            </div>
+            <h3 class="pdf-empty-title">Nenhum PDF mesclado</h3>
+            <p class="pdf-empty-desc">Adicione ao menos dois arquivos na lista e clique em "Mesclar PDFs" para gerar o documento unificado.</p>
+          </div>
+
+          <!-- Estado Processando -->
+          <div class="pdf-loading-view" id="m-loading-view" style="display: none;">
+            <div class="pdf-spinner"></div>
+            <h3 class="pdf-loading-title">Combinando p\xE1ginas dos documentos...</h3>
+            <p class="pdf-loading-desc">Organizando p\xE1ginas sequenciais em novo PDF.</p>
+          </div>
+
+          <!-- Estado Resultado -->
+          <div class="pdf-result-view" id="m-result-view" style="display: none;">
+
+            <div class="pdf-result-header">
+              <span class="pdf-badge pdf-badge--success">\u2713 PDFs Mesclados</span>
+              <span class="pdf-result-summary" id="m-result-summary">Documento unificado com sucesso</span>
+            </div>
+
+            <!-- Palco de Preview -->
+            <div class="pdf-stage" id="m-stage">
+              <canvas id="m-preview-canvas" class="pdf-preview-canvas"></canvas>
+            </div>
+
+            <!-- Metadados -->
+            <div class="pdf-meta-bar">
+              <div class="pdf-meta-item">
+                <span class="pdf-meta-label">Arquivos Unidos:</span>
+                <strong id="m-meta-docs" class="pdf-meta-val">0</strong>
+              </div>
+              <div class="pdf-meta-item">
+                <span class="pdf-meta-label">Total de P\xE1ginas:</span>
+                <strong id="m-meta-pages" class="pdf-meta-val">0</strong>
+              </div>
+              <div class="pdf-meta-item">
+                <span class="pdf-meta-label">Tamanho Final:</span>
+                <strong id="m-meta-size" class="pdf-meta-val">0 KB</strong>
+              </div>
+            </div>
+
+            <!-- A\xE7\xE3o de Download -->
+            <div class="pdf-actions-bar">
+              <button type="button" id="m-download-btn" class="pdf-export-btn pdf-export-btn--primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Baixar PDF Mesclado
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+  }
+
+  // js/tools/pdf-merge/tool.js
+  var _listeners6 = [];
+  var _filesQueue = [];
+  var _mergedPdfBlob = null;
+  function _on5(element, event, handler) {
+    if (!element) return;
+    element.addEventListener(event, handler);
+    _listeners6.push({ element, event, handler });
+  }
+  function _formatBytes3(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / 1048576).toFixed(2) + " MB";
+  }
+  var tool_default7 = {
+    id: "pdf-merge",
+    label: "Mesclar PDF",
+    render(container) {
+      container.innerHTML = getPdfMergeHTML();
+    },
+    async mount(container) {
+      _listeners6 = [];
+      _filesQueue = [];
+      _mergedPdfBlob = null;
+      await Promise.all([
+        loadScript("js/lib/pdf-lib.min.js"),
+        loadScript(APP_CONFIG.CDN.PDFJS)
+      ]);
+      const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+      if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+      }
+      const dropzone = container.querySelector("#m-dropzone");
+      const fileInput = container.querySelector("#m-file-input");
+      const fileList = container.querySelector("#m-file-list");
+      const listEmpty = container.querySelector("#m-list-empty");
+      const countBadge = container.querySelector("#m-count-badge");
+      const clearBtn = container.querySelector("#m-clear-btn");
+      const mergeBtn = container.querySelector("#m-merge-btn");
+      const emptyView = container.querySelector("#m-empty-view");
+      const loadingView = container.querySelector("#m-loading-view");
+      const resultView = container.querySelector("#m-result-view");
+      const previewCanvas = container.querySelector("#m-preview-canvas");
+      const metaDocs = container.querySelector("#m-meta-docs");
+      const metaPages = container.querySelector("#m-meta-pages");
+      const metaSize = container.querySelector("#m-meta-size");
+      const downloadBtn = container.querySelector("#m-download-btn");
+      function _setViewState(state2) {
+        emptyView.style.display = state2 === "empty" ? "flex" : "none";
+        loadingView.style.display = state2 === "loading" ? "flex" : "none";
+        resultView.style.display = state2 === "result" ? "flex" : "none";
+      }
+      function _renderList() {
+        countBadge.textContent = _filesQueue.length;
+        clearBtn.style.display = _filesQueue.length > 0 ? "inline-block" : "none";
+        mergeBtn.disabled = _filesQueue.length < 2;
+        if (_filesQueue.length === 0) {
+          fileList.innerHTML = "";
+          fileList.appendChild(listEmpty);
+          listEmpty.style.display = "block";
+          return;
+        }
+        listEmpty.style.display = "none";
+        fileList.innerHTML = "";
+        _filesQueue.forEach((item, index) => {
+          const row = document.createElement("div");
+          row.className = "pdf-merge-item";
+          row.innerHTML = `
+          <div class="pdf-merge-item-order">${index + 1}</div>
+          <div class="pdf-merge-item-info">
+            <span class="pdf-merge-item-name" title="${item.file.name}">${item.file.name}</span>
+            <span class="pdf-merge-item-size">${_formatBytes3(item.file.size)}</span>
+          </div>
+          <div class="pdf-merge-item-actions">
+            <button type="button" class="pdf-item-ctrl-btn btn-up" data-idx="${index}" title="Mover para cima" ${index === 0 ? "disabled" : ""}>\u2191</button>
+            <button type="button" class="pdf-item-ctrl-btn btn-down" data-idx="${index}" title="Mover para baixo" ${index === _filesQueue.length - 1 ? "disabled" : ""}>\u2193</button>
+            <button type="button" class="pdf-item-ctrl-btn btn-del" data-idx="${index}" title="Remover">\u2715</button>
+          </div>
+        `;
+          fileList.appendChild(row);
+        });
+        fileList.querySelectorAll(".btn-up").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.idx, 10);
+            if (idx > 0) {
+              const temp = _filesQueue[idx];
+              _filesQueue[idx] = _filesQueue[idx - 1];
+              _filesQueue[idx - 1] = temp;
+              _renderList();
+            }
+          });
+        });
+        fileList.querySelectorAll(".btn-down").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.idx, 10);
+            if (idx < _filesQueue.length - 1) {
+              const temp = _filesQueue[idx];
+              _filesQueue[idx] = _filesQueue[idx + 1];
+              _filesQueue[idx + 1] = temp;
+              _renderList();
+            }
+          });
+        });
+        fileList.querySelectorAll(".btn-del").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.dataset.idx, 10);
+            _filesQueue.splice(idx, 1);
+            _renderList();
+          });
+        });
+      }
+      async function _addFiles(files) {
+        for (const file of files) {
+          if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+            const buffer = await file.arrayBuffer();
+            _filesQueue.push({ file, buffer });
+          }
+        }
+        _renderList();
+      }
+      async function _doMerge() {
+        if (_filesQueue.length < 2) return;
+        _setViewState("loading");
+        await new Promise((r) => setTimeout(r, 20));
+        const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
+        if (!PDFLib) {
+          alert("Biblioteca PDFLib n\xE3o dispon\xEDvel.");
+          _setViewState("empty");
+          return;
+        }
+        try {
+          const mergedDoc = await PDFLib.PDFDocument.create();
+          let totalPages = 0;
+          for (const item of _filesQueue) {
+            const srcDoc = await PDFLib.PDFDocument.load(item.buffer.slice(0), { ignoreEncryption: true });
+            const pageIndices = srcDoc.getPageIndices();
+            const copiedPages = await mergedDoc.copyPages(srcDoc, pageIndices);
+            copiedPages.forEach((page) => mergedDoc.addPage(page));
+            totalPages += pageIndices.length;
+          }
+          const mergedBytes = await mergedDoc.save();
+          _mergedPdfBlob = new Blob([mergedBytes], { type: "application/pdf" });
+          metaDocs.textContent = _filesQueue.length;
+          metaPages.textContent = totalPages;
+          metaSize.textContent = _formatBytes3(_mergedPdfBlob.size);
+          try {
+            const previewDoc = await pdfjsLib.getDocument({ data: mergedBytes.slice(0) }).promise;
+            const firstPage = await previewDoc.getPage(1);
+            const stageVp = firstPage.getViewport({ scale: 1 });
+            const scale = Math.min(260 / stageVp.width, 230 / stageVp.height);
+            const scaledVp = firstPage.getViewport({ scale: Math.max(scale, 0.4) });
+            previewCanvas.width = scaledVp.width;
+            previewCanvas.height = scaledVp.height;
+            const ctx = previewCanvas.getContext("2d");
+            await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
+          } catch (e) {
+            console.warn("Erro ao renderizar miniatura mesclada:", e);
+          }
+          _setViewState("result");
+        } catch (err) {
+          console.error("Falha ao mesclar PDFs:", err);
+          _setViewState("empty");
+          alert("Erro ao mesclar documentos. Um dos arquivos pode ter criptografia pesada.");
+        }
+      }
+      _on5(fileInput, "change", (e) => {
+        if (e.target.files && e.target.files.length) {
+          _addFiles(Array.from(e.target.files));
+          fileInput.value = "";
+        }
+      });
+      _on5(dropzone, "dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("pdf-drag-over");
+      });
+      _on5(dropzone, "dragleave", () => dropzone.classList.remove("pdf-drag-over"));
+      _on5(dropzone, "drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("pdf-drag-over");
+        if (e.dataTransfer.files && e.dataTransfer.files.length) {
+          _addFiles(Array.from(e.dataTransfer.files));
+        }
+      });
+      _on5(clearBtn, "click", () => {
+        _filesQueue = [];
+        _renderList();
+        _setViewState("empty");
+      });
+      _on5(mergeBtn, "click", _doMerge);
+      _on5(downloadBtn, "click", () => {
+        if (!_mergedPdfBlob) return;
+        const outName = "documentos_mesclados.pdf";
+        const url = URL.createObjectURL(_mergedPdfBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = outName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 500);
+      });
+    },
+    unmount() {
+      _listeners6.forEach(({ element, event, handler }) => {
+        if (element) element.removeEventListener(event, handler);
+      });
+      _listeners6 = [];
+      _filesQueue = [];
+      _mergedPdfBlob = null;
+    }
+  };
+
   // js/tool-registry.js
   var STORAGE_KEY_ACTIVE_TOOL = "opentool_active_tool";
   var BUILTIN_TOOLS = {
     hub: tool_default3,
     doc2md: tool_default,
     qrcode: tool_default2,
-    img2vector: tool_default4
+    img2vector: tool_default4,
+    "pdf-unlock": tool_default5,
+    "pdf-compress": tool_default6,
+    "pdf-merge": tool_default7
   };
   var _preloadedModules = /* @__PURE__ */ new Map();
   var TOOL_CATALOG = [
@@ -7849,6 +9093,36 @@ ${footerDelimiter}
       <polygon points="12 2 2 7 12 12 22 7 12 2"/>
       <polyline points="2 17 12 22 22 17"/>
       <polyline points="2 12 12 17 22 12"/>
+    </svg>`
+    },
+    {
+      id: "pdf-unlock",
+      label: "Desbloquear PDF",
+      description: "Remova senhas e restri\xE7\xF5es de permiss\xF5es (edi\xE7\xE3o, c\xF3pia, impress\xE3o) de arquivos PDF",
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+    </svg>`
+    },
+    {
+      id: "pdf-compress",
+      label: "Comprimir PDF",
+      description: "Reduza o tamanho de PDFs com reamostragem inteligente de imagens e ajuste de DPI",
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="4 14 10 14 10 20"/>
+      <polyline points="20 10 14 10 14 4"/>
+      <line x1="14" y1="10" x2="21" y2="3"/>
+      <line x1="3" y1="21" x2="10" y2="14"/>
+    </svg>`
+    },
+    {
+      id: "pdf-merge",
+      label: "Mesclar PDF",
+      description: "Junte m\xFAltiplos documentos PDF em um \xFAnico arquivo ordenado 100% local",
+      icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+      <line x1="12" y1="11" x2="12" y2="17"/>
+      <line x1="9" y1="14" x2="15" y2="14"/>
     </svg>`
     }
   ];

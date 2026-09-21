@@ -1,0 +1,141 @@
+/**
+ * Open Tool — Ferramenta: Mesclar PDF (pdf-merge) Styles
+ * Segue a Diretriz 2.4 (Single-Viewport e Alinhamento Perfeito)
+ * @version v.2.3.0
+ */
+
+.pdf-merge-root {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem 1.5rem;
+  animation: fadeInTool 0.3s ease;
+}
+
+/* ── Fila de Mesclagem ──────────────────────────────────────────────────── */
+.pdf-merge-list-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.pdf-merge-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pdf-link-btn {
+  background: transparent;
+  border: none;
+  color: var(--accent-primary);
+  font-size: 0.6875rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.pdf-merge-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+  padding: 0.4rem;
+  background: var(--surface-input, var(--bg-primary));
+}
+
+.pdf-merge-empty-list {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 1.5rem 0.5rem;
+  opacity: 0.7;
+}
+
+.pdf-merge-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.375rem;
+  animation: fadeInTool 0.15s ease;
+}
+
+.pdf-merge-item-order {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  color: var(--accent-primary);
+  border-radius: 50%;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.pdf-merge-item-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.pdf-merge-item-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pdf-merge-item-size {
+  font-size: 0.625rem;
+  color: var(--text-secondary);
+}
+
+.pdf-merge-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.pdf-item-ctrl-btn {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-input, var(--bg-primary));
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.25rem;
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pdf-item-ctrl-btn:hover:not(:disabled) {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.pdf-item-ctrl-btn.btn-del:hover {
+  border-color: var(--error, #ef4444);
+  color: var(--error, #ef4444);
+}
+
+.pdf-item-ctrl-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

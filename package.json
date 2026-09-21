@@ -1,6 +1,6 @@
 {
   "name": "open-tool",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "description": "Open Tool: Plataforma de ferramentas universais 100% client-side (doc2md, QR Code e mais)",
   "main": "index.html",
   "type": "module",
@@ -33,6 +33,7 @@
     "xlsx": "^0.18.5"
   },
   "dependencies": {
-    "imagetracerjs": "^1.2.6"
+    "imagetracerjs": "^1.2.6",
+    "pdf-lib": "^1.17.1"
   }
 }

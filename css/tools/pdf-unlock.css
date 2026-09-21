@@ -1,0 +1,524 @@
+/**
+ * Open Tool — Ferramenta: Desbloquear PDF (pdf-unlock) Styles
+ * Segue a Diretriz 2.4 (Single-Viewport e Alinhamento Perfeito)
+ * @version v.2.3.0
+ */
+
+.pdf-unlock-root {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem 1.5rem;
+  animation: fadeInTool 0.3s ease;
+}
+
+.pdf-tool-hero {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.pdf-tool-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  color: var(--accent-primary);
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 25%, transparent);
+  margin-bottom: 0.4rem;
+}
+
+/* ── Workspace: Layout 2 Colunas Perfeitamente Alinhadas ──────────────────── */
+.pdf-workspace {
+  display: grid;
+  grid-template-columns: 440px 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .pdf-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Controls Panel ─────────────────────────────────────────────────────── */
+.pdf-controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Dropzone Compacto ──────────────────────────────────────────────────── */
+.pdf-dropzone {
+  position: relative;
+  border: 1.5px dashed var(--border-subtle);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--bg-primary) 50%, var(--surface-card));
+  padding: 0.75rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pdf-dropzone:hover,
+.pdf-dropzone.pdf-drag-over {
+  border-color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 6%, var(--surface-card));
+  transform: translateY(-1px);
+}
+
+.pdf-hidden-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.pdf-dropzone-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.pdf-dropzone-icon {
+  display: inline-flex;
+  padding: 0.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.pdf-dropzone-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.pdf-dropzone-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.pdf-link {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+
+.pdf-dropzone-sub {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ── Arquivo Carregado ──────────────────────────────────────────────────── */
+.pdf-file-loaded {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+}
+
+.pdf-icon-badge {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  background: color-mix(in srgb, var(--error, #ef4444) 15%, transparent);
+  color: var(--error, #ef4444);
+  font-weight: 800;
+  font-size: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--error, #ef4444) 30%, transparent);
+  flex-shrink: 0;
+}
+
+.pdf-loaded-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.pdf-filename {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pdf-filesize {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+}
+
+.pdf-remove-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--error) 15%, transparent);
+  color: var(--error);
+  border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.pdf-remove-btn:hover {
+  background: var(--error);
+  color: #fff;
+}
+
+/* ── Status Card ────────────────────────────────────────────────────────── */
+.pdf-status-card {
+  background: color-mix(in srgb, var(--surface-input, var(--bg-primary)) 70%, var(--surface-card));
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.625rem;
+  padding: 0.75rem 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pdf-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.pdf-status-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.pdf-status-icon {
+  color: var(--accent-primary);
+}
+
+.pdf-status-title {
+  font-size: 0.78125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pdf-badge {
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--text-secondary) 15%, transparent);
+  color: var(--text-secondary);
+  border: 1px solid color-mix(in srgb, var(--text-secondary) 25%, transparent);
+}
+
+.pdf-badge--warning {
+  background: color-mix(in srgb, #f59e0b 15%, transparent);
+  color: #f59e0b;
+  border-color: color-mix(in srgb, #f59e0b 30%, transparent);
+}
+
+.pdf-badge--info {
+  background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
+  color: var(--accent-primary);
+  border-color: color-mix(in srgb, var(--accent-primary) 30%, transparent);
+}
+
+.pdf-badge--success {
+  background: color-mix(in srgb, #10b981 15%, transparent);
+  color: #10b981;
+  border-color: color-mix(in srgb, #10b981 30%, transparent);
+}
+
+.pdf-status-desc {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.35;
+}
+
+/* ── Password Input Group ────────────────────────────────────────────────── */
+.pdf-password-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-input, var(--bg-primary));
+}
+
+.pdf-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pdf-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pdf-input {
+  width: 100%;
+  padding: 0.5rem 2.25rem 0.5rem 0.65rem;
+  font-size: 0.8125rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.375rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.pdf-input:focus {
+  border-color: var(--accent-primary);
+}
+
+.pdf-pwd-toggle {
+  position: absolute;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0.2rem;
+}
+
+.pdf-pwd-toggle:hover {
+  color: var(--text-primary);
+}
+
+.pdf-hint {
+  font-size: 0.625rem;
+  color: var(--text-secondary);
+  line-height: 1.25;
+}
+
+/* ── Botão Principal ─────────────────────────────────────────────────────── */
+.pdf-primary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6875rem 1rem;
+  background: var(--accent-primary);
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--accent-primary) 30%, transparent);
+  margin-top: auto;
+}
+
+.pdf-primary-btn:hover:not(:disabled) {
+  background: var(--accent-interactive);
+  transform: translateY(-1px);
+}
+
+.pdf-primary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Preview Panel ──────────────────────────────────────────────────────── */
+.pdf-preview-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  height: 100%;
+  min-height: 400px;
+  box-sizing: border-box;
+}
+
+.pdf-empty-view,
+.pdf-loading-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  margin: auto;
+}
+
+.pdf-empty-illustration {
+  color: var(--text-secondary);
+  opacity: 0.4;
+  margin-bottom: 0.75rem;
+}
+
+.pdf-empty-title,
+.pdf-loading-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.4rem;
+}
+
+.pdf-empty-desc,
+.pdf-loading-desc {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  max-width: 360px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.pdf-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: pdfSpin 0.8s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes pdfSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Result View ────────────────────────────────────────────────────────── */
+.pdf-result-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+}
+
+.pdf-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.pdf-result-summary {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.pdf-stage {
+  width: 100%;
+  flex: 1;
+  min-height: 200px;
+  max-height: 250px;
+  border-radius: 0.625rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-input, var(--bg-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  box-sizing: border-box;
+}
+
+.pdf-preview-canvas {
+  max-width: 100%;
+  max-height: 230px;
+  height: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 0.25rem;
+}
+
+.pdf-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0.4rem 0.65rem;
+  background: var(--surface-input, var(--bg-primary));
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+}
+
+.pdf-meta-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.pdf-meta-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.pdf-meta-val {
+  font-size: 0.78125rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary);
+}
+
+.pdf-actions-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.pdf-export-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pdf-export-btn--primary {
+  background: var(--accent-primary);
+  color: #fff;
+  border: none;
+}
+
+.pdf-export-btn--primary:hover {
+  background: var(--accent-interactive);
+}

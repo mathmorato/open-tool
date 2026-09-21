@@ -1,6 +1,6 @@
-# Open Tool `v.2.2.2`
+# Open Tool `v.2.3.0`
 
-[![Version](https://img.shields.io/badge/version-v.2.2.2-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v.2.3.0-blue.svg)](package.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![Architecture: 100% Client--Side](https://img.shields.io/badge/Architecture-100%25%20Client--Side-informational.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
 [![Privacy: Zero Server Upload](https://img.shields.io/badge/Privacy-Zero%20Server%20Upload-green.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
@@ -41,6 +41,26 @@ O Open Tool adota uma experiência visual unificada inspirada no modelo *PDF24 T
 * **Ajustes Finos:** Quantização de cores (2 a 64 cores), redução de ruído (filtro de mediana/suavização) e omissão de speckles.
 * **Palco Comparativo:** Visualização do vetor SVG, da imagem original ou comparação lado a lado, com controle de zoom (50% a 300%) e métricas de caminhos e bytes.
 * **Exportação:** Download do arquivo `.svg` e cópia direta do código-fonte XML para a área de transferência.
+
+### 5. Desbloquear PDF (`pdf-unlock`)
+* **Descriptografia Client-Side:** Desbloqueia arquivos PDF criptografados diretamente na memória do navegador utilizando o motor `pdf-lib`.
+* **Remoção de Restrições:** Elimina travas de permissão do proprietário (edição, impressão e cópia de texto) e descriptografa PDFs protegidos por senha do usuário com campo de entrada dedicado.
+* **Pré-visualização e Métricas:** Renderização imediata da primeira página via canvas (`pdf.js`) e exibição de metadados técnicos (contagem de páginas e status de proteção).
+* **Exportação:** Download direto do arquivo PDF totalmente liberado e sem restrições.
+
+### 6. Comprimir PDF (`pdf-compress`)
+* **Compressão em 3 Níveis:** Reamostragem raster e otimização por canvas com presets balanceados:
+  * *Extrema (72 DPI)*: Máxima redução de tamanho, ideal para anexos de e-mail e formulários com limites estritos.
+  * *Balanceada (100 DPI)*: Equilíbrio perfeito entre redução de bytes e legibilidade visual de documentos.
+  * *Suave (150 DPI)*: Alta nitidez com compressão moderada de imagens.
+* **Telemetria em Tempo Real:** Card com telemetria precisa calculando o tamanho original, tamanho final comprimido e percentual de economia de espaço alcançado.
+* **Visualização da Página 1:** Renderização dinâmica comparativa da página inicial no viewport.
+
+### 7. Mesclar PDF (`pdf-merge`)
+* **Fusão Sequencial de Múltiplos Arquivos:** Concatena múltiplos arquivos PDF em um único documento padronizado e ordenado via `pdf-lib`.
+* **Fila Interativa:** Dropzone para adicionar arquivos em lote ou individualmente, com exibição de páginas por documento e reordenação instantânea (botões Subir, Descer e Remover).
+* **Pré-visualização Dinâmica:** Exibição imediata da capa do documento resultante na coluna de pré-visualização.
+* **Geração Rápida:** Montagem e download instantâneo do PDF unificado em milissegundos sem qualquer transmissão de dados.
 
 ---
 
@@ -88,7 +108,10 @@ open-tool/
 │   └── tools/                   # Folhas de estilo modulares por ferramenta
 │       ├── hub.css              # Estilos do catálogo visual estilo PDF24
 │       ├── qrcode.css           # Estilos específicos do gerador de QR Code
-│       └── img2vector.css       # Estilos específicos do vetorizador de imagens
+│       ├── img2vector.css       # Estilos específicos do vetorizador de imagens
+│       ├── pdf-unlock.css       # Estilos específicos do desbloqueador de PDF
+│       ├── pdf-compress.css     # Estilos específicos do compressor de PDF
+│       └── pdf-merge.css        # Estilos específicos do mesclador de PDF
 ├── js/
 │   ├── config.js                # Configurações globais, mapa de MIME types e SemVer
 │   ├── main.js                  # Ponto de entrada (bootstrap) e inicialização de temas
@@ -99,7 +122,8 @@ open-tool/
 │   ├── app-doc2md.js            # Bridge de compatibilidade do Doc → MD
 │   ├── lib/                     # Bibliotecas locais 100% offline
 │   │   ├── qrcodegen.js         # Motor Nayuki QR Code Generator
-│   │   └── imagetracer.js       # Motor ImageTracer para vetorização raster → SVG
+│   │   ├── imagetracer.js       # Motor ImageTracer para vetorização raster → SVG
+│   │   └── pdf-lib.min.js       # Motor pdf-lib para manipulação/desbloqueio/compressão/fusão PDF
 │   ├── tools/                   # Módulos plugáveis de ferramentas
 │   │   ├── hub/                 # Ferramenta: Vitrine / Catálogo de ferramentas
 │   │   │   ├── tool.js          # Controlador do Hub
@@ -110,9 +134,18 @@ open-tool/
 │   │   ├── qrcode/              # Ferramenta: Gerador de QR Code
 │   │   │   ├── tool.js          # Controlador e renderizador de canvas/SVG
 │   │   │   └── ui.js            # Template HTML dos controles
-│   │   └── img2vector/          # Ferramenta: Image to Vector
-│   │       ├── tool.js          # Controlador de quantização e curvas Bézier
-│   │       └── ui.js            # Template HTML de upload, presets e palco
+│   │   ├── img2vector/          # Ferramenta: Image to Vector
+│   │   │   ├── tool.js          # Controlador de quantização e curvas Bézier
+│   │   │   └── ui.js            # Template HTML de upload, presets e palco
+│   │   ├── pdf-unlock/          # Ferramenta: Desbloqueador de PDF
+│   │   │   ├── tool.js          # Descriptografia e remoção de restrições com pdf-lib
+│   │   │   └── ui.js            # Template HTML e métricas
+│   │   ├── pdf-compress/        # Ferramenta: Compressor de PDF
+│   │   │   ├── tool.js          # Reamostragem raster por DPI e otimização JPEG
+│   │   │   └── ui.js            # Template HTML com presets de DPI e telemetria
+│   │   └── pdf-merge/           # Ferramenta: Mesclador de PDF
+│   │       ├── tool.js          # Fusão sequencial de páginas com pdf-lib
+│   │       └── ui.js            # Template HTML de ordenação e fila
 │   ├── parsers/                 # Parsers especializados do Doc → MD
 │   │   ├── docx-parser.js       # Mammoth + Turndown para DOCX/ODT
 │   │   ├── xlsx-parser.js       # SheetJS para planilhas e tabelas
@@ -172,9 +205,9 @@ O projeto está totalmente preparado para publicação contínua e direta via Gi
 
 ## 🏷️ Licença e Versionamento SemVer
 
-* **Controle SemVer:** O projeto segue o padrão [Semantic Versioning 2.0.0](https://semver.org/). A versão atual é **`v.2.2.2`**, sincronizada em todos os pontos de governança:
+* **Controle SemVer:** O projeto segue o padrão [Semantic Versioning 2.0.0](https://semver.org/). A versão atual é **`v.2.3.0`**, sincronizada em todos os pontos de governança:
   1. Interface principal (`index.html`).
-  2. Arquivo `package.json` (`"version": "2.2.2"`).
+  2. Arquivo `package.json` (`"version": "2.3.0"`).
   3. Constante `APP_CONFIG.VERSION` em `js/config.js`.
   4. Badges e cabeçalho deste `README.md`.
 * **Licença de Uso:** Distribuído sob os termos da licença **MIT**. Para maiores detalhes, consulte o arquivo [LICENSE](LICENSE).

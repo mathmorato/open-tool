@@ -26,14 +26,28 @@ export function getHubHTML(catalog = []) {
       <!-- Grade de Ferramentas (PDF24 Tools Style) -->
       <div class="hub-grid" id="hub-tools-grid">
         ${tools.map(tool => {
-          const badge = tool.id === 'doc2md' ? 'CONVERSOR' : (tool.id === 'qrcode' ? 'GERADOR' : (tool.id === 'img2vector' ? 'VETORIZADOR' : 'FERRAMENTA'));
-          const features = tool.id === 'doc2md'
-            ? ['Word (.docx), Excel (.xlsx), PDF, PPTX', 'Extração automática de pacotes .ZIP e .RAR', 'Geração de Markdown limpo e formatado']
-            : (tool.id === 'qrcode'
-              ? ['Geração imediata para Links e Textos', 'Exportação em PNG de alta resolução e SVG', 'Customização de cores, tamanho e margem']
-              : (tool.id === 'img2vector'
-                ? ['Raster para SVG vetorial (PNG, JPG, WEBP, BMP)', 'Curvas Bézier matemáticas e ajuste fino de cores', 'Exportação e cópia direta de código SVG']
-                : ['Processamento 100% no navegador', 'Zero telemetria de dados']));
+          let badge = 'FERRAMENTA';
+          let features = ['Processamento 100% no navegador', 'Zero telemetria de dados'];
+
+          if (tool.id === 'doc2md') {
+            badge = 'CONVERSOR';
+            features = ['Word (.docx), Excel (.xlsx), PDF, PPTX', 'Extração automática de pacotes .ZIP e .RAR', 'Geração de Markdown limpo e formatado'];
+          } else if (tool.id === 'qrcode') {
+            badge = 'GERADOR';
+            features = ['Geração imediata para Links e Textos', 'Exportação em PNG de alta resolução e SVG', 'Customização de cores, tamanho e margem'];
+          } else if (tool.id === 'img2vector') {
+            badge = 'VETORIZADOR';
+            features = ['Raster para SVG vetorial (PNG, JPG, WEBP, BMP)', 'Curvas Bézier matemáticas e ajuste fino de cores', 'Exportação e cópia direta de código SVG'];
+          } else if (tool.id === 'pdf-unlock') {
+            badge = 'DESBLOQUEADOR';
+            features = ['Remoção de senhas de leitura e restrições', 'Desbloqueio de permissões de cópia e impressão', 'Descriptografia 100% local no navegador'];
+          } else if (tool.id === 'pdf-compress') {
+            badge = 'COMPRESSOR';
+            features = ['Reamostragem inteligente de imagens', 'Presets de 72, 100 e 150 DPI', 'Métricas de redução e economia de bytes'];
+          } else if (tool.id === 'pdf-merge') {
+            badge = 'MESCLADOR';
+            features = ['Junção de múltiplos PDFs em arquivo único', 'Reordenação sequencial de documentos', 'Geração instantânea e download único'];
+          }
 
           return `
             <article class="hub-card" data-tool-card="${tool.id}" tabindex="0" role="button" aria-label="Abrir ferramenta ${tool.label}">

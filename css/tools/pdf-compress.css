@@ -1,0 +1,170 @@
+/**
+ * Open Tool — Ferramenta: Comprimir PDF (pdf-compress) Styles
+ * Segue a Diretriz 2.4 (Single-Viewport e Alinhamento Perfeito)
+ * @version v.2.3.0
+ */
+
+.pdf-compress-root {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem 1.5rem;
+  animation: fadeInTool 0.3s ease;
+}
+
+/* ── Presets Grid (3 Colunas) ───────────────────────────────────────────── */
+.pdf-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.375rem;
+}
+
+.pdf-preset-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.45rem 0.5rem;
+  background: var(--surface-input, var(--bg-primary));
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.pdf-preset-btn:hover {
+  border-color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 5%, var(--surface-input, var(--bg-primary)));
+}
+
+.pdf-preset-btn--active {
+  border-color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 12%, var(--surface-input, var(--bg-primary)));
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--accent-primary) 30%, transparent);
+}
+
+.pdf-preset-icon {
+  font-size: 0.8125rem;
+  margin-bottom: 0;
+}
+
+.pdf-preset-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.pdf-preset-desc {
+  font-size: 0.625rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ── Detalhes Avançados ─────────────────────────────────────────────────── */
+.pdf-advanced-details {
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.625rem;
+  background: var(--surface-input, var(--bg-primary));
+}
+
+.pdf-advanced-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  list-style: none;
+}
+
+.pdf-advanced-summary::-webkit-details-marker {
+  display: none;
+}
+
+.pdf-advanced-body {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.pdf-range-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.pdf-range-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.pdf-val-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.pdf-slider {
+  width: 100%;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+/* ── Card de Economia / Métricas ────────────────────────────────────────── */
+.pdf-savings-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.75rem;
+  background: var(--surface-input, var(--bg-primary));
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+}
+
+.pdf-savings-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.pdf-savings-label {
+  font-size: 0.625rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pdf-savings-val {
+  font-size: 0.8125rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary);
+}
+
+.pdf-savings-arrow {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.pdf-savings-badge {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, #10b981 18%, transparent);
+  color: #10b981;
+  border: 1px solid color-mix(in srgb, #10b981 35%, transparent);
+}
