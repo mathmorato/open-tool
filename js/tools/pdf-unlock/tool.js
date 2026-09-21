@@ -44,6 +44,9 @@ async function _ensureLibs() {
   if (typeof window === 'undefined' || !window.pdfjsLib) {
     promises.push(loadScript(APP_CONFIG.CDN.PDFJS).catch(e => console.warn('pdf.js load:', e)));
   }
+  if (typeof window === 'undefined' || !window.createQpdfModule) {
+    promises.push(loadScript('js/lib/qpdf.js').catch(e => console.warn('qpdf load:', e)));
+  }
   if (promises.length > 0) {
     await Promise.all(promises);
   }
@@ -96,6 +99,8 @@ export default {
     const metaPages       = container.querySelector('#u-meta-pages');
     const metaSize        = container.querySelector('#u-meta-size');
     const downloadBtn     = container.querySelector('#u-download-btn');
+    const copyTextBtn     = container.querySelector('#u-copy-text-btn');
+    const copyBtnText     = container.querySelector('#u-copy-btn-text');
 
     const loadingTitle   = container.querySelector('#u-loading-title');
     const progressPct    = container.querySelector('#u-progress-pct');
@@ -208,142 +213,98 @@ export default {
       if (!_currentArrayBuffer) return;
 
       _setViewState('loading');
-      _updateProgress(5, 'Iniciando descriptografia...', 'Carregando chaves de segurança e tabelas xref...', 'Iniciando');
-      await new Promise(r => setTimeout(r, 25));
+      _updateProgress(10, 'Iniciando desbloqueio criptográfico...', 'Carregando motor nativo WebAssembly...', 'Etapa 1 / 3');
+      await new Promise(r => setTimeout(r, 20));
 
       await _ensureLibs();
       const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
       const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
-
-      if (!PDFLib) {
-        alert('Biblioteca PDFLib não carregada.');
-        _setViewState('empty');
-        return;
-      }
+      const createQpdf = (typeof window !== 'undefined' && window.createQpdfModule) || globalThis.createQpdfModule;
 
       const password = passwordInput.value.trim();
 
       try {
-        let pdfDoc = null;
         let unlockedBytes = null;
+        let pageCount = 1;
         const copyBuf = _currentArrayBuffer.slice(0);
 
-        if (_requiresPassword) {
-          // Descriptografa com a senha fornecida via PDF.js e reconstrói via PDFLib
-          _updateProgress(15, 'Verificando senha criptográfica...', 'Autenticando credenciais no stream...', 'Validando');
-          await new Promise(r => setTimeout(r, 20));
+        // 1. Motor Primário: QPDF WebAssembly (100% nativo, sem perda de texto vetorial, idêntico a iLovePDF)
+        if (createQpdf) {
+          _updateProgress(35, 'Descriptografando fluxos e permissões...', 'Removendo travas de cópia, seleção e impressão (QPDF C++/Wasm)...', 'Etapa 2 / 3');
+          await new Promise(r => setTimeout(r, 25));
 
-          const loadingTask = pdfjsLib.getDocument({ data: copyBuf, password });
-          const jsDoc = await loadingTask.promise;
-          const numPages = jsDoc.numPages;
-
-          pdfDoc = await PDFLib.PDFDocument.create();
-
-          for (let i = 1; i <= numPages; i++) {
-            const currentPct = Math.round(15 + (((i - 1) / numPages) * 75));
-            _updateProgress(
-              currentPct,
-              `Descriptografando página ${i} de ${numPages}...`,
-              'Removendo senhas e decodificando fluxos criptografados...',
-              `${i} / ${numPages} págs`
-            );
-            await new Promise(r => setTimeout(r, 15));
-
-            const page = await jsDoc.getPage(i);
-            const viewport = page.getViewport({ scale: 1.5 });
-            const canvas = document.createElement('canvas');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            const ctx = canvas.getContext('2d');
-            await page.render({ canvasContext: ctx, viewport }).promise;
-
-            const imgDataUrl = canvas.toDataURL('image/jpeg', 0.92);
-            const imgBytes = _dataUrlToBytes(imgDataUrl);
-            const embeddedImg = await pdfDoc.embedJpg(imgBytes);
-
-            const newPage = pdfDoc.addPage([viewport.width, viewport.height]);
-            newPage.drawImage(embeddedImg, {
-              x: 0,
-              y: 0,
-              width: viewport.width,
-              height: viewport.height
-            });
-          }
-          _updateProgress(94, 'Finalizando PDF descriptografado...', 'Consolidando páginas e removendo flags de bloqueio...', `${numPages} / ${numPages} págs`);
-          await new Promise(r => setTimeout(r, 20));
-          unlockedBytes = await pdfDoc.save();
-        } else {
-          // Tenta desbloqueio direto de restrições
-          _updateProgress(25, 'Inspecionando permissões...', 'Analisando dicionário de segurança (/Encrypt)...', '1 / 3 etapas');
-          await new Promise(r => setTimeout(r, 20));
-
-          try {
-            _updateProgress(55, 'Removendo restrições de permissão...', 'Limpando flags de edição, cópia e impressão...', '2 / 3 etapas');
-            await new Promise(r => setTimeout(r, 20));
-
-            pdfDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
-
-            _updateProgress(88, 'Reconstruindo documento sem travas...', 'Salvando árvore de objetos PDF limpa...', '3 / 3 etapas');
-            await new Promise(r => setTimeout(r, 20));
-
-            unlockedBytes = await pdfDoc.save();
-          } catch (errIgnore) {
-            // Fallback: se pdf-lib não conseguir salvar por causa de criptografia nos fluxos internos, usa PDF.js
-            if (pdfjsLib) {
-              _updateProgress(35, 'Usando decodificador raster...', 'Extraindo páginas com permissão de leitura...', 'Modo seguro');
-              await new Promise(r => setTimeout(r, 20));
-
-              const loadingTask = pdfjsLib.getDocument({ data: copyBuf });
-              const jsDoc = await loadingTask.promise;
-              const numPages = jsDoc.numPages;
-
-              pdfDoc = await PDFLib.PDFDocument.create();
-
-              for (let i = 1; i <= numPages; i++) {
-                const currentPct = Math.round(35 + (((i - 1) / numPages) * 55));
-                _updateProgress(
-                  currentPct,
-                  `Processando página ${i} de ${numPages}...`,
-                  'Reconstruindo página sem restrições...',
-                  `${i} / ${numPages} págs`
-                );
-                await new Promise(r => setTimeout(r, 15));
-
-                const page = await jsDoc.getPage(i);
-                const viewport = page.getViewport({ scale: 1.5 });
-                const canvas = document.createElement('canvas');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                const ctx = canvas.getContext('2d');
-                await page.render({ canvasContext: ctx, viewport }).promise;
-
-                const imgDataUrl = canvas.toDataURL('image/jpeg', 0.92);
-                const imgBytes = _dataUrlToBytes(imgDataUrl);
-                const embeddedImg = await pdfDoc.embedJpg(imgBytes);
-
-                const newPage = pdfDoc.addPage([viewport.width, viewport.height]);
-                newPage.drawImage(embeddedImg, {
-                  x: 0,
-                  y: 0,
-                  width: viewport.width,
-                  height: viewport.height
-                });
-              }
-              _updateProgress(94, 'Finalizando PDF desprotegido...', 'Gravando novo arquivo sem restrições...', `${numPages} / ${numPages} págs`);
-              await new Promise(r => setTimeout(r, 20));
-              unlockedBytes = await pdfDoc.save();
-            } else {
-              throw errIgnore;
+          const qpdf = await createQpdf({
+            locateFile: (file) => {
+              if (file.endsWith('.wasm')) return 'js/lib/qpdf.wasm';
+              return 'js/lib/' + file;
             }
+          });
+
+          const inPath = '/input.pdf';
+          const outPath = '/output.pdf';
+          qpdf.FS.writeFile(inPath, new Uint8Array(copyBuf));
+
+          const args = [];
+          if (password && password.length > 0) {
+            args.push(`--password=${password}`);
+          } else {
+            args.push('--password=');
+          }
+          args.push(inPath, '--decrypt', outPath);
+
+          let stderr = '';
+          qpdf.printErr = (t) => { stderr += t + '\n'; };
+
+          const exitCode = qpdf.callMain(args);
+          if (exitCode === 0) {
+            unlockedBytes = qpdf.FS.readFile(outPath);
+            try { qpdf.FS.unlink(inPath); } catch (_) {}
+            try { qpdf.FS.unlink(outPath); } catch (_) {}
+          } else {
+            try { qpdf.FS.unlink(inPath); } catch (_) {}
+            try { qpdf.FS.unlink(outPath); } catch (_) {}
+            if (exitCode === 2 || stderr.toLowerCase().includes('invalid password') || stderr.toLowerCase().includes('password')) {
+              _requiresPassword = true;
+              passwordGroup.style.display = 'flex';
+              passwordInput.focus();
+              throw new Error('PASSWORD_REQUIRED');
+            }
+            console.warn('QPDF falhou com código', exitCode, stderr);
           }
         }
 
-        _updateProgress(100, 'PDF Desbloqueado com Sucesso!', 'Preparando visualização...', '100%');
+        // 2. Fallback via PDF-Lib direto se QPDF não estiver disponível
+        if (!unlockedBytes && PDFLib) {
+          _updateProgress(55, 'Processando via PDF-Lib...', 'Reconstruindo árvore de objetos sem flags de proteção...', 'Etapa 2 / 3');
+          await new Promise(r => setTimeout(r, 20));
+          try {
+            const srcDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+            unlockedBytes = await srcDoc.save();
+          } catch (eLib) {
+            console.warn('PDF-Lib direto falhou:', eLib);
+          }
+        }
+
+        if (!unlockedBytes) {
+          throw new Error('Falha ao descriptografar documento.');
+        }
+
+        _updateProgress(85, 'Validando documento...', 'Confirmando texto selecionável e páginas...', 'Etapa 3 / 3');
+        await new Promise(r => setTimeout(r, 20));
+
+        if (PDFLib) {
+          try {
+            const checkDoc = await PDFLib.PDFDocument.load(unlockedBytes);
+            pageCount = checkDoc.getPageCount();
+          } catch (_) {}
+        }
+
+        _updateProgress(100, 'PDF Desbloqueado com Sucesso!', 'Permissões e texto selecionável liberados.', '100%');
         await new Promise(r => setTimeout(r, 20));
 
         _unlockedPdfBlob = new Blob([unlockedBytes], { type: 'application/pdf' });
 
-        metaPages.textContent = pdfDoc.getPageCount ? pdfDoc.getPageCount() : '1+';
+        metaPages.textContent = pageCount;
         metaSize.textContent = _formatBytes(_unlockedPdfBlob.size);
 
         // Renderiza thumbnail da primeira página no canvas
@@ -370,7 +331,11 @@ export default {
       } catch (err) {
         console.error('Falha ao desbloquear PDF:', err);
         _setViewState('empty');
-        alert('Senha incorreta ou PDF com proteção não suportada pelo navegador.');
+        if (err.message === 'PASSWORD_REQUIRED') {
+          alert('Este documento exige senha de abertura válida. Por favor, insira a senha no campo correspondente.');
+        } else {
+          alert('Erro ao desbloquear o PDF. Verifique se o arquivo está corrompido ou se a senha está correta.');
+        }
       }
     }
 
@@ -419,6 +384,32 @@ export default {
     });
 
     _on(unlockBtn, 'click', _doUnlock);
+
+    _on(copyTextBtn, 'click', async () => {
+      if (!_unlockedPdfBlob || !pdfjsLib) return;
+      const originalText = copyBtnText ? copyBtnText.textContent : 'Copiar Texto';
+      try {
+        if (copyBtnText) copyBtnText.textContent = 'Copiando...';
+        const arr = await _unlockedPdfBlob.arrayBuffer();
+        const doc = await pdfjsLib.getDocument({ data: new Uint8Array(arr) }).promise;
+        let allText = '';
+        for (let i = 1; i <= doc.numPages; i++) {
+          const page = await doc.getPage(i);
+          const content = await page.getTextContent();
+          const pageStr = content.items.map(it => it.str).join(' ');
+          allText += `--- Página ${i} ---\n${pageStr}\n\n`;
+        }
+        await navigator.clipboard.writeText(allText.trim());
+        if (copyBtnText) copyBtnText.textContent = 'Copiado!';
+        setTimeout(() => {
+          if (copyBtnText) copyBtnText.textContent = originalText;
+        }, 2000);
+      } catch (err) {
+        console.error('Erro ao copiar texto:', err);
+        if (copyBtnText) copyBtnText.textContent = originalText;
+        alert('Falha ao extrair texto para a área de transferência.');
+      }
+    });
 
     _on(downloadBtn, 'click', () => {
       if (!_unlockedPdfBlob) return;

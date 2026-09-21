@@ -127,7 +127,7 @@ A interface deve transmitir clareza técnica, precisão, agilidade e confiabilid
 ## 4. Sistema de versionamento
 
 - **Formato estrito SemVer:** `v.X.Y.Z` (onde `X` = Major, `Y` = Minor, `Z` = Patch).
-- Versão atual da plataforma: `v.2.4.1`.
+- Versão atual da plataforma: `v.2.4.2`.
 - **Locais obrigatórios de atualização a cada release:**
   1. Rodapé visível da interface principal (`index.html`).
   2. `js/config.js` — constante `APP_CONFIG.VERSION`.

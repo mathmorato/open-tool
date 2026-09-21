@@ -580,3 +580,15 @@
 .pdf-export-btn--primary:hover {
   background: var(--accent-interactive);
 }
+
+.pdf-export-btn--secondary {
+  background: var(--surface-input, var(--bg-primary));
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+
+.pdf-export-btn--secondary:hover {
+  background: var(--surface-card);
+  border-color: var(--blue-primary, #2563EB);
+  color: var(--blue-primary, #2563EB);
+}

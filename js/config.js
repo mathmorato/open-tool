@@ -179,7 +179,7 @@ export const MIME_TYPE_MAP = {
 };
 
 export const APP_CONFIG = {
-  VERSION: 'v.2.4.1',
+  VERSION: 'v.2.4.2',
   APP_NAME: 'Open Tool',
   TAGLINE: 'Open Tool • Ferramentas Universais 100% Client-Side',
   REPO_URL: 'https://github.com/mathmorato/open-tool',
@@ -320,6 +320,10 @@ export function loadScript(src) {
       return Promise.resolve();
     }
     if ((src.includes('jszip') || src.includes('JSZip')) && window.JSZip) {
+      if (existing) existing.dataset.loaded = 'true';
+      return Promise.resolve();
+    }
+    if (src.includes('qpdf') && window.createQpdfModule) {
       if (existing) existing.dataset.loaded = 'true';
       return Promise.resolve();
     }

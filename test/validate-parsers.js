@@ -17,8 +17,8 @@ if (!semverDecimalRegex.test(APP_CONFIG.VERSION)) {
   console.error(`[ERRO] Versão ${APP_CONFIG.VERSION} viola a regra de base decimal estrita (Y e Z devem ser de 0 a 9)`);
   process.exit(1);
 }
-if (APP_CONFIG.VERSION !== 'v.2.4.1') {
-  console.error('[ERRO] Versão diferente de v.2.4.1');
+if (APP_CONFIG.VERSION !== 'v.2.4.2') {
+  console.error('[ERRO] Versão diferente de v.2.4.2');
   process.exit(1);
 }
 if (APP_CONFIG.APP_NAME !== 'Open Tool') {
@@ -47,7 +47,7 @@ console.log(`[OK] Pacotes compactados configurados: ${APP_CONFIG.ARCHIVE_EXTENSI
 
 // 2. Verifica package.json
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
-if (pkg.version !== '2.4.1' || !/^[0-9]\.[0-9]\.[0-9]$/.test(pkg.version)) {
+if (pkg.version !== '2.4.2' || !/^[0-9]\.[0-9]\.[0-9]$/.test(pkg.version)) {
   console.error('[ERRO] package.json version incompatível ou fora da base decimal');
   process.exit(1);
 }
@@ -65,8 +65,8 @@ const pdfMergeUi = fs.readFileSync('./js/tools/pdf-merge/ui.js', 'utf8');
 const pdfSplitUi = fs.readFileSync('./js/tools/pdf-split/ui.js', 'utf8');
 const fullAppHtml = indexHtml + '\n' + doc2mdUi + '\n' + qrcodeUi + '\n' + hubUi + '\n' + img2vectorUi + '\n' + pdfUnlockUi + '\n' + pdfCompressUi + '\n' + pdfMergeUi + '\n' + pdfSplitUi;
 
-if (!indexHtml.includes('v.2.4.1')) {
-  console.error('[ERRO] index.html não contém v.2.4.1');
+if (!indexHtml.includes('v.2.4.2')) {
+  console.error('[ERRO] index.html não contém v.2.4.2');
   process.exit(1);
 }
 if (!indexHtml.includes('brand-logo-svg') || !indexHtml.includes('Open <span class="accent">Tool</span>')) {
