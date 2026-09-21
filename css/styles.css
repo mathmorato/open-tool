@@ -1,7 +1,7 @@
 /**
- * Open Mark (doc2md)
- * Design System & Estilos Globais
- * @version v.1.7.5
+ * Open Tool
+ * Design System & Estilos Globais — Plataforma Multi-Ferramenta
+ * @version v.2.0.0
  */
 
 /* ==========================================================================
@@ -16,12 +16,20 @@
   --bg-subtle: #EFF6FF;
   
   --border-color: #E2E8F0;
+  --border-subtle: #E2E8F0;
   --border-hover: #CBD5E1;
   --border-focus: #2563EB;
   
   --text-primary: #0F172A;
   --text-secondary: #64748B;
   --text-muted: #94A3B8;
+
+  /* Tokens semânticos usados por ferramentas */
+  --accent-primary: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-soft: #EFF6FF;
+  --surface-card: #FFFFFF;
+  --surface-input: #F8FAFC;
   
   --blue-primary: #2563EB;
   --blue-hover: #1D4ED8;
@@ -73,12 +81,20 @@
   --bg-subtle: #172554;
 
   --border-color: #334155;
+  --border-subtle: #334155;
   --border-hover: #475569;
   --border-focus: #3B82F6;
 
   --text-primary: #F8FAFC;
   --text-secondary: #94A3B8;
   --text-muted: #64748B;
+
+  /* Tokens semânticos dark */
+  --accent-primary: #3B82F6;
+  --accent-hover: #60A5FA;
+  --accent-soft: rgba(59, 130, 246, 0.1);
+  --surface-card: #1E293B;
+  --surface-input: #0F172A;
 
   --blue-primary: #3B82F6;
   --blue-hover: #60A5FA;
@@ -2282,4 +2298,133 @@ body.dark-mode .consolidation-track,
   background-color: rgba(16, 185, 129, 0.12) !important;
   border-color: #10b981 !important;
   transition: all 0.2s ease !important;
+}
+
+/* ==========================================================================
+   Tool Navbar — Navegação entre Ferramentas (Open Tool v2.0.0)
+   ========================================================================== */
+
+#tool-navbar-container {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 57px; /* altura do topbar */
+  z-index: 40;
+  transition: background-color var(--transition-normal), border-color var(--transition-normal);
+}
+
+.tool-navbar {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.tool-navbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.tool-navbar-inner::-webkit-scrollbar { display: none; }
+
+.tool-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.125rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+  position: relative;
+  margin-bottom: -1px; /* sobrepõe o border-bottom do container */
+}
+
+.tool-nav-btn:hover {
+  color: var(--accent-primary);
+  background: var(--accent-soft);
+}
+
+.tool-nav-btn--active {
+  color: var(--accent-primary);
+  border-bottom-color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.tool-nav-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.tool-nav-label {
+  letter-spacing: 0.01em;
+}
+
+/* ==========================================================================
+   Tool Viewport — Área de Conteúdo da Ferramenta Ativa
+   ========================================================================== */
+
+.tool-viewport {
+  width: 100%;
+  min-height: 60vh;
+  transition: opacity 0.2s ease;
+}
+
+.tool-viewport--transitioning {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Animação de entrada de ferramentas
+   ========================================================================== */
+
+@keyframes fadeInTool {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   Estado de Erro de Carregamento de Ferramenta
+   ========================================================================== */
+
+.tool-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 0.75rem;
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 2rem;
+}
+
+.tool-error-detail {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--error-color);
+  background: var(--error-bg);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--error-border);
+  max-width: 480px;
+  word-break: break-all;
+}
+
+/* ==========================================================================
+   Doc2MD Tool Root — Animação de entrada
+   ========================================================================== */
+
+.doc2md-tool-root {
+  animation: fadeInTool 0.3s ease;
 }

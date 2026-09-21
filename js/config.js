@@ -1,7 +1,7 @@
 /**
- * Open Mark (doc2md)
+ * Open Tool
  * Configuração Central & Versionamento SemVer
- * @version v.1.9.0
+ * @version v.2.0.0
  */
 
 export const CODE_EXTENSIONS_MAP = {
@@ -179,10 +179,10 @@ export const MIME_TYPE_MAP = {
 };
 
 export const APP_CONFIG = {
-  VERSION: 'v.1.9.0',
-  APP_NAME: 'Open Mark',
-  TAGLINE: 'Open Mark • Conversor Universal 100% Client-Side',
-  REPO_URL: 'https://github.com/mathmorato/open-mark',
+  VERSION: 'v.2.0.0',
+  APP_NAME: 'Open Tool',
+  TAGLINE: 'Open Tool • Ferramentas Universais 100% Client-Side',
+  REPO_URL: 'https://github.com/mathmorato/open-tool',
   
   // Limite máximo rígido de tamanho por arquivo (1,5 GB = 1.610.612.736 bytes)
   MAX_FILE_SIZE_BYTES: 1.5 * 1024 * 1024 * 1024, // 1.5 GB = 1.610.612.736 bytes

@@ -2937,10 +2937,17 @@ export function boot() {
 }
 
 if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
-  } else {
-    boot();
+  // Guard: suprime o auto-boot quando app.js é importado como sub-módulo pelo
+  // tool registry (nesse caso, o initDoc2md() do bridge chama boot() manualmente
+  // após o HTML da ferramenta já ter sido injetado no viewport).
+  const isSubModule = typeof window.__openToolRegistryActive !== 'undefined';
+
+  if (!isSubModule) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
   }
 
   // Delegação global direta no document (fase de captura) para garantir que NENHUM clique em botão de download
