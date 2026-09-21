@@ -1,17 +1,23 @@
 /**
  * Open Tool — Ferramenta: QR Code
  * Gerador de QR Codes 100% client-side.
- * Utiliza a biblioteca QRCode.js via CDN (carregamento lazy).
- * @version v.2.0.0
+ * Usa a biblioteca qrcodegen de Nayuki (MIT) via jsDelivr.
+ * @version v.3.0.0
+ *
+ * API da lib (objeto global `qrcodegen`):
+ *   const qr = qrcodegen.QrCode.encodeText(text, ecl);
+ *   qr.size            → número de módulos no grid
+ *   qr.getModule(x, y) → true = módulo escuro, false = módulo claro
  */
 
 import { getQRCodeHTML } from './ui.js';
 import { loadScript } from '../../config.js';
 
-// CDN da biblioteca QRCode.js (leve, sem dependências)
-const QRCODE_LIB_URL = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+// Biblioteca nayuki — IIFE local (expõe window.qrcodegen)
+// Fonte: nayuki-qr-code-generator@1.8.0 + wrapper IIFE para compatibilidade com <script>
+const QRCODE_LIB_URL = '/js/lib/qrcodegen.js';
 
-// Mapeamento de nível de correção de erro para descrição
+// Descrições dos níveis de correção de erro
 const ECL_DESCRIPTIONS = {
   L: 'L — 7% de recuperação (menor densidade)',
   M: 'M — 15% de recuperação (padrão)',
@@ -19,18 +25,88 @@ const ECL_DESCRIPTIONS = {
   H: 'H — 30% de recuperação (máximo)'
 };
 
-// Estado interno da ferramenta
-let _qrInstance = null;
+// Estado interno
 let _activeEcl = 'M';
-let _listeners = []; // array de { el, type, fn } para cleanup
+let _listeners = [];
+let _lastQr    = null;  // instância de qrcodegen.QrCode
+let _lastFg    = '#000000';
+let _lastBg    = '#ffffff';
 
-/**
- * Registra um event listener e armazena para cleanup.
- */
 function _on(el, type, fn) {
   if (!el) return;
   el.addEventListener(type, fn);
   _listeners.push({ el, type, fn });
+}
+
+/** Converte a chave UI (L/M/Q/H) para o objeto Ecc do nayuki */
+function _getEcc(key) {
+  const { QrCode } = window.qrcodegen;
+  return {
+    L: QrCode.Ecc.LOW,
+    M: QrCode.Ecc.MEDIUM,
+    Q: QrCode.Ecc.QUARTILE,
+    H: QrCode.Ecc.HIGH
+  }[key] || QrCode.Ecc.MEDIUM;
+}
+
+/**
+ * Renderiza um QrCode nayuki num <canvas>.
+ * @param {object} qr        Instância de qrcodegen.QrCode
+ * @param {HTMLCanvasElement} canvas
+ * @param {number} canvasSize  Tamanho em px (width = height)
+ * @param {string} fgColor   Cor dos módulos escuros (hex)
+ * @param {string} bgColor   Cor do fundo (hex)
+ * @param {number} border    Margem em módulos ao redor do QR (default 4)
+ */
+function _drawQrOnCanvas(qr, canvas, canvasSize, fgColor, bgColor, border = 4) {
+  const n     = qr.size;
+  const scale = Math.floor(canvasSize / (n + border * 2));
+  const off   = Math.floor((canvasSize - scale * n) / 2);
+
+  canvas.width  = canvasSize;
+  canvas.height = canvasSize;
+
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+  ctx.fillStyle = fgColor;
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      if (qr.getModule(x, y)) {
+        ctx.fillRect(off + x * scale, off + y * scale, scale, scale);
+      }
+    }
+  }
+}
+
+/**
+ * Gera uma string SVG a partir de um QrCode nayuki.
+ * @param {object} qr
+ * @param {string} fgColor
+ * @param {string} bgColor
+ * @param {number} border  Margem em módulos (default 4)
+ * @returns {string} SVG completo
+ */
+function _qrToSvgString(qr, fgColor, bgColor, border = 4) {
+  const n   = qr.size;
+  const dim = n + border * 2;
+  const parts = [];
+
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      if (qr.getModule(x, y)) {
+        parts.push(`M${x + border},${y + border}h1v1h-1z`);
+      }
+    }
+  }
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 ${dim} ${dim}" stroke="none">
+  <rect width="${dim}" height="${dim}" fill="${bgColor}"/>
+  <path d="${parts.join(' ')}" fill="${fgColor}"/>
+</svg>`;
 }
 
 const tool = {
@@ -43,13 +119,20 @@ const tool = {
 
   async mount(container) {
     _listeners = [];
-    _qrInstance = null;
     _activeEcl = 'M';
+    _lastQr    = null;
 
-    // Carrega a biblioteca QRCode.js de forma lazy
+    // Carrega a biblioteca nayuki de forma lazy
     await loadScript(QRCODE_LIB_URL);
 
-    // Referências aos elementos do DOM
+    // Aguarda o global `qrcodegen` estar disponível
+    await new Promise(resolve => {
+      const check = () =>
+        (typeof window.qrcodegen !== 'undefined' ? resolve() : setTimeout(check, 50));
+      check();
+    });
+
+    // Referências DOM
     const inputEl       = container.querySelector('#qr-input');
     const charCountEl   = container.querySelector('#qr-char-count');
     const urlFeedback   = container.querySelector('#qr-url-feedback');
@@ -67,7 +150,7 @@ const tool = {
     const emptyState    = container.querySelector('#qr-empty-state');
     const loadingState  = container.querySelector('#qr-loading-state');
     const resultEl      = container.querySelector('#qr-result');
-    const canvasContainer = container.querySelector('#qr-canvas-container');
+    const canvasWrap    = container.querySelector('#qr-canvas-container');
     const metaSizeEl    = container.querySelector('#qr-meta-size');
     const metaEclEl     = container.querySelector('#qr-meta-ecl');
     const metaCharsEl   = container.querySelector('#qr-meta-chars');
@@ -76,9 +159,9 @@ const tool = {
     const copyClipboard = container.querySelector('#qr-copy-clipboard');
     const copyFeedback  = container.querySelector('#qr-copy-feedback');
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    // ── Helpers ────────────────────────────────────────────────────────────
 
-    function _isValidUrl(str) {
+    function _isUrl(str) {
       try { return Boolean(new URL(str)); } catch { return false; }
     }
 
@@ -88,8 +171,8 @@ const tool = {
         urlFeedback.className = 'qrcode-url-feedback';
         return;
       }
-      if (_isValidUrl(val.trim())) {
-        urlFeedback.textContent = '✓ URL válida';
+      if (_isUrl(val.trim())) {
+        urlFeedback.textContent = '✓ URL válida detectada';
         urlFeedback.className = 'qrcode-url-feedback qrcode-url-feedback--valid';
       } else {
         urlFeedback.textContent = 'Texto livre (não é uma URL)';
@@ -97,137 +180,120 @@ const tool = {
       }
     }
 
-    function _syncColor(colorInput, hexInput, previewEl) {
-      const val = colorInput.value;
-      hexInput.value = val.toUpperCase();
-      previewEl.style.background = val;
+    function _syncColorFromPicker(pickerEl, hexEl, prevEl) {
+      const val = pickerEl.value;
+      hexEl.value = val.toUpperCase();
+      prevEl.style.background = val;
     }
 
-    function _syncColorFromHex(hexInput, colorInput, previewEl) {
-      const val = hexInput.value.trim();
+    function _syncColorFromHex(hexEl, pickerEl, prevEl) {
+      const val = hexEl.value.trim();
       if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-        colorInput.value = val;
-        previewEl.style.background = val;
+        pickerEl.value = val;
+        prevEl.style.background = val;
       }
     }
 
-    function _showState(state) {
+    function _setState(state) {
       emptyState.style.display   = state === 'empty'   ? '' : 'none';
       loadingState.style.display = state === 'loading' ? '' : 'none';
       resultEl.style.display     = state === 'result'  ? '' : 'none';
     }
 
-    // ── Geração do QR Code ───────────────────────────────────────────────────
+    // ── Geração do QR Code ──────────────────────────────────────────────────
 
-    function _generate() {
+    async function _generate() {
       const text = inputEl.value.trim();
       if (!text) return;
 
-      const size   = parseInt(sizeRangeEl.value, 10);
+      const size    = parseInt(sizeRangeEl.value, 10);
       const fgColor = colorFgEl.value;
       const bgColor = colorBgEl.value;
+      const ecl     = _getEcc(_activeEcl);
 
-      _showState('loading');
+      _setState('loading');
 
-      // Micro delay para o loading state aparecer antes do processamento
-      setTimeout(() => {
-        try {
-          // Limpa instância anterior
-          canvasContainer.innerHTML = '';
-          _qrInstance = null;
-
-          /* global QRCode */
-          _qrInstance = new QRCode(canvasContainer, {
-            text,
-            width: size,
-            height: size,
-            colorDark: fgColor,
-            colorLight: bgColor,
-            correctLevel: QRCode.CorrectLevel[_activeEcl]
-          });
-
-          // Atualiza metadados
-          metaSizeEl.textContent  = `${size} × ${size} px`;
-          metaEclEl.textContent   = `ECL: ${_activeEcl}`;
-          metaCharsEl.textContent = `${text.length} caractere${text.length !== 1 ? 's' : ''}`;
-
-          _showState('result');
-
-          // Scroll suave para o resultado
-          resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-        } catch (err) {
-          console.error('[QR Code] Falha na geração:', err);
-          _showState('empty');
-          urlFeedback.textContent = '⚠ Falha ao gerar o QR Code. Verifique o conteúdo inserido.';
-          urlFeedback.className = 'qrcode-url-feedback qrcode-url-feedback--error';
-        }
-      }, 80);
-    }
-
-    // ── Download PNG ─────────────────────────────────────────────────────────
-
-    function _downloadPng() {
-      const canvas = canvasContainer.querySelector('canvas');
-      if (!canvas) return;
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
-      link.download = `qrcode-${Date.now()}.png`;
-      link.click();
-    }
-
-    // ── Download SVG ─────────────────────────────────────────────────────────
-
-    function _downloadSvg() {
-      const canvas = canvasContainer.querySelector('canvas');
-      if (!canvas) return;
-
-      const size    = canvas.width;
-      const fgColor = colorFgEl.value;
-      const bgColor = colorBgEl.value;
-
-      // Converte o canvas para uma imagem embutida no SVG
-      const imgData = canvas.toDataURL('image/png');
-      const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <rect width="${size}" height="${size}" fill="${bgColor}"/>
-  <image href="${imgData}" width="${size}" height="${size}"/>
-</svg>`;
-      const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-      const url  = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href  = url;
-      link.download = `qrcode-${Date.now()}.svg`;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 10000);
-    }
-
-    // ── Copiar para Área de Transferência ────────────────────────────────────
-
-    async function _copyToClipboard() {
-      const canvas = canvasContainer.querySelector('canvas');
-      if (!canvas) return;
+      // Cede o controle ao browser para exibir o spinner antes de processar
+      await new Promise(r => setTimeout(r, 10));
 
       try {
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-        await navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blob })
-        ]);
-        _showCopyFeedback('✓ Imagem copiada para a área de transferência!', 'success');
+        // Gera o QR Code com a API do nayuki
+        const qr = qrcodegen.QrCode.encodeText(text, ecl);
+        _lastQr = qr;
+        _lastFg = fgColor;
+        _lastBg = bgColor;
+
+        // Cria e pinta o canvas
+        const canvas = document.createElement('canvas');
+        _drawQrOnCanvas(qr, canvas, size, fgColor, bgColor);
+
+        // Substitui o conteúdo do container
+        canvasWrap.innerHTML = '';
+        canvasWrap.appendChild(canvas);
+
+        // Atualiza metadados
+        metaSizeEl.textContent  = `${size} × ${size} px`;
+        metaEclEl.textContent   = `ECL: ${_activeEcl}`;
+        metaCharsEl.textContent = `${text.length} caractere${text.length !== 1 ? 's' : ''}`;
+
+        _setState('result');
+        resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
       } catch (err) {
-        // Fallback: copia o link do data URL
+        console.error('[QR Code] Falha na geração:', err);
+        _setState('empty');
+        urlFeedback.textContent = `⚠ Erro: ${err.message || 'Falha ao gerar QR Code'}`;
+        urlFeedback.className = 'qrcode-url-feedback qrcode-url-feedback--error';
+      }
+    }
+
+    // ── Downloads ────────────────────────────────────────────────────────────
+
+    function _downloadPng() {
+      if (!_lastQr) return;
+      const canvas = canvasWrap.querySelector('canvas');
+      if (!canvas) return;
+      const link = document.createElement('a');
+      link.download = `qrcode-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function _downloadSvg() {
+      if (!_lastQr) return;
+      try {
+        const svgString = _qrToSvgString(_lastQr, _lastFg, _lastBg);
+        const blob = new Blob([svgString], { type: 'image/svg+xml' });
+        const url  = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = `qrcode-${Date.now()}.svg`;
+        link.href = url;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+      } catch (err) {
+        console.error('[QR Code] Falha ao exportar SVG:', err);
+      }
+    }
+
+    async function _copyToClipboard() {
+      const canvas = canvasWrap.querySelector('canvas');
+      if (!canvas) return;
+      try {
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        _showCopyFeedback('✓ Imagem copiada para a área de transferência!', 'success');
+      } catch {
         try {
           await navigator.clipboard.writeText(canvas.toDataURL('image/png'));
-          _showCopyFeedback('✓ Data URL copiado para a área de transferência.', 'success');
+          _showCopyFeedback('✓ Data URL copiado.', 'success');
         } catch {
           _showCopyFeedback('⚠ Não foi possível copiar. Use "Baixar PNG".', 'error');
         }
       }
     }
 
-    function _showCopyFeedback(message, type) {
-      copyFeedback.textContent = message;
+    function _showCopyFeedback(msg, type) {
+      copyFeedback.textContent = msg;
       copyFeedback.className = `qrcode-copy-feedback qrcode-copy-feedback--${type}`;
       copyFeedback.style.display = '';
       setTimeout(() => { copyFeedback.style.display = 'none'; }, 3000);
@@ -235,7 +301,6 @@ const tool = {
 
     // ── Event Listeners ───────────────────────────────────────────────────────
 
-    // Input de texto
     _on(inputEl, 'input', () => {
       const val = inputEl.value;
       charCountEl.textContent = val.length;
@@ -243,20 +308,18 @@ const tool = {
       _updateUrlFeedback(val);
     });
 
-    // Enter no textarea (Ctrl+Enter gera)
-    _on(inputEl, 'keydown', (e) => {
+    _on(inputEl, 'keydown', e => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
         if (!generateBtn.disabled) _generate();
       }
     });
 
-    // Slider de tamanho
     _on(sizeRangeEl, 'input', () => {
       sizeDisplayEl.textContent = sizeRangeEl.value;
     });
 
-    // Botões de ECL
+    // Botões ECL
     eclGroup.querySelectorAll('.qrcode-ecl-btn').forEach(btn => {
       _on(btn, 'click', () => {
         _activeEcl = btn.dataset.ecl;
@@ -267,30 +330,33 @@ const tool = {
       });
     });
 
-    // Cor FG
-    _on(colorFgEl, 'input', () => _syncColor(colorFgEl, colorFgHexEl, colorFgPrev));
+    // Cores
+    _on(colorFgEl, 'input', () => _syncColorFromPicker(colorFgEl, colorFgHexEl, colorFgPrev));
     _on(colorFgHexEl, 'input', () => _syncColorFromHex(colorFgHexEl, colorFgEl, colorFgPrev));
-
-    // Cor BG
-    _on(colorBgEl, 'input', () => _syncColor(colorBgEl, colorBgHexEl, colorBgPrev));
+    _on(colorBgEl, 'input', () => _syncColorFromPicker(colorBgEl, colorBgHexEl, colorBgPrev));
     _on(colorBgHexEl, 'input', () => _syncColorFromHex(colorBgHexEl, colorBgEl, colorBgPrev));
 
     // Botão gerar
     _on(generateBtn, 'click', _generate);
 
-    // Ações de exportação
+    // Exportação
     _on(downloadPng,   'click', _downloadPng);
     _on(downloadSvg,   'click', _downloadSvg);
     _on(copyClipboard, 'click', _copyToClipboard);
+
+    // Regenera automaticamente ao mudar opções (se já tiver QR gerado)
+    const _regenerateIfActive = () => { if (_lastQr) _generate(); };
+    _on(sizeRangeEl, 'change', _regenerateIfActive);
+    _on(colorFgEl,   'change', _regenerateIfActive);
+    _on(colorBgEl,   'change', _regenerateIfActive);
   },
 
   unmount() {
-    // Remove todos os event listeners registrados
     _listeners.forEach(({ el, type, fn }) => {
       try { el.removeEventListener(type, fn); } catch { /* ignore */ }
     });
     _listeners = [];
-    _qrInstance = null;
+    _lastQr    = null;
   }
 };
 
