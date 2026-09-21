@@ -1,6 +1,6 @@
-# Open Tool `v.2.4.4`
+# Open Tool `v.2.4.5`
 
-[![Version](https://img.shields.io/badge/version-v.2.4.4-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v.2.4.5-blue.svg)](package.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![Architecture: 100% Client--Side](https://img.shields.io/badge/Architecture-100%25%20Client--Side-informational.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
 [![Privacy: Zero Server Upload](https://img.shields.io/badge/Privacy-Zero%20Server%20Upload-green.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
