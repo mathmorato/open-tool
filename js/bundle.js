@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.1.1",
+    VERSION: "v.2.2.0",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -5089,7 +5089,7 @@ ${textContent}
     },
     tick(now) {
       const perfNow = typeof now === "number" ? now : typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
-      const dt = Math.min((perfNow - (this.lastFrameTime || perfNow)) / 1e3, 0.1);
+      const dt = Math.max(0, Math.min((perfNow - (this.lastFrameTime || perfNow)) / 1e3, 0.1));
       this.lastFrameTime = perfNow;
       const smoothing = 1 - Math.exp(-12 * dt);
       const diffCount = this.targetCount - this.currentCount;
@@ -6966,6 +6966,30 @@ ${footerDelimiter}
             </div>
           </div>
 
+          <!-- Remo\xE7\xE3o Inteligente de Fundo -->
+          <div class="v-bg-remover-card" id="v-bg-remover-card">
+            <div class="v-bg-remover-header">
+              <div class="v-bg-remover-title-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="v-bg-icon">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                </svg>
+                <span class="v-bg-remover-title">Remo\xE7\xE3o Inteligente de Fundo</span>
+              </div>
+              <span class="v-bg-badge" id="v-bg-badge">Desativado</span>
+            </div>
+            <p class="v-bg-remover-desc">
+              Detecta e isola automaticamente o plano de fundo externo via flood-fill perim\xE9trico, preservando elementos internos e gerando um vetor SVG transparente.
+            </p>
+            <button type="button" class="v-bg-btn" id="v-remove-bg-btn" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+                <path d="m14 8 4 4-4 4"></path>
+              </svg>
+              <span id="v-remove-bg-btn-text">Remover Fundo da Imagem</span>
+            </button>
+          </div>
+
           <!-- Presets de Vetoriza\xE7\xE3o -->
           <div class="img2vector-field-group">
             <label class="img2vector-label">Modo / Preset</label>
@@ -7034,6 +7058,14 @@ ${footerDelimiter}
                   <span id="v-omit-val" class="v-val-badge">8</span>
                 </div>
                 <input type="range" id="v-omit-range" min="0" max="64" value="8" class="v-slider">
+              </div>
+
+              <div class="v-range-row">
+                <div class="v-range-header">
+                  <label for="v-bgtol-range">Toler\xE2ncia da Remo\xE7\xE3o de Fundo</label>
+                  <span id="v-bgtol-val" class="v-val-badge">32</span>
+                </div>
+                <input type="range" id="v-bgtol-range" min="5" max="100" value="32" class="v-slider">
               </div>
             </div>
           </details>
@@ -7151,10 +7183,140 @@ ${footerDelimiter}
   var _currentImageSrc = null;
   var _currentSvgString = null;
   var _currentZoom = 1;
+  var _bgRemovalActive = false;
+  var _cutoutDataUrl = null;
+  var _tolTimeout = null;
   function _on2(element, event, handler) {
     if (!element) return;
     element.addEventListener(event, handler);
     _listeners3.push({ element, event, handler });
+  }
+  function removeBackgroundIntelligent(imgData, tolerance = 32) {
+    const width = imgData.width;
+    const height = imgData.height;
+    const data = imgData.data;
+    const totalPixels = width * height;
+    const visited = new Uint8Array(totalPixels);
+    const queue = new Int32Array(totalPixels);
+    let qHead = 0;
+    let qTail = 0;
+    const edgeSamples = [];
+    const stepX = Math.max(1, Math.floor(width / 24));
+    const stepY = Math.max(1, Math.floor(height / 24));
+    for (let x = 0; x < width; x += stepX) {
+      const top = x * 4;
+      const bot = ((height - 1) * width + x) * 4;
+      if (data[top + 3] > 0) edgeSamples.push([data[top], data[top + 1], data[top + 2]]);
+      if (data[bot + 3] > 0) edgeSamples.push([data[bot], data[bot + 1], data[bot + 2]]);
+    }
+    for (let y = 0; y < height; y += stepY) {
+      const left = y * width * 4;
+      const right = (y * width + (width - 1)) * 4;
+      if (data[left + 3] > 0) edgeSamples.push([data[left], data[left + 1], data[left + 2]]);
+      if (data[right + 3] > 0) edgeSamples.push([data[right], data[right + 1], data[right + 2]]);
+    }
+    if (edgeSamples.length === 0) {
+      return imgData;
+    }
+    let rSum = 0, gSum = 0, bSum = 0;
+    for (let i = 0; i < edgeSamples.length; i++) {
+      rSum += edgeSamples[i][0];
+      gSum += edgeSamples[i][1];
+      bSum += edgeSamples[i][2];
+    }
+    const bgR = Math.round(rSum / edgeSamples.length);
+    const bgG = Math.round(gSum / edgeSamples.length);
+    const bgB = Math.round(bSum / edgeSamples.length);
+    const corners = [
+      [data[0], data[1], data[2]],
+      [data[(width - 1) * 4], data[(width - 1) * 4 + 1], data[(width - 1) * 4 + 2]],
+      [data[(height - 1) * width * 4], data[(height - 1) * width * 4 + 1], data[(height - 1) * width * 4 + 2]],
+      [data[((height - 1) * width + width - 1) * 4], data[((height - 1) * width + width - 1) * 4 + 1], data[((height - 1) * width + width - 1) * 4 + 2]]
+    ];
+    function isBgColor(idx) {
+      if (data[idx + 3] === 0) return true;
+      const r = data[idx];
+      const g = data[idx + 1];
+      const b = data[idx + 2];
+      const dr = r - bgR;
+      const dg = g - bgG;
+      const db = b - bgB;
+      if (Math.sqrt(dr * dr + dg * dg + db * db) <= tolerance) {
+        return true;
+      }
+      for (let c = 0; c < corners.length; c++) {
+        const cr = r - corners[c][0];
+        const cg = g - corners[c][1];
+        const cb = b - corners[c][2];
+        if (Math.sqrt(cr * cr + cg * cg + cb * cb) <= tolerance * 0.85) {
+          return true;
+        }
+      }
+      return false;
+    }
+    for (let x = 0; x < width; x++) {
+      const topIdx = x;
+      if (!visited[topIdx] && isBgColor(topIdx * 4)) {
+        visited[topIdx] = 1;
+        queue[qTail++] = topIdx;
+      }
+      const botIdx = (height - 1) * width + x;
+      if (!visited[botIdx] && isBgColor(botIdx * 4)) {
+        visited[botIdx] = 1;
+        queue[qTail++] = botIdx;
+      }
+    }
+    for (let y = 0; y < height; y++) {
+      const leftIdx = y * width;
+      if (!visited[leftIdx] && isBgColor(leftIdx * 4)) {
+        visited[leftIdx] = 1;
+        queue[qTail++] = leftIdx;
+      }
+      const rightIdx = y * width + (width - 1);
+      if (!visited[rightIdx] && isBgColor(rightIdx * 4)) {
+        visited[rightIdx] = 1;
+        queue[qTail++] = rightIdx;
+      }
+    }
+    while (qHead < qTail) {
+      const p = queue[qHead++];
+      const px = p % width;
+      const py = p / width | 0;
+      if (px > 0) {
+        const np = p - 1;
+        if (!visited[np] && isBgColor(np * 4)) {
+          visited[np] = 1;
+          queue[qTail++] = np;
+        }
+      }
+      if (px < width - 1) {
+        const np = p + 1;
+        if (!visited[np] && isBgColor(np * 4)) {
+          visited[np] = 1;
+          queue[qTail++] = np;
+        }
+      }
+      if (py > 0) {
+        const np = p - width;
+        if (!visited[np] && isBgColor(np * 4)) {
+          visited[np] = 1;
+          queue[qTail++] = np;
+        }
+      }
+      if (py < height - 1) {
+        const np = p + width;
+        if (!visited[np] && isBgColor(np * 4)) {
+          visited[np] = 1;
+          queue[qTail++] = np;
+        }
+      }
+    }
+    for (let i = 0; i < totalPixels; i++) {
+      if (visited[i] === 1) {
+        data[i * 4 + 3] = 0;
+      }
+    }
+    return imgData;
   }
   var tool_default4 = {
     id: "img2vector",
@@ -7169,6 +7331,9 @@ ${footerDelimiter}
       _currentImageSrc = null;
       _currentSvgString = null;
       _currentZoom = 1;
+      _bgRemovalActive = false;
+      _cutoutDataUrl = null;
+      _tolTimeout = null;
       if (typeof window !== "undefined" && !window.ImageTracer) {
         try {
           await loadScript(IMAGETRACER_LIB_URL);
@@ -7186,6 +7351,11 @@ ${footerDelimiter}
       const removeBtn = container.querySelector("#v-remove-btn");
       const convertBtn = container.querySelector("#v-convert-btn");
       const presetGrid = container.querySelector("#v-preset-grid");
+      const removeBgBtn = container.querySelector("#v-remove-bg-btn");
+      const removeBgBtnText = container.querySelector("#v-remove-bg-btn-text");
+      const bgBadge = container.querySelector("#v-bg-badge");
+      const bgTolRange = container.querySelector("#v-bgtol-range");
+      const bgTolVal = container.querySelector("#v-bgtol-val");
       const colorsRange = container.querySelector("#v-colors-range");
       const colorsVal = container.querySelector("#v-colors-val");
       const blurRange = container.querySelector("#v-blur-range");
@@ -7262,6 +7432,8 @@ ${footerDelimiter}
           return;
         }
         _currentFile = file;
+        _bgRemovalActive = false;
+        _cutoutDataUrl = null;
         if (_currentImageSrc) {
           URL.revokeObjectURL(_currentImageSrc);
         }
@@ -7270,12 +7442,19 @@ ${footerDelimiter}
         origOutput.src = _currentImageSrc;
         filenameEl.textContent = file.name;
         filesizeEl.textContent = _formatBytes(file.size);
+        removeBgBtn.disabled = false;
+        removeBgBtn.classList.remove("v-bg-btn--active");
+        removeBgBtnText.textContent = "Remover Fundo da Imagem";
+        bgBadge.textContent = "Desativado";
+        bgBadge.classList.remove("v-bg-badge--active");
         dropPrompt.style.display = "none";
         loadedBox.style.display = "flex";
         convertBtn.disabled = false;
       }
       function _resetFile() {
         _currentFile = null;
+        _bgRemovalActive = false;
+        _cutoutDataUrl = null;
         if (_currentImageSrc) {
           URL.revokeObjectURL(_currentImageSrc);
           _currentImageSrc = null;
@@ -7286,8 +7465,70 @@ ${footerDelimiter}
         dropPrompt.style.display = "flex";
         loadedBox.style.display = "none";
         convertBtn.disabled = true;
+        removeBgBtn.disabled = true;
+        removeBgBtn.classList.remove("v-bg-btn--active");
+        removeBgBtnText.textContent = "Remover Fundo da Imagem";
+        bgBadge.textContent = "Desativado";
+        bgBadge.classList.remove("v-bg-badge--active");
         _setViewState("empty");
         _currentSvgString = null;
+      }
+      function _updateCutoutPreviews() {
+        if (!_currentImageSrc) return;
+        const tol = parseInt(bgTolRange.value, 10) || 32;
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          let w = img.naturalWidth || img.width;
+          let h = img.naturalHeight || img.height;
+          const maxDim = 800;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round(h * maxDim / w);
+              w = maxDim;
+            } else {
+              w = Math.round(w * maxDim / h);
+              h = maxDim;
+            }
+          }
+          const c = document.createElement("canvas");
+          c.width = w;
+          c.height = h;
+          const cx = c.getContext("2d");
+          cx.drawImage(img, 0, 0, w, h);
+          let imgData = cx.getImageData(0, 0, w, h);
+          imgData = removeBackgroundIntelligent(imgData, tol);
+          cx.putImageData(imgData, 0, 0);
+          _cutoutDataUrl = c.toDataURL("image/png");
+          previewImg.src = _cutoutDataUrl;
+          origOutput.src = _cutoutDataUrl;
+        };
+        img.src = _currentImageSrc;
+      }
+      function _toggleBgRemoval() {
+        if (!_currentFile && !_currentImageSrc) return;
+        _bgRemovalActive = !_bgRemovalActive;
+        if (_bgRemovalActive) {
+          bgBadge.textContent = "\u2713 Fundo Removido";
+          bgBadge.classList.add("v-bg-badge--active");
+          removeBgBtn.classList.add("v-bg-btn--active");
+          removeBgBtnText.textContent = "Restaurar Fundo Original";
+          _updateCutoutPreviews();
+          if (_currentSvgString) {
+            _vectorize();
+          }
+        } else {
+          bgBadge.textContent = "Desativado";
+          bgBadge.classList.remove("v-bg-badge--active");
+          removeBgBtn.classList.remove("v-bg-btn--active");
+          removeBgBtnText.textContent = "Remover Fundo da Imagem";
+          _cutoutDataUrl = null;
+          previewImg.src = _currentImageSrc;
+          origOutput.src = _currentImageSrc;
+          if (_currentSvgString) {
+            _vectorize();
+          }
+        }
       }
       function _formatBytes(bytes) {
         if (bytes < 1024) return bytes + " B";
@@ -7342,7 +7583,12 @@ ${footerDelimiter}
             canvas.height = targetH;
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, targetW, targetH);
-            const imgData = ctx.getImageData(0, 0, targetW, targetH);
+            let imgData = ctx.getImageData(0, 0, targetW, targetH);
+            if (_bgRemovalActive) {
+              const tol = parseInt(bgTolRange.value, 10) || 32;
+              imgData = removeBackgroundIntelligent(imgData, tol);
+              ctx.putImageData(imgData, 0, 0);
+            }
             const svgStr = tracer.imagedataToSVG(imgData, options);
             _currentSvgString = svgStr;
             svgOutput.innerHTML = svgStr;
@@ -7492,9 +7738,28 @@ ${footerDelimiter}
       _on2(zoomOut, "click", () => _setZoom(_currentZoom - 0.2));
       _on2(downloadSvg, "click", _downloadSvgFile);
       _on2(copySvg, "click", _copySvgCode);
+      _on2(removeBgBtn, "click", _toggleBgRemoval);
+      _on2(bgTolRange, "input", () => {
+        bgTolVal.textContent = bgTolRange.value;
+        if (_bgRemovalActive) {
+          clearTimeout(_tolTimeout);
+          _tolTimeout = setTimeout(() => {
+            if (_bgRemovalActive) {
+              _updateCutoutPreviews();
+              if (_currentSvgString) {
+                _vectorize();
+              }
+            }
+          }, 200);
+        }
+      });
       _syncPresetControls("bw");
     },
     unmount() {
+      if (_tolTimeout) {
+        clearTimeout(_tolTimeout);
+        _tolTimeout = null;
+      }
       _listeners3.forEach(({ element, event, handler }) => {
         try {
           element.removeEventListener(event, handler);
@@ -7509,6 +7774,8 @@ ${footerDelimiter}
         }
         _currentImageSrc = null;
       }
+      _cutoutDataUrl = null;
+      _bgRemovalActive = false;
     }
   };
 

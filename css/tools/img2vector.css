@@ -171,6 +171,109 @@
   color: #fff;
 }
 
+/* ── Remoção Inteligente de Fundo ────────────────────────────────────────── */
+.v-bg-remover-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: color-mix(in srgb, var(--surface-input, var(--bg-primary)) 70%, var(--surface-card));
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.v-bg-remover-card:hover {
+  border-color: color-mix(in srgb, var(--accent-primary) 35%, var(--border-subtle));
+}
+
+.v-bg-remover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.v-bg-remover-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.v-bg-icon {
+  color: var(--accent-primary);
+}
+
+.v-bg-remover-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.v-bg-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--text-secondary) 15%, transparent);
+  color: var(--text-secondary);
+  border: 1px solid color-mix(in srgb, var(--text-secondary) 25%, transparent);
+  transition: all 0.2s ease;
+}
+
+.v-bg-badge--active {
+  background: color-mix(in srgb, #10b981 18%, transparent);
+  color: #10b981;
+  border-color: color-mix(in srgb, #10b981 35%, transparent);
+}
+
+.v-bg-remover-desc {
+  font-size: 0.71875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.v-bg-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.v-bg-btn:hover:not(:disabled) {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--surface-card));
+}
+
+.v-bg-btn--active {
+  background: color-mix(in srgb, #10b981 15%, var(--surface-card));
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.v-bg-btn--active:hover:not(:disabled) {
+  background: color-mix(in srgb, #10b981 25%, var(--surface-card));
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.v-bg-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* ── Presets Grid ───────────────────────────────────────────────────────── */
 .img2vector-label {
   font-size: 0.8125rem;

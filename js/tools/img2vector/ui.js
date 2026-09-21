@@ -61,6 +61,30 @@ export function getImageToVectorHTML() {
             </div>
           </div>
 
+          <!-- Remoção Inteligente de Fundo -->
+          <div class="v-bg-remover-card" id="v-bg-remover-card">
+            <div class="v-bg-remover-header">
+              <div class="v-bg-remover-title-wrap">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="v-bg-icon">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                </svg>
+                <span class="v-bg-remover-title">Remoção Inteligente de Fundo</span>
+              </div>
+              <span class="v-bg-badge" id="v-bg-badge">Desativado</span>
+            </div>
+            <p class="v-bg-remover-desc">
+              Detecta e isola automaticamente o plano de fundo externo via flood-fill perimétrico, preservando elementos internos e gerando um vetor SVG transparente.
+            </p>
+            <button type="button" class="v-bg-btn" id="v-remove-bg-btn" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+                <path d="m14 8 4 4-4 4"></path>
+              </svg>
+              <span id="v-remove-bg-btn-text">Remover Fundo da Imagem</span>
+            </button>
+          </div>
+
           <!-- Presets de Vetorização -->
           <div class="img2vector-field-group">
             <label class="img2vector-label">Modo / Preset</label>
@@ -129,6 +153,14 @@ export function getImageToVectorHTML() {
                   <span id="v-omit-val" class="v-val-badge">8</span>
                 </div>
                 <input type="range" id="v-omit-range" min="0" max="64" value="8" class="v-slider">
+              </div>
+
+              <div class="v-range-row">
+                <div class="v-range-header">
+                  <label for="v-bgtol-range">Tolerância da Remoção de Fundo</label>
+                  <span id="v-bgtol-val" class="v-val-badge">32</span>
+                </div>
+                <input type="range" id="v-bgtol-range" min="5" max="100" value="32" class="v-slider">
               </div>
             </div>
           </details>

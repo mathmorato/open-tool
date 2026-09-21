@@ -1678,7 +1678,7 @@ export const batchAnimationController = {
 
   tick(now) {
     const perfNow = typeof now === 'number' ? now : (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now());
-    const dt = Math.min((perfNow - (this.lastFrameTime || perfNow)) / 1000, 0.1); // Trava dt máximo para evitar saltos após tab background
+    const dt = Math.max(0, Math.min((perfNow - (this.lastFrameTime || perfNow)) / 1000, 0.1)); // Trava dt entre 0 e 0.1s para evitar saltos ou valores negativos
     this.lastFrameTime = perfNow;
 
     // Coeficiente de convergência ágil (ajuste fino para não arrastar nem travar)

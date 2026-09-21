@@ -791,9 +791,9 @@ console.log('  -> Colapso visual (.has-error display: none !important) e ERROR_C
 
 // 15. Teste de estabilidade e posicionamento do botão de download unificado abaixo da linha principal (CLS = 0)
 console.log('[TESTE 15] Testando layout de duas linhas e estabilidade do botão unificado...');
-const indexHtmlContent = fs.readFileSync('./index.html', 'utf8');
+const indexHtmlContent = fs.readFileSync('./index.html', 'utf8') + '\n' + fs.readFileSync('./js/tools/doc2md/ui.js', 'utf8');
 if ((!indexHtmlContent.includes('queue-actions-row') && !indexHtmlContent.includes('queue-static-buttons')) || (!indexHtmlContent.includes('unified-download-container') && !indexHtmlContent.includes('unified-action-row'))) {
-  console.error('[FALHA] Estrutura estável de duas linhas (queue-static-buttons / unified-action-row) ausente no index.html');
+  console.error('[FALHA] Estrutura estável de duas linhas (queue-static-buttons / unified-action-row) ausente no template de UI');
   process.exit(1);
 }
 if (!stylesCss.includes('.unified-download-container') && !stylesCss.includes('.unified-action-row')) {
@@ -1052,17 +1052,17 @@ if (!cssContent.includes('.btn-sort .sort-icon')) {
 console.log('  -> [OK] Estilos de alinhamento à esquerda e redução de 50% no espaçamento vertical validados!');
 
 // Validação dos elementos HTML de ordenação e ícones vetoriais
-const htmlContent = fs.readFileSync('./index.html', 'utf8');
+const htmlContent = fs.readFileSync('./index.html', 'utf8') + '\n' + fs.readFileSync('./js/tools/doc2md/ui.js', 'utf8');
 if (!htmlContent.includes('icon-desc') || !htmlContent.includes('icon-asc') || !htmlContent.includes('sort-files-label')) {
-  console.error('[FALHA] index.html não contém os ícones SVG icon-desc / icon-asc ou sort-files-label');
+  console.error('[FALHA] UI não contém os ícones SVG icon-desc / icon-asc ou sort-files-label');
   process.exit(1);
 }
 console.log('  -> [OK] Ícones vetoriais SVG e elementos de ordenação validados no DOM!');
 
 // 22. Teste da nova redação textual do cabeçalho hero e da dropzone com badges expandidos (v.1.7.1)
 console.log('[TESTE 22] Testando redação textual do cabeçalho hero, dropzone e badges expandidos...');
-if (!htmlContent.includes('Conversor Universal & Mesclador de Documentos para Markdown')) {
-  console.error('[FALHA] Título principal não atualizado no index.html');
+if (!htmlContent.includes('Conversor Universal & Mesclador de Documentos para Markdown') && !htmlContent.includes('Conversor Universal &amp; Mesclador de Documentos para Markdown')) {
+  console.error('[FALHA] Título principal não atualizado no template');
   process.exit(1);
 }
 if (!htmlContent.includes('Converta, descompacte e unifique documentos, planilhas, apresentações, PDFs e pacotes (.zip/.rar) diretamente no navegador.')) {
@@ -1450,9 +1450,9 @@ if (mockTotalBytesCounter.textContent !== '0' || mockTotalFormattedUnit.textCont
 console.log('  -> [OK] clearQueue() resetou a animação e zerou o contador com sucesso!');
 
 // 27.5. Validação de microcópia do rótulo da badge no index.html e ausência de 'bytes'
-const currentHtmlContent = fs.readFileSync('./index.html', 'utf8');
+const currentHtmlContent = fs.readFileSync('./index.html', 'utf8') + '\n' + fs.readFileSync('./js/tools/doc2md/ui.js', 'utf8');
 if (!currentHtmlContent.includes('Tamanho do MD:')) {
-  console.error('[FALHA] index.html não contém o rótulo "Tamanho do MD:" na badge');
+  console.error('[FALHA] UI não contém o rótulo "Tamanho do MD:" na badge');
   process.exit(1);
 }
 if (currentHtmlContent.includes('<span class="total-bytes-unit">bytes</span>')) {

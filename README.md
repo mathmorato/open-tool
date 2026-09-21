@@ -1,6 +1,6 @@
-# Open Tool `v.2.1.1`
+# Open Tool `v.2.2.0`
 
-[![Version](https://img.shields.io/badge/version-v.2.1.1-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v.2.2.0-blue.svg)](package.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![Architecture: 100% Client--Side](https://img.shields.io/badge/Architecture-100%25%20Client--Side-informational.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
 [![Privacy: Zero Server Upload](https://img.shields.io/badge/Privacy-Zero%20Server%20Upload-green.svg)](#-manifesto-de-segurança-e-privacidade-data-privacy-by-design)
@@ -36,6 +36,7 @@ O Open Tool adota uma experiência visual unificada inspirada no modelo *PDF24 T
 
 ### 4. Image to Vector (`img2vector`)
 * **Vetorização Raster para SVG:** Converte imagens rasterizadas (`.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`, `.gif`) em caminhos vetoriais escaláveis `<path>` com curvas Bézier cúbicas e quadráticas.
+* **Remoção Inteligente de Fundo:** Isolamento e recorte do fundo externo via algoritmo de inundação perimétrica (flood-fill BFS com detecção de bordas e tolerância regulável), preservando elementos internos e gerando vetores transparentes.
 * **Presets Otimizados:** Perfis pré-definidos para *Logotipo / P&B* (2 cores nítidas), *Equilibrado* (ilustrações), *Alta Fidelidade* (detalhes finos), *Curvas Suaves*, *Posterizado* e *Escala de Cinza*.
 * **Ajustes Finos:** Quantização de cores (2 a 64 cores), redução de ruído (filtro de mediana/suavização) e omissão de speckles.
 * **Palco Comparativo:** Visualização do vetor SVG, da imagem original ou comparação lado a lado, com controle de zoom (50% a 300%) e métricas de caminhos e bytes.
@@ -171,9 +172,9 @@ O projeto está totalmente preparado para publicação contínua e direta via Gi
 
 ## 🏷️ Licença e Versionamento SemVer
 
-* **Controle SemVer:** O projeto segue o padrão [Semantic Versioning 2.0.0](https://semver.org/). A versão atual é **`v.2.1.1`**, sincronizada em todos os pontos de governança:
+* **Controle SemVer:** O projeto segue o padrão [Semantic Versioning 2.0.0](https://semver.org/). A versão atual é **`v.2.2.0`**, sincronizada em todos os pontos de governança:
   1. Interface principal (`index.html`).
-  2. Arquivo `package.json` (`"version": "2.1.1"`).
+  2. Arquivo `package.json` (`"version": "2.2.0"`).
   3. Constante `APP_CONFIG.VERSION` em `js/config.js`.
   4. Badges e cabeçalho deste `README.md`.
 * **Licença de Uso:** Distribuído sob os termos da licença **MIT**. Para maiores detalhes, consulte o arquivo [LICENSE](LICENSE).
