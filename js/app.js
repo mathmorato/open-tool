@@ -2895,15 +2895,6 @@ function initDropzone() {
     });
   }
 
-  // 2. Canal Drag & Drop Blindado com suporte a múltiplos arquivos
-  window.addEventListener('dragover', (e) => {
-    e.preventDefault();
-  }, false);
-
-  window.addEventListener('drop', (e) => {
-    e.preventDefault();
-  }, false);
-
   if (dropzone) {
     dropzone.addEventListener('dragenter', (e) => {
       e.preventDefault();
@@ -2937,24 +2928,53 @@ function initDropzone() {
     });
   }
 
-  // 3. Suporte a Colar (Paste / Clipboard) iterando todos os arquivos
-  window.addEventListener('paste', async (e) => {
-    if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
-      e.preventDefault();
-      console.log(`[doc2md] ${e.clipboardData.files.length} arquivo(s) recebido(s) via Paste (Clipboard)`);
-      addFilesToQueue(e.clipboardData.files);
-      return;
-    }
+  // 2. Canal Drag & Drop Blindado com suporte a múltiplos arquivos (anexado uma única vez)
+  if (!window.__openToolGlobalDropAttached) {
+    window.__openToolGlobalDropAttached = true;
 
-    const pastedText = e.clipboardData ? e.clipboardData.getData('text') : '';
-    if (pastedText && pastedText.trim()) {
+    window.addEventListener('dragover', (e) => {
       e.preventDefault();
-      console.log('[doc2md] Texto puro recebido via Paste (Clipboard)');
-      updateDebugStatus(`[Clipboard]: Texto recebido (${pastedText.length} caracteres)`);
-      const mockFile = new File([pastedText], 'texto_colado.txt', { type: 'text/plain' });
-      addFilesToQueue([mockFile]);
-    }
-  });
+    }, false);
+
+    window.addEventListener('drop', (e) => {
+      e.preventDefault();
+    }, false);
+
+    // 3. Suporte a Colar (Paste / Clipboard) iterando todos os arquivos
+    window.addEventListener('paste', async (e) => {
+      // Se o foco estiver em um campo de texto, input, textarea ou elemento editável, NUNCA interceptar
+      const activeEl = document.activeElement;
+      const target = e.target;
+      if (
+        (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) ||
+        (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable))
+      ) {
+        return;
+      }
+
+      // Se a ferramenta doc2md não estiver visível no DOM, não interceptar
+      const dropzoneEl = document.getElementById('dropzone');
+      if (!dropzoneEl || !dropzoneEl.isConnected || dropzoneEl.offsetParent === null) {
+        return;
+      }
+
+      if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
+        e.preventDefault();
+        console.log(`[doc2md] ${e.clipboardData.files.length} arquivo(s) recebido(s) via Paste (Clipboard)`);
+        addFilesToQueue(e.clipboardData.files);
+        return;
+      }
+
+      const pastedText = e.clipboardData ? e.clipboardData.getData('text') : '';
+      if (pastedText && pastedText.trim()) {
+        e.preventDefault();
+        console.log('[doc2md] Texto puro recebido via Paste (Clipboard)');
+        updateDebugStatus(`[Clipboard]: Texto recebido (${pastedText.length} caracteres)`);
+        const mockFile = new File([pastedText], 'texto_colado.txt', { type: 'text/plain' });
+        addFilesToQueue([mockFile]);
+      }
+    });
+  }
 }
 
 

@@ -171,6 +171,7 @@ const tool = {
     const metaCharsEl   = container.querySelector('#qr-meta-chars');
     const downloadPng   = container.querySelector('#qr-download-png');
     const downloadSvg   = container.querySelector('#qr-download-svg');
+    const pasteBtn      = container.querySelector('#qr-paste-btn');
     const copyClipboard = container.querySelector('#qr-copy-clipboard');
     const copyFeedback  = container.querySelector('#qr-copy-feedback');
 
@@ -316,12 +317,41 @@ const tool = {
 
     // ── Event Listeners ───────────────────────────────────────────────────────
 
-    _on(inputEl, 'input', () => {
+    const _syncInputState = () => {
       const val = inputEl.value;
       charCountEl.textContent = val.length;
       generateBtn.disabled = !val.trim();
       _updateUrlFeedback(val);
+    };
+
+    _on(inputEl, 'input', _syncInputState);
+
+    // Garante sincronização imediata no evento de colar nativo (Ctrl+V / Botão Direito)
+    _on(inputEl, 'paste', () => {
+      setTimeout(_syncInputState, 0);
     });
+
+    // Botão de ação rápida "Colar" via Clipboard API
+    if (pasteBtn) {
+      _on(pasteBtn, 'click', async () => {
+        try {
+          if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+              inputEl.value = text;
+              _syncInputState();
+              inputEl.focus();
+            }
+          } else {
+            inputEl.focus();
+            inputEl.select();
+          }
+        } catch (err) {
+          console.warn('[qrcode] Acesso ao clipboard bloqueado pelo navegador:', err);
+          inputEl.focus();
+        }
+      });
+    }
 
     _on(inputEl, 'keydown', e => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {

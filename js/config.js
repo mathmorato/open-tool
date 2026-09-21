@@ -1,7 +1,7 @@
 /**
  * Open Tool
  * Configuração Central & Versionamento SemVer
- * @version v.2.0.2
+ * @version v.2.0.3
  */
 
 export const CODE_EXTENSIONS_MAP = {
@@ -179,7 +179,7 @@ export const MIME_TYPE_MAP = {
 };
 
 export const APP_CONFIG = {
-  VERSION: 'v.2.0.2',
+  VERSION: 'v.2.0.3',
   APP_NAME: 'Open Tool',
   TAGLINE: 'Open Tool • Ferramentas Universais 100% Client-Side',
   REPO_URL: 'https://github.com/mathmorato/open-tool',

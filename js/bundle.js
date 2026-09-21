@@ -268,7 +268,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.0.2",
+    VERSION: "v.2.0.3",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -3669,12 +3669,6 @@ ${footerDelimiter}
         fileInput.value = "";
       });
     }
-    window.addEventListener("dragover", (e) => {
-      e.preventDefault();
-    }, false);
-    window.addEventListener("drop", (e) => {
-      e.preventDefault();
-    }, false);
     if (dropzone) {
       dropzone.addEventListener("dragenter", (e) => {
         e.preventDefault();
@@ -3704,22 +3698,40 @@ ${footerDelimiter}
         }
       });
     }
-    window.addEventListener("paste", async (e) => {
-      if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
+    if (!window.__openToolGlobalDropAttached) {
+      window.__openToolGlobalDropAttached = true;
+      window.addEventListener("dragover", (e) => {
         e.preventDefault();
-        console.log(`[doc2md] ${e.clipboardData.files.length} arquivo(s) recebido(s) via Paste (Clipboard)`);
-        addFilesToQueue(e.clipboardData.files);
-        return;
-      }
-      const pastedText = e.clipboardData ? e.clipboardData.getData("text") : "";
-      if (pastedText && pastedText.trim()) {
+      }, false);
+      window.addEventListener("drop", (e) => {
         e.preventDefault();
-        console.log("[doc2md] Texto puro recebido via Paste (Clipboard)");
-        updateDebugStatus(`[Clipboard]: Texto recebido (${pastedText.length} caracteres)`);
-        const mockFile = new File([pastedText], "texto_colado.txt", { type: "text/plain" });
-        addFilesToQueue([mockFile]);
-      }
-    });
+      }, false);
+      window.addEventListener("paste", async (e) => {
+        const activeEl = document.activeElement;
+        const target = e.target;
+        if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) || activeEl && (activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.isContentEditable)) {
+          return;
+        }
+        const dropzoneEl = document.getElementById("dropzone");
+        if (!dropzoneEl || !dropzoneEl.isConnected || dropzoneEl.offsetParent === null) {
+          return;
+        }
+        if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
+          e.preventDefault();
+          console.log(`[doc2md] ${e.clipboardData.files.length} arquivo(s) recebido(s) via Paste (Clipboard)`);
+          addFilesToQueue(e.clipboardData.files);
+          return;
+        }
+        const pastedText = e.clipboardData ? e.clipboardData.getData("text") : "";
+        if (pastedText && pastedText.trim()) {
+          e.preventDefault();
+          console.log("[doc2md] Texto puro recebido via Paste (Clipboard)");
+          updateDebugStatus(`[Clipboard]: Texto recebido (${pastedText.length} caracteres)`);
+          const mockFile = new File([pastedText], "texto_colado.txt", { type: "text/plain" });
+          addFilesToQueue([mockFile]);
+        }
+      });
+    }
   }
   function boot() {
     reinitElements();
@@ -3846,13 +3858,22 @@ ${footerDelimiter}
 
           <!-- Input de conte\xFAdo -->
           <div class="qrcode-field-group">
-            <label class="qrcode-label" for="qr-input">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-              </svg>
-              URL ou texto
-            </label>
+            <div class="qrcode-label-row">
+              <label class="qrcode-label" for="qr-input">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+                URL ou texto
+              </label>
+              <button type="button" id="qr-paste-btn" class="qrcode-paste-btn" title="Colar link ou texto da \xE1rea de transfer\xEAncia">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                </svg>
+                <span>Colar</span>
+              </button>
+            </div>
             <div class="qrcode-input-wrap">
               <textarea
                 id="qr-input"
@@ -4172,6 +4193,7 @@ ${footerDelimiter}
       const metaCharsEl = container.querySelector("#qr-meta-chars");
       const downloadPng = container.querySelector("#qr-download-png");
       const downloadSvg = container.querySelector("#qr-download-svg");
+      const pasteBtn = container.querySelector("#qr-paste-btn");
       const copyClipboard = container.querySelector("#qr-copy-clipboard");
       const copyFeedback = container.querySelector("#qr-copy-feedback");
       function _isUrl(str) {
@@ -4290,12 +4312,36 @@ ${footerDelimiter}
           copyFeedback.style.display = "none";
         }, 3e3);
       }
-      _on(inputEl, "input", () => {
+      const _syncInputState = () => {
         const val = inputEl.value;
         charCountEl.textContent = val.length;
         generateBtn.disabled = !val.trim();
         _updateUrlFeedback(val);
+      };
+      _on(inputEl, "input", _syncInputState);
+      _on(inputEl, "paste", () => {
+        setTimeout(_syncInputState, 0);
       });
+      if (pasteBtn) {
+        _on(pasteBtn, "click", async () => {
+          try {
+            if (navigator.clipboard && typeof navigator.clipboard.readText === "function") {
+              const text = await navigator.clipboard.readText();
+              if (text) {
+                inputEl.value = text;
+                _syncInputState();
+                inputEl.focus();
+              }
+            } else {
+              inputEl.focus();
+              inputEl.select();
+            }
+          } catch (err) {
+            console.warn("[qrcode] Acesso ao clipboard bloqueado pelo navegador:", err);
+            inputEl.focus();
+          }
+        });
+      }
       _on(inputEl, "keydown", (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
           e.preventDefault();
