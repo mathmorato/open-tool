@@ -88,11 +88,25 @@ export function getPdfMergeHTML() {
             <p class="pdf-empty-desc">Adicione ao menos dois arquivos na lista e clique em "Mesclar PDFs" para gerar o documento unificado.</p>
           </div>
 
-          <!-- Estado Processando -->
+          <!-- Estado Processando com Barra de Progresso Real -->
           <div class="pdf-loading-view" id="m-loading-view" style="display: none;">
-            <div class="pdf-spinner"></div>
-            <h3 class="pdf-loading-title">Combinando páginas dos documentos...</h3>
-            <p class="pdf-loading-desc">Organizando páginas sequenciais em novo PDF.</p>
+            <div class="open-tool-progress-panel">
+              <div class="open-tool-progress-icon-wrap">
+                <div class="open-tool-progress-pulse-ring"></div>
+                <div class="open-tool-progress-spinner"></div>
+              </div>
+              <div class="open-tool-progress-header">
+                <h3 class="open-tool-progress-title" id="m-loading-title">Combinando páginas dos documentos...</h3>
+                <span class="open-tool-progress-percentage" id="m-progress-pct">0%</span>
+              </div>
+              <div class="open-tool-progress-track">
+                <div class="open-tool-progress-fill" id="m-progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="open-tool-progress-footer">
+                <span class="open-tool-progress-desc" id="m-loading-desc">Iniciando leitura dos arquivos...</span>
+                <span class="open-tool-progress-counter" id="m-progress-counter">0 / 0</span>
+              </div>
+            </div>
           </div>
 
           <!-- Estado Resultado -->

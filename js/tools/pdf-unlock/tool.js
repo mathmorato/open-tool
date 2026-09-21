@@ -97,10 +97,24 @@ export default {
     const metaSize        = container.querySelector('#u-meta-size');
     const downloadBtn     = container.querySelector('#u-download-btn');
 
+    const loadingTitle   = container.querySelector('#u-loading-title');
+    const progressPct    = container.querySelector('#u-progress-pct');
+    const progressFill   = container.querySelector('#u-progress-fill');
+    const loadingDesc    = container.querySelector('#u-loading-desc');
+    const progressCounter = container.querySelector('#u-progress-counter');
+
     function _setViewState(state) {
       emptyView.style.display   = state === 'empty'   ? 'flex' : 'none';
       loadingView.style.display = state === 'loading' ? 'flex' : 'none';
       resultView.style.display  = state === 'result'  ? 'flex' : 'none';
+    }
+
+    function _updateProgress(pct, title, desc, counter) {
+      if (progressPct) progressPct.textContent = `${pct}%`;
+      if (progressFill) progressFill.style.width = `${pct}%`;
+      if (title && loadingTitle) loadingTitle.textContent = title;
+      if (desc && loadingDesc) loadingDesc.textContent = desc;
+      if (counter && progressCounter) progressCounter.textContent = counter;
     }
 
     async function _inspectPdf(file) {
@@ -194,7 +208,8 @@ export default {
       if (!_currentArrayBuffer) return;
 
       _setViewState('loading');
-      await new Promise(r => setTimeout(r, 30));
+      _updateProgress(5, 'Iniciando descriptografia...', 'Carregando chaves de segurança e tabelas xref...', 'Iniciando');
+      await new Promise(r => setTimeout(r, 25));
 
       await _ensureLibs();
       const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
@@ -215,6 +230,9 @@ export default {
 
         if (_requiresPassword) {
           // Descriptografa com a senha fornecida via PDF.js e reconstrói via PDFLib
+          _updateProgress(15, 'Verificando senha criptográfica...', 'Autenticando credenciais no stream...', 'Validando');
+          await new Promise(r => setTimeout(r, 20));
+
           const loadingTask = pdfjsLib.getDocument({ data: copyBuf, password });
           const jsDoc = await loadingTask.promise;
           const numPages = jsDoc.numPages;
@@ -222,6 +240,15 @@ export default {
           pdfDoc = await PDFLib.PDFDocument.create();
 
           for (let i = 1; i <= numPages; i++) {
+            const currentPct = Math.round(15 + (((i - 1) / numPages) * 75));
+            _updateProgress(
+              currentPct,
+              `Descriptografando página ${i} de ${numPages}...`,
+              'Removendo senhas e decodificando fluxos criptografados...',
+              `${i} / ${numPages} págs`
+            );
+            await new Promise(r => setTimeout(r, 15));
+
             const page = await jsDoc.getPage(i);
             const viewport = page.getViewport({ scale: 1.5 });
             const canvas = document.createElement('canvas');
@@ -242,15 +269,30 @@ export default {
               height: viewport.height
             });
           }
+          _updateProgress(94, 'Finalizando PDF descriptografado...', 'Consolidando páginas e removendo flags de bloqueio...', `${numPages} / ${numPages} págs`);
+          await new Promise(r => setTimeout(r, 20));
           unlockedBytes = await pdfDoc.save();
         } else {
           // Tenta desbloqueio direto de restrições
+          _updateProgress(25, 'Inspecionando permissões...', 'Analisando dicionário de segurança (/Encrypt)...', '1 / 3 etapas');
+          await new Promise(r => setTimeout(r, 20));
+
           try {
+            _updateProgress(55, 'Removendo restrições de permissão...', 'Limpando flags de edição, cópia e impressão...', '2 / 3 etapas');
+            await new Promise(r => setTimeout(r, 20));
+
             pdfDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+
+            _updateProgress(88, 'Reconstruindo documento sem travas...', 'Salvando árvore de objetos PDF limpa...', '3 / 3 etapas');
+            await new Promise(r => setTimeout(r, 20));
+
             unlockedBytes = await pdfDoc.save();
           } catch (errIgnore) {
             // Fallback: se pdf-lib não conseguir salvar por causa de criptografia nos fluxos internos, usa PDF.js
             if (pdfjsLib) {
+              _updateProgress(35, 'Usando decodificador raster...', 'Extraindo páginas com permissão de leitura...', 'Modo seguro');
+              await new Promise(r => setTimeout(r, 20));
+
               const loadingTask = pdfjsLib.getDocument({ data: copyBuf });
               const jsDoc = await loadingTask.promise;
               const numPages = jsDoc.numPages;
@@ -258,6 +300,15 @@ export default {
               pdfDoc = await PDFLib.PDFDocument.create();
 
               for (let i = 1; i <= numPages; i++) {
+                const currentPct = Math.round(35 + (((i - 1) / numPages) * 55));
+                _updateProgress(
+                  currentPct,
+                  `Processando página ${i} de ${numPages}...`,
+                  'Reconstruindo página sem restrições...',
+                  `${i} / ${numPages} págs`
+                );
+                await new Promise(r => setTimeout(r, 15));
+
                 const page = await jsDoc.getPage(i);
                 const viewport = page.getViewport({ scale: 1.5 });
                 const canvas = document.createElement('canvas');
@@ -278,12 +329,17 @@ export default {
                   height: viewport.height
                 });
               }
+              _updateProgress(94, 'Finalizando PDF desprotegido...', 'Gravando novo arquivo sem restrições...', `${numPages} / ${numPages} págs`);
+              await new Promise(r => setTimeout(r, 20));
               unlockedBytes = await pdfDoc.save();
             } else {
               throw errIgnore;
             }
           }
         }
+
+        _updateProgress(100, 'PDF Desbloqueado com Sucesso!', 'Preparando visualização...', '100%');
+        await new Promise(r => setTimeout(r, 20));
 
         _unlockedPdfBlob = new Blob([unlockedBytes], { type: 'application/pdf' });
 

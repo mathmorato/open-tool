@@ -71,10 +71,24 @@ export default {
     const metaSize      = container.querySelector('#m-meta-size');
     const downloadBtn   = container.querySelector('#m-download-btn');
 
+    const loadingTitle   = container.querySelector('#m-loading-title');
+    const progressPct    = container.querySelector('#m-progress-pct');
+    const progressFill   = container.querySelector('#m-progress-fill');
+    const loadingDesc    = container.querySelector('#m-loading-desc');
+    const progressCounter = container.querySelector('#m-progress-counter');
+
     function _setViewState(state) {
       emptyView.style.display   = state === 'empty'   ? 'flex' : 'none';
       loadingView.style.display = state === 'loading' ? 'flex' : 'none';
       resultView.style.display  = state === 'result'  ? 'flex' : 'none';
+    }
+
+    function _updateProgress(pct, title, desc, counter) {
+      if (progressPct) progressPct.textContent = `${pct}%`;
+      if (progressFill) progressFill.style.width = `${pct}%`;
+      if (title && loadingTitle) loadingTitle.textContent = title;
+      if (desc && loadingDesc) loadingDesc.textContent = desc;
+      if (counter && progressCounter) progressCounter.textContent = counter;
     }
 
     function _renderList() {
@@ -161,7 +175,8 @@ export default {
       if (_filesQueue.length < 2) return;
 
       _setViewState('loading');
-      await new Promise(r => setTimeout(r, 20));
+      _updateProgress(5, 'Iniciando mesclagem...', 'Carregando bibliotecas na memória local...', `0 / ${_filesQueue.length} arquivos`);
+      await new Promise(r => setTimeout(r, 25));
 
       await _ensureLibs();
       const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
@@ -176,8 +191,20 @@ export default {
       try {
         const mergedDoc = await PDFLib.PDFDocument.create();
         let totalPages = 0;
+        const totalDocs = _filesQueue.length;
 
-        for (const item of _filesQueue) {
+        for (let i = 0; i < totalDocs; i++) {
+          const item = _filesQueue[i];
+          const docIdx = i + 1;
+          const currentPct = Math.round(5 + ((i / totalDocs) * 85));
+          _updateProgress(
+            currentPct,
+            `Mesclando arquivo ${docIdx} de ${totalDocs}...`,
+            `${item.file.name} (${_formatBytes(item.file.size)})`,
+            `${docIdx} / ${totalDocs} arquivos`
+          );
+          await new Promise(r => setTimeout(r, 20));
+
           try {
             const srcDoc = await PDFLib.PDFDocument.load(item.buffer.slice(0), { ignoreEncryption: true });
             const pageIndices = srcDoc.getPageIndices();
@@ -191,6 +218,14 @@ export default {
               const jsDoc = await loadingTask.promise;
               const numPgs = jsDoc.numPages;
               for (let p = 1; p <= numPgs; p++) {
+                _updateProgress(
+                  currentPct,
+                  `Processando página ${p}/${numPgs} do doc ${docIdx}...`,
+                  `${item.file.name} (extração rasterizada)`,
+                  `${docIdx} / ${totalDocs} arquivos`
+                );
+                await new Promise(r => setTimeout(r, 10));
+
                 const page = await jsDoc.getPage(p);
                 const vp = page.getViewport({ scale: 1.5 });
                 const canvas = document.createElement('canvas');
@@ -216,12 +251,18 @@ export default {
           }
         }
 
+        _updateProgress(94, 'Finalizando estrutura do PDF...', 'Consolidando páginas e tabela de referências cruzadas...', `${totalDocs} / ${totalDocs} arquivos`);
+        await new Promise(r => setTimeout(r, 20));
+
         const mergedBytes = await mergedDoc.save();
         _mergedPdfBlob = new Blob([mergedBytes], { type: 'application/pdf' });
 
         metaDocs.textContent = _filesQueue.length;
         metaPages.textContent = totalPages;
         metaSize.textContent = _formatBytes(_mergedPdfBlob.size);
+
+        _updateProgress(100, 'Mesclagem concluída!', 'Renderizando miniatura de confirmação...', `${totalDocs} / ${totalDocs} arquivos`);
+        await new Promise(r => setTimeout(r, 20));
 
         // Renderiza thumbnail da primeira página no canvas
         if (pdfjsLib) {

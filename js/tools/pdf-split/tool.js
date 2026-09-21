@@ -117,10 +117,24 @@ export default {
     const downloadBtn     = container.querySelector('#s-download-btn');
     const downloadBtnText = container.querySelector('#s-download-btn-text');
 
+    const loadingTitle   = container.querySelector('#s-loading-title');
+    const progressPct    = container.querySelector('#s-progress-pct');
+    const progressFill   = container.querySelector('#s-progress-fill');
+    const loadingDesc    = container.querySelector('#s-loading-desc');
+    const progressCounter = container.querySelector('#s-progress-counter');
+
     function _setViewState(state) {
       emptyView.style.display   = state === 'empty'   ? 'flex' : 'none';
       loadingView.style.display = state === 'loading' ? 'flex' : 'none';
       resultView.style.display  = state === 'result'  ? 'flex' : 'none';
+    }
+
+    function _updateProgress(pct, title, desc, counter) {
+      if (progressPct) progressPct.textContent = `${pct}%`;
+      if (progressFill) progressFill.style.width = `${pct}%`;
+      if (title && loadingTitle) loadingTitle.textContent = title;
+      if (desc && loadingDesc) loadingDesc.textContent = desc;
+      if (counter && progressCounter) progressCounter.textContent = counter;
     }
 
     // Calcula partições com base no modo ativo
@@ -327,7 +341,8 @@ export default {
       if (!_currentArrayBuffer || partitions.length === 0) return;
 
       _setViewState('loading');
-      await new Promise(r => setTimeout(r, 20));
+      _updateProgress(5, 'Iniciando divisão...', 'Carregando documento e estruturando partições...', `0 / ${partitions.length} partes`);
+      await new Promise(r => setTimeout(r, 25));
 
       await _ensureLibs();
       const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
@@ -358,9 +373,14 @@ export default {
         // Processa cada partição
         for (let i = 0; i < partitions.length; i++) {
           const part = partitions[i];
-          if (loadingProgress) {
-            loadingProgress.textContent = `Gerando arquivo ${i + 1} de ${partitions.length} (${part.indices.length} pág)...`;
-          }
+          const currentPct = Math.round(5 + ((i / partitions.length) * 85));
+          _updateProgress(
+            currentPct,
+            `Gerando arquivo ${i + 1} de ${partitions.length}...`,
+            `Extraindo ${part.indices.length} página(s) (${part.label})`,
+            `${i + 1} / ${partitions.length} partes`
+          );
+          await new Promise(r => setTimeout(r, 15));
 
           const newDoc = await PDFLib.PDFDocument.create();
 
@@ -415,6 +435,9 @@ export default {
           if (!JSZip) {
             throw new Error('Biblioteca JSZip necessária para pacote compactado.');
           }
+          _updateProgress(92, 'Empacotando arquivos...', `Compactando ${generatedFiles.length} arquivos PDF em .ZIP...`, `${partitions.length} / ${partitions.length} partes`);
+          await new Promise(r => setTimeout(r, 20));
+
           const zip = new JSZip();
           generatedFiles.forEach(f => {
             zip.file(f.name, f.bytes);
@@ -428,6 +451,9 @@ export default {
           resultSummary.textContent = `${totalPagesExtracted} páginas distribuídas em ${generatedFiles.length} arquivos`;
           downloadBtnText.textContent = `Baixar Pacote (${generatedFiles.length} PDFs em .ZIP)`;
         }
+
+        _updateProgress(100, 'Divisão concluída com sucesso!', 'Preparando visualização...', `${partitions.length} / ${partitions.length} partes`);
+        await new Promise(r => setTimeout(r, 20));
 
         metaFiles.textContent = generatedFiles.length;
         metaPages.textContent = totalPagesExtracted;

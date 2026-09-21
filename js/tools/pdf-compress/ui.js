@@ -144,11 +144,25 @@ export function getPdfCompressHTML() {
             <p class="pdf-empty-desc">Carregue um arquivo e selecione o nível de compressão para otimizar o documento no navegador.</p>
           </div>
 
-          <!-- Estado Processando -->
+          <!-- Estado Processando com Barra de Progresso Real -->
           <div class="pdf-loading-view" id="c-loading-view" style="display: none;">
-            <div class="pdf-spinner"></div>
-            <h3 class="pdf-loading-title">Otimizando e reamostrando páginas...</h3>
-            <p class="pdf-loading-desc" id="c-loading-progress">Processando página 1...</p>
+            <div class="open-tool-progress-panel">
+              <div class="open-tool-progress-icon-wrap">
+                <div class="open-tool-progress-pulse-ring"></div>
+                <div class="open-tool-progress-spinner"></div>
+              </div>
+              <div class="open-tool-progress-header">
+                <h4 class="open-tool-progress-title" id="c-loading-title">Otimizando documento...</h4>
+                <span class="open-tool-progress-percentage" id="c-progress-pct">0%</span>
+              </div>
+              <div class="open-tool-progress-track">
+                <div class="open-tool-progress-fill" id="c-progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="open-tool-progress-footer">
+                <span class="open-tool-progress-desc" id="c-loading-desc">Iniciando reamostragem gráfica...</span>
+                <span class="open-tool-progress-counter" id="c-progress-counter">0 / 0 págs</span>
+              </div>
+            </div>
           </div>
 
           <!-- Estado Resultado -->

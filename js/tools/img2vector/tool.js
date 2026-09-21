@@ -241,6 +241,20 @@ export default {
     const svgOutput       = container.querySelector('#v-svg-output');
     const origOutput      = container.querySelector('#v-orig-output');
 
+    const loadingTitle    = container.querySelector('#v-loading-title');
+    const progressPct     = container.querySelector('#v-progress-pct');
+    const progressFill    = container.querySelector('#v-progress-fill');
+    const loadingDesc     = container.querySelector('#v-loading-desc');
+    const progressCounter = container.querySelector('#v-progress-counter');
+
+    function _updateProgress(pct, title, desc, counter) {
+      if (progressPct) progressPct.textContent = `${pct}%`;
+      if (progressFill) progressFill.style.width = `${pct}%`;
+      if (title && loadingTitle) loadingTitle.textContent = title;
+      if (desc && loadingDesc) loadingDesc.textContent = desc;
+      if (counter && progressCounter) progressCounter.textContent = counter;
+    }
+
     const metaPaths     = container.querySelector('#v-meta-paths');
     const metaColors    = container.querySelector('#v-meta-colors');
     const metaSize      = container.querySelector('#v-meta-size');
@@ -441,7 +455,8 @@ export default {
       if (!_currentImageSrc) return;
 
       _setViewState('loading');
-      await new Promise(r => setTimeout(r, 20));
+      _updateProgress(15, 'Preparando imagem...', 'Amostrando pixels e normalizando dimensões...', 'Etapa 1 / 4');
+      await new Promise(r => setTimeout(r, 25));
 
       const tracer = (typeof window !== 'undefined' && window.ImageTracer) ? window.ImageTracer : null;
       if (!tracer) {
@@ -468,8 +483,11 @@ export default {
       const img = new Image();
       img.crossOrigin = 'anonymous';
 
-      img.onload = () => {
+      img.onload = async () => {
         try {
+          _updateProgress(35, 'Quantizando paleta...', `Agrupando em ${numColors} cores indexadas...`, 'Etapa 2 / 4');
+          await new Promise(r => setTimeout(r, 20));
+
           // Otimiza resolução máxima para processamento fluido no navegador
           let targetW = img.naturalWidth || img.width;
           let targetH = img.naturalHeight || img.height;
@@ -494,13 +512,22 @@ export default {
 
           // Se a remoção inteligente de fundo estiver ativa, torna o fundo transparente
           if (_bgRemovalActive) {
+            _updateProgress(50, 'Isolando plano de fundo...', 'Removendo fundo por inundação inteligente...', 'Etapa 2 / 4');
+            await new Promise(r => setTimeout(r, 20));
+
             const tol = parseInt(bgTolRange.value, 10) || 32;
             imgData = removeBackgroundIntelligent(imgData, tol);
             ctx.putImageData(imgData, 0, 0);
           }
 
+          _updateProgress(70, 'Traçando curvas Bézier...', 'Calculando splines cúbicas e nós vetoriais...', 'Etapa 3 / 4');
+          await new Promise(r => setTimeout(r, 20));
+
           const svgStr = tracer.imagedataToSVG(imgData, options);
           _currentSvgString = svgStr;
+
+          _updateProgress(95, 'Otimizando nós e caminhos...', 'Formatando marcação SVG escalável...', 'Etapa 4 / 4');
+          await new Promise(r => setTimeout(r, 20));
 
           // Injeta SVG e assegura dimensões explícitas no elemento SVG
           svgOutput.innerHTML = svgStr;
@@ -524,6 +551,9 @@ export default {
           metaPaths.textContent = pathCount.toLocaleString('pt-BR');
           metaColors.textContent = numColors;
           metaSize.textContent = _formatBytes(svgBytes);
+
+          _updateProgress(100, 'Vetorização Concluída!', 'Renderizando SVG...', 'Pronto');
+          await new Promise(r => setTimeout(r, 20));
 
           _setViewState('result');
           _applyViewMode('vector');

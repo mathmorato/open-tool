@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.4.0",
+    VERSION: "v.2.4.1",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -7169,11 +7169,25 @@ ${footerDelimiter}
             <p class="v-empty-desc">Carregue uma imagem rasterizada e clique em "Vetorizar Imagem para SVG" para visualizar o resultado.</p>
           </div>
 
-          <!-- Estado Processando -->
+          <!-- Estado Processando com Barra de Progresso Real -->
           <div class="v-loading-view" id="v-loading-view" style="display: none;">
-            <div class="v-spinner"></div>
-            <h3 class="v-loading-title">Extraindo contornos e tra\xE7ando curvas B\xE9zier...</h3>
-            <p class="v-loading-desc">Quantizando cores e calculando splines vetoriais no navegador.</p>
+            <div class="open-tool-progress-panel">
+              <div class="open-tool-progress-icon-wrap">
+                <div class="open-tool-progress-pulse-ring"></div>
+                <div class="open-tool-progress-spinner"></div>
+              </div>
+              <div class="open-tool-progress-header">
+                <h4 class="open-tool-progress-title" id="v-loading-title">Vetorizando imagem para SVG...</h4>
+                <span class="open-tool-progress-percentage" id="v-progress-pct">0%</span>
+              </div>
+              <div class="open-tool-progress-track">
+                <div class="open-tool-progress-fill" id="v-progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="open-tool-progress-footer">
+                <span class="open-tool-progress-desc" id="v-loading-desc">Iniciando an\xE1lise de contornos e paleta...</span>
+                <span class="open-tool-progress-counter" id="v-progress-counter">Etapa 1 / 4</span>
+              </div>
+            </div>
           </div>
 
           <!-- Resultado do Vetor -->
@@ -7440,6 +7454,18 @@ ${footerDelimiter}
       const stageContent = container.querySelector("#v-stage-content");
       const svgOutput = container.querySelector("#v-svg-output");
       const origOutput = container.querySelector("#v-orig-output");
+      const loadingTitle = container.querySelector("#v-loading-title");
+      const progressPct = container.querySelector("#v-progress-pct");
+      const progressFill = container.querySelector("#v-progress-fill");
+      const loadingDesc = container.querySelector("#v-loading-desc");
+      const progressCounter = container.querySelector("#v-progress-counter");
+      function _updateProgress(pct, title, desc, counter) {
+        if (progressPct) progressPct.textContent = `${pct}%`;
+        if (progressFill) progressFill.style.width = `${pct}%`;
+        if (title && loadingTitle) loadingTitle.textContent = title;
+        if (desc && loadingDesc) loadingDesc.textContent = desc;
+        if (counter && progressCounter) progressCounter.textContent = counter;
+      }
       const metaPaths = container.querySelector("#v-meta-paths");
       const metaColors = container.querySelector("#v-meta-colors");
       const metaSize = container.querySelector("#v-meta-size");
@@ -7615,7 +7641,8 @@ ${footerDelimiter}
       async function _vectorize() {
         if (!_currentImageSrc) return;
         _setViewState("loading");
-        await new Promise((r) => setTimeout(r, 20));
+        _updateProgress(15, "Preparando imagem...", "Amostrando pixels e normalizando dimens\xF5es...", "Etapa 1 / 4");
+        await new Promise((r) => setTimeout(r, 25));
         const tracer = typeof window !== "undefined" && window.ImageTracer ? window.ImageTracer : null;
         if (!tracer) {
           alert("Biblioteca de vetoriza\xE7\xE3o n\xE3o inicializada. Tente recarregar a p\xE1gina.");
@@ -7636,8 +7663,10 @@ ${footerDelimiter}
         });
         const img = new Image();
         img.crossOrigin = "anonymous";
-        img.onload = () => {
+        img.onload = async () => {
           try {
+            _updateProgress(35, "Quantizando paleta...", `Agrupando em ${numColors} cores indexadas...`, "Etapa 2 / 4");
+            await new Promise((r) => setTimeout(r, 20));
             let targetW = img.naturalWidth || img.width;
             let targetH = img.naturalHeight || img.height;
             const maxDim = 1200;
@@ -7657,12 +7686,18 @@ ${footerDelimiter}
             ctx.drawImage(img, 0, 0, targetW, targetH);
             let imgData = ctx.getImageData(0, 0, targetW, targetH);
             if (_bgRemovalActive) {
+              _updateProgress(50, "Isolando plano de fundo...", "Removendo fundo por inunda\xE7\xE3o inteligente...", "Etapa 2 / 4");
+              await new Promise((r) => setTimeout(r, 20));
               const tol = parseInt(bgTolRange.value, 10) || 32;
               imgData = removeBackgroundIntelligent(imgData, tol);
               ctx.putImageData(imgData, 0, 0);
             }
+            _updateProgress(70, "Tra\xE7ando curvas B\xE9zier...", "Calculando splines c\xFAbicas e n\xF3s vetoriais...", "Etapa 3 / 4");
+            await new Promise((r) => setTimeout(r, 20));
             const svgStr = tracer.imagedataToSVG(imgData, options);
             _currentSvgString = svgStr;
+            _updateProgress(95, "Otimizando n\xF3s e caminhos...", "Formatando marca\xE7\xE3o SVG escal\xE1vel...", "Etapa 4 / 4");
+            await new Promise((r) => setTimeout(r, 20));
             svgOutput.innerHTML = svgStr;
             const svgEl = svgOutput.querySelector("svg");
             if (svgEl) {
@@ -7681,6 +7716,8 @@ ${footerDelimiter}
             metaPaths.textContent = pathCount.toLocaleString("pt-BR");
             metaColors.textContent = numColors;
             metaSize.textContent = _formatBytes5(svgBytes);
+            _updateProgress(100, "Vetoriza\xE7\xE3o Conclu\xEDda!", "Renderizando SVG...", "Pronto");
+            await new Promise((r) => setTimeout(r, 20));
             _setViewState("result");
             _applyViewMode("vector");
           } catch (err) {
@@ -7969,11 +8006,25 @@ ${footerDelimiter}
             <p class="pdf-empty-desc">Carregue um arquivo PDF protegido para visualizar a pr\xE9via da p\xE1gina e remover as restri\xE7\xF5es.</p>
           </div>
 
-          <!-- Estado Processando -->
+          <!-- Estado Processando com Barra de Progresso Real -->
           <div class="pdf-loading-view" id="u-loading-view" style="display: none;">
-            <div class="pdf-spinner"></div>
-            <h3 class="pdf-loading-title">Descriptografando fluxos do documento...</h3>
-            <p class="pdf-loading-desc">Removendo certificados de restri\xE7\xE3o e gerando vers\xE3o desprotegida.</p>
+            <div class="open-tool-progress-panel">
+              <div class="open-tool-progress-icon-wrap">
+                <div class="open-tool-progress-pulse-ring"></div>
+                <div class="open-tool-progress-spinner"></div>
+              </div>
+              <div class="open-tool-progress-header">
+                <h4 class="open-tool-progress-title" id="u-loading-title">Descriptografando documento...</h4>
+                <span class="open-tool-progress-percentage" id="u-progress-pct">0%</span>
+              </div>
+              <div class="open-tool-progress-track">
+                <div class="open-tool-progress-fill" id="u-progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="open-tool-progress-footer">
+                <span class="open-tool-progress-desc" id="u-loading-desc">Iniciando an\xE1lise de permiss\xF5es...</span>
+                <span class="open-tool-progress-counter" id="u-progress-counter">0 / 0</span>
+              </div>
+            </div>
           </div>
 
           <!-- Estado Conclu\xEDdo / Resultado -->
@@ -8103,10 +8154,22 @@ ${footerDelimiter}
       const metaPages = container.querySelector("#u-meta-pages");
       const metaSize = container.querySelector("#u-meta-size");
       const downloadBtn = container.querySelector("#u-download-btn");
+      const loadingTitle = container.querySelector("#u-loading-title");
+      const progressPct = container.querySelector("#u-progress-pct");
+      const progressFill = container.querySelector("#u-progress-fill");
+      const loadingDesc = container.querySelector("#u-loading-desc");
+      const progressCounter = container.querySelector("#u-progress-counter");
       function _setViewState(state2) {
         emptyView.style.display = state2 === "empty" ? "flex" : "none";
         loadingView.style.display = state2 === "loading" ? "flex" : "none";
         resultView.style.display = state2 === "result" ? "flex" : "none";
+      }
+      function _updateProgress(pct, title, desc, counter) {
+        if (progressPct) progressPct.textContent = `${pct}%`;
+        if (progressFill) progressFill.style.width = `${pct}%`;
+        if (title && loadingTitle) loadingTitle.textContent = title;
+        if (desc && loadingDesc) loadingDesc.textContent = desc;
+        if (counter && progressCounter) progressCounter.textContent = counter;
       }
       async function _inspectPdf(file) {
         _currentFile2 = file;
@@ -8184,7 +8247,8 @@ ${footerDelimiter}
       async function _doUnlock() {
         if (!_currentArrayBuffer) return;
         _setViewState("loading");
-        await new Promise((r) => setTimeout(r, 30));
+        _updateProgress(5, "Iniciando descriptografia...", "Carregando chaves de seguran\xE7a e tabelas xref...", "Iniciando");
+        await new Promise((r) => setTimeout(r, 25));
         await _ensureLibs();
         const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
         const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
@@ -8199,11 +8263,21 @@ ${footerDelimiter}
           let unlockedBytes = null;
           const copyBuf = _currentArrayBuffer.slice(0);
           if (_requiresPassword) {
+            _updateProgress(15, "Verificando senha criptogr\xE1fica...", "Autenticando credenciais no stream...", "Validando");
+            await new Promise((r) => setTimeout(r, 20));
             const loadingTask = pdfjsLib.getDocument({ data: copyBuf, password });
             const jsDoc = await loadingTask.promise;
             const numPages = jsDoc.numPages;
             pdfDoc = await PDFLib.PDFDocument.create();
             for (let i = 1; i <= numPages; i++) {
+              const currentPct = Math.round(15 + (i - 1) / numPages * 75);
+              _updateProgress(
+                currentPct,
+                `Descriptografando p\xE1gina ${i} de ${numPages}...`,
+                "Removendo senhas e decodificando fluxos criptografados...",
+                `${i} / ${numPages} p\xE1gs`
+              );
+              await new Promise((r) => setTimeout(r, 15));
               const page = await jsDoc.getPage(i);
               const viewport = page.getViewport({ scale: 1.5 });
               const canvas = document.createElement("canvas");
@@ -8222,18 +8296,36 @@ ${footerDelimiter}
                 height: viewport.height
               });
             }
+            _updateProgress(94, "Finalizando PDF descriptografado...", "Consolidando p\xE1ginas e removendo flags de bloqueio...", `${numPages} / ${numPages} p\xE1gs`);
+            await new Promise((r) => setTimeout(r, 20));
             unlockedBytes = await pdfDoc.save();
           } else {
+            _updateProgress(25, "Inspecionando permiss\xF5es...", "Analisando dicion\xE1rio de seguran\xE7a (/Encrypt)...", "1 / 3 etapas");
+            await new Promise((r) => setTimeout(r, 20));
             try {
+              _updateProgress(55, "Removendo restri\xE7\xF5es de permiss\xE3o...", "Limpando flags de edi\xE7\xE3o, c\xF3pia e impress\xE3o...", "2 / 3 etapas");
+              await new Promise((r) => setTimeout(r, 20));
               pdfDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+              _updateProgress(88, "Reconstruindo documento sem travas...", "Salvando \xE1rvore de objetos PDF limpa...", "3 / 3 etapas");
+              await new Promise((r) => setTimeout(r, 20));
               unlockedBytes = await pdfDoc.save();
             } catch (errIgnore) {
               if (pdfjsLib) {
+                _updateProgress(35, "Usando decodificador raster...", "Extraindo p\xE1ginas com permiss\xE3o de leitura...", "Modo seguro");
+                await new Promise((r) => setTimeout(r, 20));
                 const loadingTask = pdfjsLib.getDocument({ data: copyBuf });
                 const jsDoc = await loadingTask.promise;
                 const numPages = jsDoc.numPages;
                 pdfDoc = await PDFLib.PDFDocument.create();
                 for (let i = 1; i <= numPages; i++) {
+                  const currentPct = Math.round(35 + (i - 1) / numPages * 55);
+                  _updateProgress(
+                    currentPct,
+                    `Processando p\xE1gina ${i} de ${numPages}...`,
+                    "Reconstruindo p\xE1gina sem restri\xE7\xF5es...",
+                    `${i} / ${numPages} p\xE1gs`
+                  );
+                  await new Promise((r) => setTimeout(r, 15));
                   const page = await jsDoc.getPage(i);
                   const viewport = page.getViewport({ scale: 1.5 });
                   const canvas = document.createElement("canvas");
@@ -8252,12 +8344,16 @@ ${footerDelimiter}
                     height: viewport.height
                   });
                 }
+                _updateProgress(94, "Finalizando PDF desprotegido...", "Gravando novo arquivo sem restri\xE7\xF5es...", `${numPages} / ${numPages} p\xE1gs`);
+                await new Promise((r) => setTimeout(r, 20));
                 unlockedBytes = await pdfDoc.save();
               } else {
                 throw errIgnore;
               }
             }
           }
+          _updateProgress(100, "PDF Desbloqueado com Sucesso!", "Preparando visualiza\xE7\xE3o...", "100%");
+          await new Promise((r) => setTimeout(r, 20));
           _unlockedPdfBlob = new Blob([unlockedBytes], { type: "application/pdf" });
           metaPages.textContent = pdfDoc.getPageCount ? pdfDoc.getPageCount() : "1+";
           metaSize.textContent = _formatBytes(_unlockedPdfBlob.size);
@@ -8489,11 +8585,25 @@ ${footerDelimiter}
             <p class="pdf-empty-desc">Carregue um arquivo e selecione o n\xEDvel de compress\xE3o para otimizar o documento no navegador.</p>
           </div>
 
-          <!-- Estado Processando -->
+          <!-- Estado Processando com Barra de Progresso Real -->
           <div class="pdf-loading-view" id="c-loading-view" style="display: none;">
-            <div class="pdf-spinner"></div>
-            <h3 class="pdf-loading-title">Otimizando e reamostrando p\xE1ginas...</h3>
-            <p class="pdf-loading-desc" id="c-loading-progress">Processando p\xE1gina 1...</p>
+            <div class="open-tool-progress-panel">
+              <div class="open-tool-progress-icon-wrap">
+                <div class="open-tool-progress-pulse-ring"></div>
+                <div class="open-tool-progress-spinner"></div>
+              </div>
+              <div class="open-tool-progress-header">
+                <h4 class="open-tool-progress-title" id="c-loading-title">Otimizando documento...</h4>
+                <span class="open-tool-progress-percentage" id="c-progress-pct">0%</span>
+              </div>
+              <div class="open-tool-progress-track">
+                <div class="open-tool-progress-fill" id="c-progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="open-tool-progress-footer">
+                <span class="open-tool-progress-desc" id="c-loading-desc">Iniciando reamostragem gr\xE1fica...</span>
+                <span class="open-tool-progress-counter" id="c-progress-counter">0 / 0 p\xE1gs</span>
+              </div>
+            </div>
           </div>
 
           <!-- Estado Resultado -->
@@ -8568,16 +8678,6 @@ ${footerDelimiter}
     if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / 1048576).toFixed(2) + " MB";
   }
-  function _dataUrlToBytes2(dataUrl) {
-    const parts = dataUrl.split(",");
-    const bin = atob(parts[1]);
-    const len = bin.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = bin.charCodeAt(i);
-    }
-    return bytes;
-  }
   async function _ensureLibs2() {
     const promises = [];
     if (typeof window === "undefined" || !window.PDFLib) {
@@ -8635,10 +8735,22 @@ ${footerDelimiter}
       const metaPages = container.querySelector("#c-meta-pages");
       const metaSaved = container.querySelector("#c-meta-saved");
       const downloadBtn = container.querySelector("#c-download-btn");
+      const loadingTitle = container.querySelector("#c-loading-title");
+      const progressPct = container.querySelector("#c-progress-pct");
+      const progressFill = container.querySelector("#c-progress-fill");
+      const loadingDesc = container.querySelector("#c-loading-desc");
+      const progressCounter = container.querySelector("#c-progress-counter");
       function _setViewState(state2) {
         emptyView.style.display = state2 === "empty" ? "flex" : "none";
         loadingView.style.display = state2 === "loading" ? "flex" : "none";
         resultView.style.display = state2 === "result" ? "flex" : "none";
+      }
+      function _updateProgress(pct, title, desc, counter) {
+        if (progressPct) progressPct.textContent = `${pct}%`;
+        if (progressFill) progressFill.style.width = `${pct}%`;
+        if (title && loadingTitle) loadingTitle.textContent = title;
+        if (desc && loadingDesc) loadingDesc.textContent = desc;
+        if (counter && progressCounter) progressCounter.textContent = counter;
       }
       function _syncPresetControls(presetKey) {
         const cfg = PRESETS[presetKey];
@@ -8667,10 +8779,20 @@ ${footerDelimiter}
         compressBtn.disabled = true;
         _setViewState("empty");
       }
+      function _dataUrlToBytes3(dataUrl) {
+        const parts = dataUrl.split(",");
+        const bin = atob(parts[1]);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) {
+          bytes[i] = bin.charCodeAt(i);
+        }
+        return bytes;
+      }
       async function _doCompress() {
         if (!_currentArrayBuffer2) return;
         _setViewState("loading");
-        await new Promise((r) => setTimeout(r, 20));
+        _updateProgress(5, "Iniciando otimiza\xE7\xE3o...", "Carregando estrutura e decodificando p\xE1ginas...", "0 / 0 p\xE1gs");
+        await new Promise((r) => setTimeout(r, 25));
         await _ensureLibs2();
         const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
         const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
@@ -8689,9 +8811,14 @@ ${footerDelimiter}
           const numPages = jsDoc.numPages;
           const newPdfDoc = await PDFLib.PDFDocument.create();
           for (let i = 1; i <= numPages; i++) {
-            if (loadingProgress) {
-              loadingProgress.textContent = `Otimizando p\xE1gina ${i} de ${numPages}...`;
-            }
+            const currentPct = Math.round(5 + (i - 1) / numPages * 88);
+            _updateProgress(
+              currentPct,
+              `Otimizando p\xE1gina ${i} de ${numPages}...`,
+              `Reamostrando em ${dpi} DPI com ${(quality * 100).toFixed(0)}% de qualidade`,
+              `${i} / ${numPages} p\xE1gs`
+            );
+            await new Promise((r) => setTimeout(r, 15));
             const page = await jsDoc.getPage(i);
             const viewport = page.getViewport({ scale: renderScale });
             const baseViewport = page.getViewport({ scale: 1 });
@@ -8701,7 +8828,7 @@ ${footerDelimiter}
             const ctx = canvas.getContext("2d");
             await page.render({ canvasContext: ctx, viewport }).promise;
             const imgDataUrl = canvas.toDataURL("image/jpeg", quality);
-            const imgBytes = _dataUrlToBytes2(imgDataUrl);
+            const imgBytes = _dataUrlToBytes3(imgDataUrl);
             const embeddedImg = await newPdfDoc.embedJpg(imgBytes);
             const newPage = newPdfDoc.addPage([baseViewport.width, baseViewport.height]);
             newPage.drawImage(embeddedImg, {
@@ -8711,8 +8838,12 @@ ${footerDelimiter}
               height: baseViewport.height
             });
           }
+          _updateProgress(95, "Gerando arquivo PDF comprimido...", "Reconstruindo fluxos e \xE1rvore de objetos...", `${numPages} / ${numPages} p\xE1gs`);
+          await new Promise((r) => setTimeout(r, 20));
           const compressedBytes = await newPdfDoc.save();
           _compressedPdfBlob = new Blob([compressedBytes], { type: "application/pdf" });
+          _updateProgress(100, "Compress\xE3o conclu\xEDda com sucesso!", "Preparando visualiza\xE7\xE3o...", `${numPages} / ${numPages} p\xE1gs`);
+          await new Promise((r) => setTimeout(r, 20));
           const origSize = _currentFile3.size;
           const newSize = _compressedPdfBlob.size;
           const diff = origSize - newSize;
@@ -8911,11 +9042,25 @@ ${footerDelimiter}
             <p class="pdf-empty-desc">Adicione ao menos dois arquivos na lista e clique em "Mesclar PDFs" para gerar o documento unificado.</p>
           </div>
 
-          <!-- Estado Processando -->
+          <!-- Estado Processando com Barra de Progresso Real -->
           <div class="pdf-loading-view" id="m-loading-view" style="display: none;">
-            <div class="pdf-spinner"></div>
-            <h3 class="pdf-loading-title">Combinando p\xE1ginas dos documentos...</h3>
-            <p class="pdf-loading-desc">Organizando p\xE1ginas sequenciais em novo PDF.</p>
+            <div class="open-tool-progress-panel">
+              <div class="open-tool-progress-icon-wrap">
+                <div class="open-tool-progress-pulse-ring"></div>
+                <div class="open-tool-progress-spinner"></div>
+              </div>
+              <div class="open-tool-progress-header">
+                <h3 class="open-tool-progress-title" id="m-loading-title">Combinando p\xE1ginas dos documentos...</h3>
+                <span class="open-tool-progress-percentage" id="m-progress-pct">0%</span>
+              </div>
+              <div class="open-tool-progress-track">
+                <div class="open-tool-progress-fill" id="m-progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="open-tool-progress-footer">
+                <span class="open-tool-progress-desc" id="m-loading-desc">Iniciando leitura dos arquivos...</span>
+                <span class="open-tool-progress-counter" id="m-progress-counter">0 / 0</span>
+              </div>
+            </div>
           </div>
 
           <!-- Estado Resultado -->
@@ -9024,10 +9169,22 @@ ${footerDelimiter}
       const metaPages = container.querySelector("#m-meta-pages");
       const metaSize = container.querySelector("#m-meta-size");
       const downloadBtn = container.querySelector("#m-download-btn");
+      const loadingTitle = container.querySelector("#m-loading-title");
+      const progressPct = container.querySelector("#m-progress-pct");
+      const progressFill = container.querySelector("#m-progress-fill");
+      const loadingDesc = container.querySelector("#m-loading-desc");
+      const progressCounter = container.querySelector("#m-progress-counter");
       function _setViewState(state2) {
         emptyView.style.display = state2 === "empty" ? "flex" : "none";
         loadingView.style.display = state2 === "loading" ? "flex" : "none";
         resultView.style.display = state2 === "result" ? "flex" : "none";
+      }
+      function _updateProgress(pct, title, desc, counter) {
+        if (progressPct) progressPct.textContent = `${pct}%`;
+        if (progressFill) progressFill.style.width = `${pct}%`;
+        if (title && loadingTitle) loadingTitle.textContent = title;
+        if (desc && loadingDesc) loadingDesc.textContent = desc;
+        if (counter && progressCounter) progressCounter.textContent = counter;
       }
       function _renderList() {
         countBadge.textContent = _filesQueue.length;
@@ -9103,7 +9260,8 @@ ${footerDelimiter}
       async function _doMerge() {
         if (_filesQueue.length < 2) return;
         _setViewState("loading");
-        await new Promise((r) => setTimeout(r, 20));
+        _updateProgress(5, "Iniciando mesclagem...", "Carregando bibliotecas na mem\xF3ria local...", `0 / ${_filesQueue.length} arquivos`);
+        await new Promise((r) => setTimeout(r, 25));
         await _ensureLibs3();
         const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
         const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
@@ -9115,7 +9273,18 @@ ${footerDelimiter}
         try {
           const mergedDoc = await PDFLib.PDFDocument.create();
           let totalPages = 0;
-          for (const item of _filesQueue) {
+          const totalDocs = _filesQueue.length;
+          for (let i = 0; i < totalDocs; i++) {
+            const item = _filesQueue[i];
+            const docIdx = i + 1;
+            const currentPct = Math.round(5 + i / totalDocs * 85);
+            _updateProgress(
+              currentPct,
+              `Mesclando arquivo ${docIdx} de ${totalDocs}...`,
+              `${item.file.name} (${_formatBytes3(item.file.size)})`,
+              `${docIdx} / ${totalDocs} arquivos`
+            );
+            await new Promise((r) => setTimeout(r, 20));
             try {
               const srcDoc = await PDFLib.PDFDocument.load(item.buffer.slice(0), { ignoreEncryption: true });
               const pageIndices = srcDoc.getPageIndices();
@@ -9128,6 +9297,13 @@ ${footerDelimiter}
                 const jsDoc = await loadingTask.promise;
                 const numPgs = jsDoc.numPages;
                 for (let p = 1; p <= numPgs; p++) {
+                  _updateProgress(
+                    currentPct,
+                    `Processando p\xE1gina ${p}/${numPgs} do doc ${docIdx}...`,
+                    `${item.file.name} (extra\xE7\xE3o rasterizada)`,
+                    `${docIdx} / ${totalDocs} arquivos`
+                  );
+                  await new Promise((r) => setTimeout(r, 10));
                   const page = await jsDoc.getPage(p);
                   const vp = page.getViewport({ scale: 1.5 });
                   const canvas = document.createElement("canvas");
@@ -9150,11 +9326,15 @@ ${footerDelimiter}
               }
             }
           }
+          _updateProgress(94, "Finalizando estrutura do PDF...", "Consolidando p\xE1ginas e tabela de refer\xEAncias cruzadas...", `${totalDocs} / ${totalDocs} arquivos`);
+          await new Promise((r) => setTimeout(r, 20));
           const mergedBytes = await mergedDoc.save();
           _mergedPdfBlob = new Blob([mergedBytes], { type: "application/pdf" });
           metaDocs.textContent = _filesQueue.length;
           metaPages.textContent = totalPages;
           metaSize.textContent = _formatBytes3(_mergedPdfBlob.size);
+          _updateProgress(100, "Mesclagem conclu\xEDda!", "Renderizando miniatura de confirma\xE7\xE3o...", `${totalDocs} / ${totalDocs} arquivos`);
+          await new Promise((r) => setTimeout(r, 20));
           if (pdfjsLib) {
             try {
               const previewDoc = await pdfjsLib.getDocument({ data: mergedBytes.slice(0) }).promise;
@@ -9408,15 +9588,25 @@ ${footerDelimiter}
             <p class="pdf-empty-text">Carregue um documento PDF \xE0 esquerda para configurar as p\xE1ginas e dividir</p>
           </div>
 
-          <!-- Estado Processando -->
+          <!-- Estado Processando com Barra de Progresso Real -->
           <div class="pdf-stage-loading" id="s-loading-view" style="display: none;">
-            <div class="batch-spinner-icon">
-              <svg class="radial-spinner-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12" stroke-linecap="round"/>
-              </svg>
+            <div class="open-tool-progress-panel">
+              <div class="open-tool-progress-icon-wrap">
+                <div class="open-tool-progress-pulse-ring"></div>
+                <div class="open-tool-progress-spinner"></div>
+              </div>
+              <div class="open-tool-progress-header">
+                <h4 class="open-tool-progress-title" id="s-loading-title">Dividindo documento PDF...</h4>
+                <span class="open-tool-progress-percentage" id="s-progress-pct">0%</span>
+              </div>
+              <div class="open-tool-progress-track">
+                <div class="open-tool-progress-fill" id="s-progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="open-tool-progress-footer">
+                <span class="open-tool-progress-desc" id="s-loading-desc">Extra\xE7\xE3o direta na mem\xF3ria local...</span>
+                <span class="open-tool-progress-counter" id="s-progress-counter">0 / 0 partes</span>
+              </div>
             </div>
-            <p class="pdf-loading-text" id="s-loading-progress">Dividindo documento PDF...</p>
-            <span class="pdf-loading-sub">Extra\xE7\xE3o direta na mem\xF3ria do navegador</span>
           </div>
 
           <!-- Estado Resultado -->
@@ -9487,7 +9677,7 @@ ${footerDelimiter}
     if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / 1048576).toFixed(2) + " MB";
   }
-  function _dataUrlToBytes3(dataUrl) {
+  function _dataUrlToBytes2(dataUrl) {
     const parts = dataUrl.split(",");
     const bin = atob(parts[1]);
     const len = bin.length;
@@ -9563,10 +9753,22 @@ ${footerDelimiter}
       const metaSize = container.querySelector("#s-meta-size");
       const downloadBtn = container.querySelector("#s-download-btn");
       const downloadBtnText = container.querySelector("#s-download-btn-text");
+      const loadingTitle = container.querySelector("#s-loading-title");
+      const progressPct = container.querySelector("#s-progress-pct");
+      const progressFill = container.querySelector("#s-progress-fill");
+      const loadingDesc = container.querySelector("#s-loading-desc");
+      const progressCounter = container.querySelector("#s-progress-counter");
       function _setViewState(state2) {
         emptyView.style.display = state2 === "empty" ? "flex" : "none";
         loadingView.style.display = state2 === "loading" ? "flex" : "none";
         resultView.style.display = state2 === "result" ? "flex" : "none";
+      }
+      function _updateProgress(pct, title, desc, counter) {
+        if (progressPct) progressPct.textContent = `${pct}%`;
+        if (progressFill) progressFill.style.width = `${pct}%`;
+        if (title && loadingTitle) loadingTitle.textContent = title;
+        if (desc && loadingDesc) loadingDesc.textContent = desc;
+        if (counter && progressCounter) progressCounter.textContent = counter;
       }
       function _calcPartitions() {
         if (_currentNumPages <= 0) return [];
@@ -9738,7 +9940,8 @@ ${footerDelimiter}
         const partitions = _calcPartitions();
         if (!_currentArrayBuffer3 || partitions.length === 0) return;
         _setViewState("loading");
-        await new Promise((r) => setTimeout(r, 20));
+        _updateProgress(5, "Iniciando divis\xE3o...", "Carregando documento e estruturando parti\xE7\xF5es...", `0 / ${partitions.length} partes`);
+        await new Promise((r) => setTimeout(r, 25));
         await _ensureLibs4();
         const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
         const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
@@ -9762,9 +9965,14 @@ ${footerDelimiter}
           const baseName = _currentFile4 ? _currentFile4.name.replace(/\.pdf$/i, "") : "documento";
           for (let i = 0; i < partitions.length; i++) {
             const part = partitions[i];
-            if (loadingProgress) {
-              loadingProgress.textContent = `Gerando arquivo ${i + 1} de ${partitions.length} (${part.indices.length} p\xE1g)...`;
-            }
+            const currentPct = Math.round(5 + i / partitions.length * 85);
+            _updateProgress(
+              currentPct,
+              `Gerando arquivo ${i + 1} de ${partitions.length}...`,
+              `Extraindo ${part.indices.length} p\xE1gina(s) (${part.label})`,
+              `${i + 1} / ${partitions.length} partes`
+            );
+            await new Promise((r) => setTimeout(r, 15));
             const newDoc = await PDFLib.PDFDocument.create();
             if (!usePdfJsFallback && srcDoc) {
               const copiedPages = await newDoc.copyPages(srcDoc, part.indices);
@@ -9781,7 +9989,7 @@ ${footerDelimiter}
                 const ctx = canvas.getContext("2d");
                 await page.render({ canvasContext: ctx, viewport }).promise;
                 const imgDataUrl = canvas.toDataURL("image/jpeg", 0.9);
-                const bytes = _dataUrlToBytes3(imgDataUrl);
+                const bytes = _dataUrlToBytes2(imgDataUrl);
                 const embedded = await newDoc.embedJpg(bytes);
                 const newPage = newDoc.addPage([viewport.width, viewport.height]);
                 newPage.drawImage(embedded, {
@@ -9808,6 +10016,8 @@ ${footerDelimiter}
             if (!JSZip) {
               throw new Error("Biblioteca JSZip necess\xE1ria para pacote compactado.");
             }
+            _updateProgress(92, "Empacotando arquivos...", `Compactando ${generatedFiles.length} arquivos PDF em .ZIP...`, `${partitions.length} / ${partitions.length} partes`);
+            await new Promise((r) => setTimeout(r, 20));
             const zip = new JSZip();
             generatedFiles.forEach((f) => {
               zip.file(f.name, f.bytes);
@@ -9820,6 +10030,8 @@ ${footerDelimiter}
             resultSummary.textContent = `${totalPagesExtracted} p\xE1ginas distribu\xEDdas em ${generatedFiles.length} arquivos`;
             downloadBtnText.textContent = `Baixar Pacote (${generatedFiles.length} PDFs em .ZIP)`;
           }
+          _updateProgress(100, "Divis\xE3o conclu\xEDda com sucesso!", "Preparando visualiza\xE7\xE3o...", `${partitions.length} / ${partitions.length} partes`);
+          await new Promise((r) => setTimeout(r, 20));
           metaFiles.textContent = generatedFiles.length;
           metaPages.textContent = totalPagesExtracted;
           metaSize.textContent = _formatBytes4(_outputBlob.size);

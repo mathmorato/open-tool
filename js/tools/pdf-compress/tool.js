@@ -103,11 +103,24 @@ export default {
     const metaPages       = container.querySelector('#c-meta-pages');
     const metaSaved       = container.querySelector('#c-meta-saved');
     const downloadBtn     = container.querySelector('#c-download-btn');
+    const loadingTitle    = container.querySelector('#c-loading-title');
+    const progressPct     = container.querySelector('#c-progress-pct');
+    const progressFill    = container.querySelector('#c-progress-fill');
+    const loadingDesc     = container.querySelector('#c-loading-desc');
+    const progressCounter = container.querySelector('#c-progress-counter');
 
     function _setViewState(state) {
       emptyView.style.display   = state === 'empty'   ? 'flex' : 'none';
       loadingView.style.display = state === 'loading' ? 'flex' : 'none';
       resultView.style.display  = state === 'result'  ? 'flex' : 'none';
+    }
+
+    function _updateProgress(pct, title, desc, counter) {
+      if (progressPct) progressPct.textContent = `${pct}%`;
+      if (progressFill) progressFill.style.width = `${pct}%`;
+      if (title && loadingTitle) loadingTitle.textContent = title;
+      if (desc && loadingDesc) loadingDesc.textContent = desc;
+      if (counter && progressCounter) progressCounter.textContent = counter;
     }
 
     function _syncPresetControls(presetKey) {
@@ -143,11 +156,22 @@ export default {
       _setViewState('empty');
     }
 
+    function _dataUrlToBytes(dataUrl) {
+      const parts = dataUrl.split(',');
+      const bin = atob(parts[1]);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) {
+        bytes[i] = bin.charCodeAt(i);
+      }
+      return bytes;
+    }
+
     async function _doCompress() {
       if (!_currentArrayBuffer) return;
 
       _setViewState('loading');
-      await new Promise(r => setTimeout(r, 20));
+      _updateProgress(5, 'Iniciando otimização...', 'Carregando estrutura e decodificando páginas...', '0 / 0 págs');
+      await new Promise(r => setTimeout(r, 25));
 
       await _ensureLibs();
       const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
@@ -172,9 +196,14 @@ export default {
         const newPdfDoc = await PDFLib.PDFDocument.create();
 
         for (let i = 1; i <= numPages; i++) {
-          if (loadingProgress) {
-            loadingProgress.textContent = `Otimizando página ${i} de ${numPages}...`;
-          }
+          const currentPct = Math.round(5 + (((i - 1) / numPages) * 88));
+          _updateProgress(
+            currentPct,
+            `Otimizando página ${i} de ${numPages}...`,
+            `Reamostrando em ${dpi} DPI com ${(quality * 100).toFixed(0)}% de qualidade`,
+            `${i} / ${numPages} págs`
+          );
+          await new Promise(r => setTimeout(r, 15));
 
           const page = await jsDoc.getPage(i);
           const viewport = page.getViewport({ scale: renderScale });
@@ -199,8 +228,14 @@ export default {
           });
         }
 
+        _updateProgress(95, 'Gerando arquivo PDF comprimido...', 'Reconstruindo fluxos e árvore de objetos...', `${numPages} / ${numPages} págs`);
+        await new Promise(r => setTimeout(r, 20));
+
         const compressedBytes = await newPdfDoc.save();
         _compressedPdfBlob = new Blob([compressedBytes], { type: 'application/pdf' });
+
+        _updateProgress(100, 'Compressão concluída com sucesso!', 'Preparando visualização...', `${numPages} / ${numPages} págs`);
+        await new Promise(r => setTimeout(r, 20));
 
         // Atualiza Métricas
         const origSize = _currentFile.size;

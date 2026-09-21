@@ -164,9 +164,73 @@
   font-family: 'JetBrains Mono', monospace;
   padding: 0.2rem 0.55rem;
   border-radius: 9999px;
-  background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
-  color: var(--accent-primary);
-  border: 1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent);
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
+[data-theme="dark"] .pdf-summary-badge {
+  background: rgba(37, 99, 235, 0.18);
+  color: #60A5FA;
+  border-color: rgba(37, 99, 235, 0.35);
+}
+
+/* ── Botão Principal de Divisão ──────────────────────────────────────────── */
+.pdf-action-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6875rem 1.25rem;
+  background: var(--blue-primary, #2563EB);
+  color: #FFFFFF !important;
+  border: 1px solid var(--blue-primary, #2563EB);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
+  margin-top: auto;
+}
+
+.pdf-action-cta svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+.pdf-action-cta:hover:not(:disabled) {
+  background: var(--blue-hover, #1D4ED8);
+  border-color: var(--blue-hover, #1D4ED8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.pdf-action-cta:disabled {
+  background: #F1F5F9 !important;
+  color: #64748B !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+
+.pdf-action-cta:disabled svg {
+  color: #64748B !important;
+  stroke: #64748B !important;
+}
+
+[data-theme="dark"] .pdf-action-cta:disabled {
+  background: #1E293B !important;
+  color: #94A3B8 !important;
+  border: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .pdf-action-cta:disabled svg {
+  color: #94A3B8 !important;
+  stroke: #94A3B8 !important;
 }
 
 @media (max-width: 768px) {

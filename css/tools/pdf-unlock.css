@@ -230,31 +230,55 @@
 }
 
 .pdf-badge {
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 600;
-  padding: 0.15rem 0.45rem;
+  padding: 0.18rem 0.55rem;
   border-radius: 9999px;
-  background: color-mix(in srgb, var(--text-secondary) 15%, transparent);
-  color: var(--text-secondary);
-  border: 1px solid color-mix(in srgb, var(--text-secondary) 25%, transparent);
+  background: #F1F5F9;
+  color: #475569;
+  border: 1px solid #CBD5E1;
 }
 
 .pdf-badge--warning {
-  background: color-mix(in srgb, #f59e0b 15%, transparent);
-  color: #f59e0b;
-  border-color: color-mix(in srgb, #f59e0b 30%, transparent);
+  background: #FEF3C7;
+  color: #92400E;
+  border-color: #FCD34D;
 }
 
 .pdf-badge--info {
-  background: color-mix(in srgb, var(--accent-primary) 15%, transparent);
-  color: var(--accent-primary);
-  border-color: color-mix(in srgb, var(--accent-primary) 30%, transparent);
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #BFDBFE;
 }
 
 .pdf-badge--success {
-  background: color-mix(in srgb, #10b981 15%, transparent);
-  color: #10b981;
-  border-color: color-mix(in srgb, #10b981 30%, transparent);
+  background: #ECFDF5;
+  color: #047857;
+  border-color: #A7F3D0;
+}
+
+[data-theme="dark"] .pdf-badge {
+  background: #1E293B;
+  color: #94A3B8;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .pdf-badge--warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #FBBF24;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+[data-theme="dark"] .pdf-badge--info {
+  background: rgba(37, 99, 235, 0.18);
+  color: #60A5FA;
+  border-color: rgba(37, 99, 235, 0.35);
+}
+
+[data-theme="dark"] .pdf-badge--success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  border-color: rgba(16, 185, 129, 0.35);
 }
 
 .pdf-status-desc {
@@ -325,35 +349,69 @@
   line-height: 1.25;
 }
 
-/* ── Botão Principal ─────────────────────────────────────────────────────── */
+/* ── Botão Principal de Ação (Acessível em Modo Claro e Escuro) ────────── */
 .pdf-primary-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 0.6875rem 1rem;
-  background: var(--accent-primary);
-  color: #fff;
-  border: none;
+  padding: 0.6875rem 1.25rem;
+  background: var(--blue-primary, #2563EB);
+  color: #FFFFFF !important;
+  border: 1px solid var(--blue-primary, #2563EB);
   border-radius: 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
+  line-height: 1.25;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 3px 10px color-mix(in srgb, var(--accent-primary) 30%, transparent);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
   margin-top: auto;
 }
 
+.pdf-primary-btn svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  flex-shrink: 0;
+}
+
 .pdf-primary-btn:hover:not(:disabled) {
-  background: var(--accent-interactive);
+  background: var(--blue-hover, #1D4ED8);
+  border-color: var(--blue-hover, #1D4ED8);
   transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.pdf-primary-btn:active:not(:disabled) {
+  background: var(--blue-active, #1E40AF);
+  border-color: var(--blue-active, #1E40AF);
+  transform: translateY(0);
 }
 
 .pdf-primary-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  box-shadow: none;
+  background: #F1F5F9 !important;
+  color: #64748B !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+
+.pdf-primary-btn:disabled svg {
+  color: #64748B !important;
+  stroke: #64748B !important;
+}
+
+[data-theme="dark"] .pdf-primary-btn:disabled {
+  background: #1E293B !important;
+  color: #94A3B8 !important;
+  border: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .pdf-primary-btn:disabled svg {
+  color: #94A3B8 !important;
+  stroke: #94A3B8 !important;
 }
 
 /* ── Preview Panel ──────────────────────────────────────────────────────── */

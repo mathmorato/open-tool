@@ -205,11 +205,25 @@ export function getImageToVectorHTML() {
             <p class="v-empty-desc">Carregue uma imagem rasterizada e clique em "Vetorizar Imagem para SVG" para visualizar o resultado.</p>
           </div>
 
-          <!-- Estado Processando -->
+          <!-- Estado Processando com Barra de Progresso Real -->
           <div class="v-loading-view" id="v-loading-view" style="display: none;">
-            <div class="v-spinner"></div>
-            <h3 class="v-loading-title">Extraindo contornos e traçando curvas Bézier...</h3>
-            <p class="v-loading-desc">Quantizando cores e calculando splines vetoriais no navegador.</p>
+            <div class="open-tool-progress-panel">
+              <div class="open-tool-progress-icon-wrap">
+                <div class="open-tool-progress-pulse-ring"></div>
+                <div class="open-tool-progress-spinner"></div>
+              </div>
+              <div class="open-tool-progress-header">
+                <h4 class="open-tool-progress-title" id="v-loading-title">Vetorizando imagem para SVG...</h4>
+                <span class="open-tool-progress-percentage" id="v-progress-pct">0%</span>
+              </div>
+              <div class="open-tool-progress-track">
+                <div class="open-tool-progress-fill" id="v-progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="open-tool-progress-footer">
+                <span class="open-tool-progress-desc" id="v-loading-desc">Iniciando análise de contornos e paleta...</span>
+                <span class="open-tool-progress-counter" id="v-progress-counter">Etapa 1 / 4</span>
+              </div>
+            </div>
           </div>
 
           <!-- Resultado do Vetor -->

@@ -603,15 +603,58 @@ body {
 
 .btn-primary {
   background-color: var(--blue-primary);
-  color: #FFFFFF;
+  color: #FFFFFF !important;
+  border: 1px solid var(--blue-primary);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.22);
 }
 
-.btn-primary:hover {
+.btn-primary svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+.btn-primary:hover:not(:disabled) {
   background-color: var(--blue-hover);
+  border-color: var(--blue-hover);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
 
-.btn-primary:active {
+.btn-primary:active:not(:disabled) {
   background-color: var(--blue-active);
+  border-color: var(--blue-active);
+}
+
+.btn:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  background-color: #F1F5F9 !important;
+  color: #64748B !important;
+  border: 1px solid #CBD5E1 !important;
+  box-shadow: none !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+
+.btn:disabled svg,
+.btn-primary:disabled svg,
+.btn-secondary:disabled svg {
+  color: #64748B !important;
+  stroke: #64748B !important;
+}
+
+[data-theme="dark"] .btn:disabled,
+[data-theme="dark"] .btn-primary:disabled,
+[data-theme="dark"] .btn-secondary:disabled {
+  background-color: #1E293B !important;
+  color: #94A3B8 !important;
+  border: 1px solid #334155 !important;
+}
+
+[data-theme="dark"] .btn:disabled svg,
+[data-theme="dark"] .btn-primary:disabled svg,
+[data-theme="dark"] .btn-secondary:disabled svg {
+  color: #94A3B8 !important;
+  stroke: #94A3B8 !important;
 }
 
 .btn-secondary {
@@ -2453,3 +2496,167 @@ body.dark-mode .consolidation-track,
 .doc2md-tool-root {
   animation: fadeInTool 0.3s ease;
 }
+
+/* ==========================================================================
+   Universal Progress Bar & Loading Component (Todas as Ferramentas)
+   ========================================================================== */
+
+.open-tool-progress-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 440px;
+  margin: auto;
+  padding: 1.5rem 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 0.75rem);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.08);
+  animation: fadeInTool 0.25s ease-out;
+}
+
+.open-tool-progress-icon-wrap {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.open-tool-progress-pulse-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--blue-primary);
+  opacity: 0.2;
+  animation: progressPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes progressPulse {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.15;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.35;
+  }
+}
+
+.open-tool-progress-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid color-mix(in srgb, var(--blue-primary) 20%, transparent);
+  border-top-color: var(--blue-primary);
+  border-radius: 50%;
+  animation: spinner-rotate-step 0.8s linear infinite;
+}
+
+.open-tool-progress-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.open-tool-progress-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.open-tool-progress-percentage {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--blue-primary);
+  background: color-mix(in srgb, var(--blue-primary) 10%, transparent);
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--blue-primary) 25%, transparent);
+  flex-shrink: 0;
+}
+
+/* Barra de Progresso com Gradiente e Shimmer */
+.open-tool-progress-track {
+  width: 100%;
+  height: 9px;
+  background: color-mix(in srgb, var(--text-secondary) 15%, transparent);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 0.55rem;
+}
+
+.open-tool-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%);
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.open-tool-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  animation: progressShimmer 1.6s infinite;
+}
+
+@keyframes progressShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.open-tool-progress-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.5rem;
+  font-size: 0.7188rem;
+  color: var(--text-secondary);
+}
+
+.open-tool-progress-desc {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.open-tool-progress-counter {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7188rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-secondary) 10%, transparent);
+  padding: 0.1rem 0.45rem;
+  border-radius: 0.25rem;
+  flex-shrink: 0;
+}
+

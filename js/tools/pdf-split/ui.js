@@ -174,15 +174,25 @@ export function getPdfSplitHTML() {
             <p class="pdf-empty-text">Carregue um documento PDF à esquerda para configurar as páginas e dividir</p>
           </div>
 
-          <!-- Estado Processando -->
+          <!-- Estado Processando com Barra de Progresso Real -->
           <div class="pdf-stage-loading" id="s-loading-view" style="display: none;">
-            <div class="batch-spinner-icon">
-              <svg class="radial-spinner-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12" stroke-linecap="round"/>
-              </svg>
+            <div class="open-tool-progress-panel">
+              <div class="open-tool-progress-icon-wrap">
+                <div class="open-tool-progress-pulse-ring"></div>
+                <div class="open-tool-progress-spinner"></div>
+              </div>
+              <div class="open-tool-progress-header">
+                <h4 class="open-tool-progress-title" id="s-loading-title">Dividindo documento PDF...</h4>
+                <span class="open-tool-progress-percentage" id="s-progress-pct">0%</span>
+              </div>
+              <div class="open-tool-progress-track">
+                <div class="open-tool-progress-fill" id="s-progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="open-tool-progress-footer">
+                <span class="open-tool-progress-desc" id="s-loading-desc">Extração direta na memória local...</span>
+                <span class="open-tool-progress-counter" id="s-progress-counter">0 / 0 partes</span>
+              </div>
             </div>
-            <p class="pdf-loading-text" id="s-loading-progress">Dividindo documento PDF...</p>
-            <span class="pdf-loading-sub">Extração direta na memória do navegador</span>
           </div>
 
           <!-- Estado Resultado -->
