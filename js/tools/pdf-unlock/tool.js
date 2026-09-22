@@ -44,6 +44,9 @@ async function _ensureLibs() {
   if (typeof window === 'undefined' || !window.pdfjsLib) {
     promises.push(loadScript(APP_CONFIG.CDN.PDFJS).catch(e => console.warn('pdf.js load:', e)));
   }
+  if (typeof window === 'undefined' || !window.__QPDF_WASM_BYTES__) {
+    promises.push(loadScript('js/lib/qpdf-wasm-binary.js').catch(e => console.warn('qpdf-wasm-binary load:', e)));
+  }
   if (typeof window === 'undefined' || !window.createQpdfModule) {
     promises.push(loadScript('js/lib/qpdf.js').catch(e => console.warn('qpdf load:', e)));
   }
@@ -238,14 +241,10 @@ export default {
           await new Promise(r => setTimeout(r, 25));
 
           try {
+            const wasmBytes = (typeof window !== 'undefined' && window.__QPDF_WASM_BYTES__) || (typeof globalThis !== 'undefined' && globalThis.__QPDF_WASM_BYTES__) || undefined;
             const qpdf = await createQpdf({
-              locateFile: (file) => {
-                const rel = file.endsWith('.wasm') ? 'js/lib/qpdf.wasm' : 'js/lib/' + file;
-                if (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:') {
-                  return new URL(rel, window.location.href).href;
-                }
-                return rel;
-              }
+              wasmBinary: wasmBytes,
+              locateFile: (file) => (file.endsWith('.wasm') ? 'js/lib/qpdf.wasm' : 'js/lib/' + file)
             });
 
             const inPath = '/input.pdf';
@@ -256,10 +255,12 @@ export default {
 
             qpdf.printErr = (t) => { stderr += t + '\n'; };
 
-            // Executa chamada do QPDF
+            // Executa chamada do QPDF com --warning-exit-0
             const args = ['--warning-exit-0'];
             if (password && password.length > 0) {
               args.push(`--password=${password}`);
+            } else {
+              args.push('--password=');
             }
             args.push(inPath, '--decrypt', outPath);
 
@@ -321,8 +322,8 @@ export default {
           }
         }
 
-        // 3. Fallback Gráfico via PDF.js (à prova de falhas para PDFs com restrição de permissão)
-        if (!unlockedBytes && pdfjsLib && PDFLib && _currentArrayBuffer.byteLength < 120 * 1024 * 1024) {
+        // 3. Fallback Gráfico via PDF.js (para arquivos pequenos < 30 MB com restrição de permissão)
+        if (!unlockedBytes && pdfjsLib && PDFLib && _currentArrayBuffer.byteLength < 30 * 1024 * 1024) {
           _updateProgress(65, 'Liberando permissões via motor gráfico...', 'Reconstruindo páginas para documento 100% desbloqueado...', 'Etapa 2 / 3');
           await new Promise(r => setTimeout(r, 20));
           try {
@@ -333,26 +334,28 @@ export default {
             const jsDoc = await loadingTask.promise;
             pageCount = jsDoc.numPages;
 
-            const newDoc = await PDFLib.PDFDocument.create();
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d', { alpha: false });
+            if (pageCount <= 30) {
+              const newDoc = await PDFLib.PDFDocument.create();
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d', { alpha: false });
 
-            for (let p = 1; p <= pageCount; p++) {
-              const page = await jsDoc.getPage(p);
-              const vp = page.getViewport({ scale: 1.5 });
-              canvas.width = vp.width;
-              canvas.height = vp.height;
-              await page.render({ canvasContext: ctx, viewport: vp }).promise;
+              for (let p = 1; p <= pageCount; p++) {
+                const page = await jsDoc.getPage(p);
+                const vp = page.getViewport({ scale: 1.2 });
+                canvas.width = vp.width;
+                canvas.height = vp.height;
+                await page.render({ canvasContext: ctx, viewport: vp }).promise;
 
-              const imgDataUrl = canvas.toDataURL('image/jpeg', 0.92);
-              const imgBytes = _dataUrlToBytes(imgDataUrl);
-              const embedded = await newDoc.embedJpg(imgBytes);
+                const imgDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+                const imgBytes = _dataUrlToBytes(imgDataUrl);
+                const embedded = await newDoc.embedJpg(imgBytes);
 
-              const newPage = newDoc.addPage([vp.width, vp.height]);
-              newPage.drawImage(embedded, { x: 0, y: 0, width: vp.width, height: vp.height });
+                const newPage = newDoc.addPage([vp.width, vp.height]);
+                newPage.drawImage(embedded, { x: 0, y: 0, width: vp.width, height: vp.height });
+              }
+
+              unlockedBytes = await newDoc.save();
             }
-
-            unlockedBytes = await newDoc.save();
           } catch (eFallback) {
             console.warn('Fallback gráfico falhou:', eFallback);
           }

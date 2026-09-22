@@ -8245,6 +8245,9 @@ ${footerDelimiter}
     if (typeof window === "undefined" || !window.pdfjsLib) {
       promises.push(loadScript(APP_CONFIG.CDN.PDFJS).catch((e) => console.warn("pdf.js load:", e)));
     }
+    if (typeof window === "undefined" || !window.__QPDF_WASM_BYTES__) {
+      promises.push(loadScript("js/lib/qpdf-wasm-binary.js").catch((e) => console.warn("qpdf-wasm-binary load:", e)));
+    }
     if (typeof window === "undefined" || !window.createQpdfModule) {
       promises.push(loadScript("js/lib/qpdf.js").catch((e) => console.warn("qpdf load:", e)));
     }
@@ -8404,14 +8407,10 @@ ${footerDelimiter}
             _updateProgress(35, "Descriptografando fluxos e permiss\xF5es...", "Removendo travas de c\xF3pia, sele\xE7\xE3o e impress\xE3o (QPDF C++/Wasm)...", "Etapa 2 / 3");
             await new Promise((r) => setTimeout(r, 25));
             try {
+              const wasmBytes = typeof window !== "undefined" && window.__QPDF_WASM_BYTES__ || typeof globalThis !== "undefined" && globalThis.__QPDF_WASM_BYTES__ || void 0;
               const qpdf = await createQpdf({
-                locateFile: (file) => {
-                  const rel = file.endsWith(".wasm") ? "js/lib/qpdf.wasm" : "js/lib/" + file;
-                  if (typeof window !== "undefined" && window.location && window.location.protocol === "file:") {
-                    return new URL(rel, window.location.href).href;
-                  }
-                  return rel;
-                }
+                wasmBinary: wasmBytes,
+                locateFile: (file) => file.endsWith(".wasm") ? "js/lib/qpdf.wasm" : "js/lib/" + file
               });
               const inPath = "/input.pdf";
               const outPath = "/output.pdf";
@@ -8422,6 +8421,8 @@ ${footerDelimiter}
               const args = ["--warning-exit-0"];
               if (password && password.length > 0) {
                 args.push(`--password=${password}`);
+              } else {
+                args.push("--password=");
               }
               args.push(inPath, "--decrypt", outPath);
               try {
@@ -8479,7 +8480,7 @@ ${footerDelimiter}
               console.warn("PDF-Lib direto falhou:", eLib);
             }
           }
-          if (!unlockedBytes && pdfjsLib2 && PDFLib && _currentArrayBuffer.byteLength < 120 * 1024 * 1024) {
+          if (!unlockedBytes && pdfjsLib2 && PDFLib && _currentArrayBuffer.byteLength < 30 * 1024 * 1024) {
             _updateProgress(65, "Liberando permiss\xF5es via motor gr\xE1fico...", "Reconstruindo p\xE1ginas para documento 100% desbloqueado...", "Etapa 2 / 3");
             await new Promise((r) => setTimeout(r, 20));
             try {
@@ -8489,22 +8490,24 @@ ${footerDelimiter}
               }
               const jsDoc = await loadingTask.promise;
               pageCount = jsDoc.numPages;
-              const newDoc = await PDFLib.PDFDocument.create();
-              const canvas = document.createElement("canvas");
-              const ctx = canvas.getContext("2d", { alpha: false });
-              for (let p = 1; p <= pageCount; p++) {
-                const page = await jsDoc.getPage(p);
-                const vp = page.getViewport({ scale: 1.5 });
-                canvas.width = vp.width;
-                canvas.height = vp.height;
-                await page.render({ canvasContext: ctx, viewport: vp }).promise;
-                const imgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
-                const imgBytes = _dataUrlToBytes(imgDataUrl);
-                const embedded = await newDoc.embedJpg(imgBytes);
-                const newPage = newDoc.addPage([vp.width, vp.height]);
-                newPage.drawImage(embedded, { x: 0, y: 0, width: vp.width, height: vp.height });
+              if (pageCount <= 30) {
+                const newDoc = await PDFLib.PDFDocument.create();
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d", { alpha: false });
+                for (let p = 1; p <= pageCount; p++) {
+                  const page = await jsDoc.getPage(p);
+                  const vp = page.getViewport({ scale: 1.2 });
+                  canvas.width = vp.width;
+                  canvas.height = vp.height;
+                  await page.render({ canvasContext: ctx, viewport: vp }).promise;
+                  const imgDataUrl = canvas.toDataURL("image/jpeg", 0.88);
+                  const imgBytes = _dataUrlToBytes(imgDataUrl);
+                  const embedded = await newDoc.embedJpg(imgBytes);
+                  const newPage = newDoc.addPage([vp.width, vp.height]);
+                  newPage.drawImage(embedded, { x: 0, y: 0, width: vp.width, height: vp.height });
+                }
+                unlockedBytes = await newDoc.save();
               }
-              unlockedBytes = await newDoc.save();
             } catch (eFallback) {
               console.warn("Fallback gr\xE1fico falhou:", eFallback);
             }
