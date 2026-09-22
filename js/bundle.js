@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.4.6",
+    VERSION: "v.2.4.7",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -3060,9 +3060,12 @@
     </svg>`,
     toolMerge: (size = 18, cls = "") => `
     <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
-      <path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
-      <line x1="12" y1="11" x2="12" y2="17"/>
-      <line x1="9" y1="14" x2="15" y2="14"/>
+      <path d="M8 5V3.5A1.5 1.5 0 0 1 9.5 2h6l4.5 4.5v9.5a1.5 1.5 0 0 1-1.5 1.5H17"/>
+      <polyline points="15.5 2 15.5 6.5 20 6.5"/>
+      <path d="M4 7a2 2 0 0 1 2-2h6.5L17 9.5V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z"/>
+      <polyline points="12.5 5 12.5 9.5 17 9.5"/>
+      <path d="M7.5 15a2.2 2.2 0 0 0 3.1 0l1.4-1.4a2.2 2.2 0 0 0-3.1-3.1l-.7.7"/>
+      <path d="M12.5 11a2.2 2.2 0 0 0-3.1 0l-1.4 1.4a2.2 2.2 0 0 0 3.1 3.1l.7-.7"/>
     </svg>`,
     toolSplit: (size = 18, cls = "") => `
     <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
