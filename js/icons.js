@@ -128,6 +128,61 @@ export const ICONS = {
       <polyline points="21 15 16 10 5 21"/>
     </svg>`,
 
+  // Ícones Lineares de Presets & Modos
+  penTool: (size = 14, cls = '') => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="m12 19 7-7 3 3-7 7-3-3z"/>
+      <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+      <path d="m2 2 7.586 7.586"/>
+      <circle cx="11" cy="11" r="2"/>
+    </svg>`,
+
+  sparkles: (size = 14, cls = '') => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+    </svg>`,
+
+  spline: (size = 14, cls = '') => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <circle cx="19" cy="5" r="2"/>
+      <circle cx="5" cy="19" r="2"/>
+      <path d="M5 17A12 12 0 0 1 17 5"/>
+    </svg>`,
+
+  layers: (size = 14, cls = '') => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.9a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/>
+      <path d="m22 12.5-9.4 4.3a2 2 0 0 1-1.2 0L2 12.5"/>
+      <path d="m22 17.5-9.4 4.3a2 2 0 0 1-1.2 0L2 17.5"/>
+    </svg>`,
+
+  contrast: (size = 14, cls = '') => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 18a6 6 0 0 0 0-12v12z"/>
+    </svg>`,
+
+  zap: (size = 14, cls = '') => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>`,
+
+  scale: (size = 14, cls = '') => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+      <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+      <path d="M7 21h10"/>
+      <path d="M12 3v18"/>
+      <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>
+    </svg>`,
+
+  diamond: (size = 14, cls = '') => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M6 3h12l4 6-10 12L2 9Z"/>
+      <path d="M11 3 8 9l4 12 4-12-3-6"/>
+      <path d="M2 9h20"/>
+    </svg>`,
+
   // Ferramentas Navbar & Hub (100% Linear)
   toolHub: (size = 18, cls = '') => `
     <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">

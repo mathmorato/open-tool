@@ -62,18 +62,24 @@ export function getPdfCompressHTML() {
             <label class="pdf-label">Nível de Compressão</label>
             <div class="pdf-preset-grid" id="c-preset-grid">
               <button type="button" class="pdf-preset-btn" data-preset="extreme">
-                <span class="pdf-preset-icon">⚡</span>
-                <span class="pdf-preset-title">Extrema</span>
+                <div class="pdf-preset-head">
+                  <span class="pdf-preset-icon">${ICONS.zap(14)}</span>
+                  <span class="pdf-preset-title">Extrema</span>
+                </div>
                 <span class="pdf-preset-desc">72 DPI • Menor peso</span>
               </button>
               <button type="button" class="pdf-preset-btn pdf-preset-btn--active" data-preset="balanced">
-                <span class="pdf-preset-icon">⚖️</span>
-                <span class="pdf-preset-title">Recomendada</span>
+                <div class="pdf-preset-head">
+                  <span class="pdf-preset-icon">${ICONS.scale(14)}</span>
+                  <span class="pdf-preset-title">Recomendada</span>
+                </div>
                 <span class="pdf-preset-desc">100 DPI • Equilibrado</span>
               </button>
               <button type="button" class="pdf-preset-btn" data-preset="light">
-                <span class="pdf-preset-icon">💎</span>
-                <span class="pdf-preset-title">Alta Nitidez</span>
+                <div class="pdf-preset-head">
+                  <span class="pdf-preset-icon">${ICONS.diamond(14)}</span>
+                  <span class="pdf-preset-title">Alta Nitidez</span>
+                </div>
                 <span class="pdf-preset-desc">150 DPI • Mais detalhe</span>
               </button>
             </div>

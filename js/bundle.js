@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.4.5",
+    VERSION: "v.2.4.6",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -2966,6 +2966,53 @@
       <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
       <circle cx="8.5" cy="8.5" r="1.5"/>
       <polyline points="21 15 16 10 5 21"/>
+    </svg>`,
+    // Ícones Lineares de Presets & Modos
+    penTool: (size = 14, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="m12 19 7-7 3 3-7 7-3-3z"/>
+      <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+      <path d="m2 2 7.586 7.586"/>
+      <circle cx="11" cy="11" r="2"/>
+    </svg>`,
+    sparkles: (size = 14, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+    </svg>`,
+    spline: (size = 14, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <circle cx="19" cy="5" r="2"/>
+      <circle cx="5" cy="19" r="2"/>
+      <path d="M5 17A12 12 0 0 1 17 5"/>
+    </svg>`,
+    layers: (size = 14, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.9a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/>
+      <path d="m22 12.5-9.4 4.3a2 2 0 0 1-1.2 0L2 12.5"/>
+      <path d="m22 17.5-9.4 4.3a2 2 0 0 1-1.2 0L2 17.5"/>
+    </svg>`,
+    contrast: (size = 14, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 18a6 6 0 0 0 0-12v12z"/>
+    </svg>`,
+    zap: (size = 14, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>`,
+    scale: (size = 14, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+      <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
+      <path d="M7 21h10"/>
+      <path d="M12 3v18"/>
+      <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>
+    </svg>`,
+    diamond: (size = 14, cls = "") => `
+    <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
+      <path d="M6 3h12l4 6-10 12L2 9Z"/>
+      <path d="M11 3 8 9l4 12 4-12-3-6"/>
+      <path d="M2 9h20"/>
     </svg>`,
     // Ferramentas Navbar & Hub (100% Linear)
     toolHub: (size = 18, cls = "") => `
@@ -7179,42 +7226,42 @@ ${footerDelimiter}
             <div class="v-preset-grid" id="v-preset-grid">
               <button type="button" class="v-preset-btn v-preset-btn--active" data-preset="bw">
                 <div class="v-preset-head">
-                  <span class="v-preset-icon">\u2B1B</span>
+                  <span class="v-preset-icon">${ICONS.penTool(14)}</span>
                   <span class="v-preset-title">Logotipo</span>
                 </div>
                 <span class="v-preset-desc">2 cores P&B</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="balanced">
                 <div class="v-preset-head">
-                  <span class="v-preset-icon">\u{1F3A8}</span>
+                  <span class="v-preset-icon">${ICONS.palette(14)}</span>
                   <span class="v-preset-title">Equilibrado</span>
                 </div>
                 <span class="v-preset-desc">16 cores</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="detailed">
                 <div class="v-preset-head">
-                  <span class="v-preset-icon">\u2728</span>
+                  <span class="v-preset-icon">${ICONS.sparkles(14)}</span>
                   <span class="v-preset-title">Alta Fid.</span>
                 </div>
                 <span class="v-preset-desc">32 cores</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="curvy">
                 <div class="v-preset-head">
-                  <span class="v-preset-icon">\u3030\uFE0F</span>
+                  <span class="v-preset-icon">${ICONS.spline(14)}</span>
                   <span class="v-preset-title">Curvas</span>
                 </div>
                 <span class="v-preset-desc">Suaves</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="posterized">
                 <div class="v-preset-head">
-                  <span class="v-preset-icon">\u{1F5BC}\uFE0F</span>
+                  <span class="v-preset-icon">${ICONS.layers(14)}</span>
                   <span class="v-preset-title">Poster</span>
                 </div>
                 <span class="v-preset-desc">Cores s\xF3lidas</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="grayscale">
                 <div class="v-preset-head">
-                  <span class="v-preset-icon">\u{1FA76}</span>
+                  <span class="v-preset-icon">${ICONS.contrast(14)}</span>
                   <span class="v-preset-title">Cinza</span>
                 </div>
                 <span class="v-preset-desc">Monocrom\xE1tico</span>
@@ -8613,18 +8660,24 @@ ${pageStr}
             <label class="pdf-label">N\xEDvel de Compress\xE3o</label>
             <div class="pdf-preset-grid" id="c-preset-grid">
               <button type="button" class="pdf-preset-btn" data-preset="extreme">
-                <span class="pdf-preset-icon">\u26A1</span>
-                <span class="pdf-preset-title">Extrema</span>
+                <div class="pdf-preset-head">
+                  <span class="pdf-preset-icon">${ICONS.zap(14)}</span>
+                  <span class="pdf-preset-title">Extrema</span>
+                </div>
                 <span class="pdf-preset-desc">72 DPI \u2022 Menor peso</span>
               </button>
               <button type="button" class="pdf-preset-btn pdf-preset-btn--active" data-preset="balanced">
-                <span class="pdf-preset-icon">\u2696\uFE0F</span>
-                <span class="pdf-preset-title">Recomendada</span>
+                <div class="pdf-preset-head">
+                  <span class="pdf-preset-icon">${ICONS.scale(14)}</span>
+                  <span class="pdf-preset-title">Recomendada</span>
+                </div>
                 <span class="pdf-preset-desc">100 DPI \u2022 Equilibrado</span>
               </button>
               <button type="button" class="pdf-preset-btn" data-preset="light">
-                <span class="pdf-preset-icon">\u{1F48E}</span>
-                <span class="pdf-preset-title">Alta Nitidez</span>
+                <div class="pdf-preset-head">
+                  <span class="pdf-preset-icon">${ICONS.diamond(14)}</span>
+                  <span class="pdf-preset-title">Alta Nitidez</span>
+                </div>
                 <span class="pdf-preset-desc">150 DPI \u2022 Mais detalhe</span>
               </button>
             </div>

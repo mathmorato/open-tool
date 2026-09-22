@@ -356,9 +356,20 @@
 }
 
 .v-preset-icon {
-  font-size: 0.8125rem;
-  margin-bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  color: var(--blue-primary, #3b82f6);
+}
+
+.v-preset-icon svg {
+  color: currentColor;
+  stroke: currentColor;
+}
+
+[data-theme="dark"] .v-preset-icon {
+  color: #60A5FA;
 }
 
 .v-preset-title {

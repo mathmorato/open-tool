@@ -44,9 +44,28 @@
   box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--accent-primary) 30%, transparent);
 }
 
+.pdf-preset-head {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+}
+
 .pdf-preset-icon {
-  font-size: 0.8125rem;
-  margin-bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--blue-primary, #3b82f6);
+}
+
+.pdf-preset-icon svg {
+  color: currentColor;
+  stroke: currentColor;
+}
+
+[data-theme="dark"] .pdf-preset-icon {
+  color: #60A5FA;
 }
 
 .pdf-preset-title {

@@ -86,42 +86,42 @@ export function getImageToVectorHTML() {
             <div class="v-preset-grid" id="v-preset-grid">
               <button type="button" class="v-preset-btn v-preset-btn--active" data-preset="bw">
                 <div class="v-preset-head">
-                  <span class="v-preset-icon">⬛</span>
+                  <span class="v-preset-icon">${ICONS.penTool(14)}</span>
                   <span class="v-preset-title">Logotipo</span>
                 </div>
                 <span class="v-preset-desc">2 cores P&B</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="balanced">
                 <div class="v-preset-head">
-                  <span class="v-preset-icon">🎨</span>
+                  <span class="v-preset-icon">${ICONS.palette(14)}</span>
                   <span class="v-preset-title">Equilibrado</span>
                 </div>
                 <span class="v-preset-desc">16 cores</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="detailed">
                 <div class="v-preset-head">
-                  <span class="v-preset-icon">✨</span>
+                  <span class="v-preset-icon">${ICONS.sparkles(14)}</span>
                   <span class="v-preset-title">Alta Fid.</span>
                 </div>
                 <span class="v-preset-desc">32 cores</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="curvy">
                 <div class="v-preset-head">
-                  <span class="v-preset-icon">〰️</span>
+                  <span class="v-preset-icon">${ICONS.spline(14)}</span>
                   <span class="v-preset-title">Curvas</span>
                 </div>
                 <span class="v-preset-desc">Suaves</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="posterized">
                 <div class="v-preset-head">
-                  <span class="v-preset-icon">🖼️</span>
+                  <span class="v-preset-icon">${ICONS.layers(14)}</span>
                   <span class="v-preset-title">Poster</span>
                 </div>
                 <span class="v-preset-desc">Cores sólidas</span>
               </button>
               <button type="button" class="v-preset-btn" data-preset="grayscale">
                 <div class="v-preset-head">
-                  <span class="v-preset-icon">🩶</span>
+                  <span class="v-preset-icon">${ICONS.contrast(14)}</span>
                   <span class="v-preset-title">Cinza</span>
                 </div>
                 <span class="v-preset-desc">Monocromático</span>
