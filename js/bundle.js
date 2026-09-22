@@ -8227,6 +8227,16 @@ ${footerDelimiter}
     if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / 1048576).toFixed(2) + " MB";
   }
+  function _dataUrlToBytes(dataUrl) {
+    const parts = dataUrl.split(",");
+    const bin = atob(parts[1]);
+    const len = bin.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = bin.charCodeAt(i);
+    }
+    return bytes;
+  }
   async function _ensureLibs() {
     const promises = [];
     if (typeof window === "undefined" || !window.PDFLib) {
@@ -8323,7 +8333,7 @@ ${footerDelimiter}
           return;
         }
         try {
-          const loadingTask = pdfjsLib2.getDocument({ data: _currentArrayBuffer.slice(0) });
+          const loadingTask = pdfjsLib2.getDocument({ data: new Uint8Array(_currentArrayBuffer) });
           loadingTask.onPassword = (callback, reason) => {
             _requiresPassword = true;
             lockBadge.textContent = "Senha de Abertura";
@@ -8386,36 +8396,56 @@ ${footerDelimiter}
         const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
         const createQpdf = typeof window !== "undefined" && window.createQpdfModule || globalThis.createQpdfModule;
         const password = passwordInput.value.trim();
+        let stderr = "";
         try {
           let unlockedBytes = null;
           let pageCount = 1;
-          const copyBuf = _currentArrayBuffer.slice(0);
           if (createQpdf) {
             _updateProgress(35, "Descriptografando fluxos e permiss\xF5es...", "Removendo travas de c\xF3pia, sele\xE7\xE3o e impress\xE3o (QPDF C++/Wasm)...", "Etapa 2 / 3");
             await new Promise((r) => setTimeout(r, 25));
-            const qpdf = await createQpdf({
-              locateFile: (file) => {
-                if (file.endsWith(".wasm")) return "js/lib/qpdf.wasm";
-                return "js/lib/" + file;
+            try {
+              const qpdf = await createQpdf({
+                locateFile: (file) => {
+                  const rel = file.endsWith(".wasm") ? "js/lib/qpdf.wasm" : "js/lib/" + file;
+                  if (typeof window !== "undefined" && window.location && window.location.protocol === "file:") {
+                    return new URL(rel, window.location.href).href;
+                  }
+                  return rel;
+                }
+              });
+              const inPath = "/input.pdf";
+              const outPath = "/output.pdf";
+              qpdf.FS.writeFile(inPath, new Uint8Array(_currentArrayBuffer));
+              qpdf.printErr = (t) => {
+                stderr += t + "\n";
+              };
+              const args = ["--warning-exit-0"];
+              if (password && password.length > 0) {
+                args.push(`--password=${password}`);
               }
-            });
-            const inPath = "/input.pdf";
-            const outPath = "/output.pdf";
-            qpdf.FS.writeFile(inPath, new Uint8Array(copyBuf));
-            const args = [];
-            if (password && password.length > 0) {
-              args.push(`--password=${password}`);
-            } else {
-              args.push("--password=");
-            }
-            args.push(inPath, "--decrypt", outPath);
-            let stderr = "";
-            qpdf.printErr = (t) => {
-              stderr += t + "\n";
-            };
-            const exitCode = qpdf.callMain(args);
-            if (exitCode === 0) {
-              unlockedBytes = qpdf.FS.readFile(outPath);
+              args.push(inPath, "--decrypt", outPath);
+              try {
+                qpdf.callMain(args);
+              } catch (cErr) {
+                console.warn("QPDF callMain:", cErr);
+              }
+              try {
+                const cand = qpdf.FS.readFile(outPath);
+                if (cand && cand.length > 100) {
+                  unlockedBytes = cand;
+                }
+              } catch (_) {
+              }
+              if (!unlockedBytes && (!password || password.length === 0)) {
+                try {
+                  qpdf.callMain(["--warning-exit-0", "--password=", inPath, "--decrypt", outPath]);
+                  const cand2 = qpdf.FS.readFile(outPath);
+                  if (cand2 && cand2.length > 100) {
+                    unlockedBytes = cand2;
+                  }
+                } catch (_) {
+                }
+              }
               try {
                 qpdf.FS.unlink(inPath);
               } catch (_) {
@@ -8424,40 +8454,76 @@ ${footerDelimiter}
                 qpdf.FS.unlink(outPath);
               } catch (_) {
               }
-            } else {
-              try {
-                qpdf.FS.unlink(inPath);
-              } catch (_) {
-              }
-              try {
-                qpdf.FS.unlink(outPath);
-              } catch (_) {
-              }
-              if (exitCode === 2 || stderr.toLowerCase().includes("invalid password") || stderr.toLowerCase().includes("password")) {
+              if (!unlockedBytes && (stderr.toLowerCase().includes("invalid password") || stderr.toLowerCase().includes("user password"))) {
                 _requiresPassword = true;
                 passwordGroup.style.display = "flex";
                 passwordInput.focus();
                 throw new Error("PASSWORD_REQUIRED");
               }
-              console.warn("QPDF falhou com c\xF3digo", exitCode, stderr);
+            } catch (qErr) {
+              if (qErr.message === "PASSWORD_REQUIRED") throw qErr;
+              const qMsg = qErr && qErr.message || String(qErr);
+              if (qMsg.includes("memory") || qMsg.includes("alloc") || qMsg.includes("Cannot enlarge")) {
+                throw new Error("OUT_OF_MEMORY");
+              }
+              console.warn("Motor QPDF falhou, tentando fallback:", qErr);
             }
           }
-          if (!unlockedBytes && PDFLib) {
+          if (!unlockedBytes && PDFLib && _currentArrayBuffer.byteLength < 120 * 1024 * 1024) {
             _updateProgress(55, "Processando via PDF-Lib...", "Reconstruindo \xE1rvore de objetos sem flags de prote\xE7\xE3o...", "Etapa 2 / 3");
             await new Promise((r) => setTimeout(r, 20));
             try {
-              const srcDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+              const srcDoc = await PDFLib.PDFDocument.load(new Uint8Array(_currentArrayBuffer), { ignoreEncryption: true });
               unlockedBytes = await srcDoc.save();
             } catch (eLib) {
               console.warn("PDF-Lib direto falhou:", eLib);
             }
           }
+          if (!unlockedBytes && pdfjsLib2 && PDFLib && _currentArrayBuffer.byteLength < 120 * 1024 * 1024) {
+            _updateProgress(65, "Liberando permiss\xF5es via motor gr\xE1fico...", "Reconstruindo p\xE1ginas para documento 100% desbloqueado...", "Etapa 2 / 3");
+            await new Promise((r) => setTimeout(r, 20));
+            try {
+              const loadingTask = pdfjsLib2.getDocument({ data: new Uint8Array(_currentArrayBuffer) });
+              if (password && password.length > 0) {
+                loadingTask.onPassword = (cb) => cb(password);
+              }
+              const jsDoc = await loadingTask.promise;
+              pageCount = jsDoc.numPages;
+              const newDoc = await PDFLib.PDFDocument.create();
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d", { alpha: false });
+              for (let p = 1; p <= pageCount; p++) {
+                const page = await jsDoc.getPage(p);
+                const vp = page.getViewport({ scale: 1.5 });
+                canvas.width = vp.width;
+                canvas.height = vp.height;
+                await page.render({ canvasContext: ctx, viewport: vp }).promise;
+                const imgDataUrl = canvas.toDataURL("image/jpeg", 0.92);
+                const imgBytes = _dataUrlToBytes(imgDataUrl);
+                const embedded = await newDoc.embedJpg(imgBytes);
+                const newPage = newDoc.addPage([vp.width, vp.height]);
+                newPage.drawImage(embedded, { x: 0, y: 0, width: vp.width, height: vp.height });
+              }
+              unlockedBytes = await newDoc.save();
+            } catch (eFallback) {
+              console.warn("Fallback gr\xE1fico falhou:", eFallback);
+            }
+          }
           if (!unlockedBytes) {
+            if (stderr.toLowerCase().includes("invalid password") || stderr.toLowerCase().includes("password")) {
+              _requiresPassword = true;
+              passwordGroup.style.display = "flex";
+              passwordInput.focus();
+              throw new Error("PASSWORD_REQUIRED");
+            }
+            if (stderr.toLowerCase().includes("memory") || stderr.toLowerCase().includes("alloc")) {
+              throw new Error("OUT_OF_MEMORY");
+            }
             throw new Error("Falha ao descriptografar documento.");
           }
           _updateProgress(85, "Validando documento...", "Confirmando texto selecion\xE1vel e p\xE1ginas...", "Etapa 3 / 3");
           await new Promise((r) => setTimeout(r, 20));
-          if (PDFLib) {
+          if (PDFLib && unlockedBytes.byteLength < 100 * 1024 * 1024) {
             try {
               const checkDoc = await PDFLib.PDFDocument.load(unlockedBytes);
               pageCount = checkDoc.getPageCount();
@@ -8471,8 +8537,10 @@ ${footerDelimiter}
           metaSize.textContent = _formatBytes(_unlockedPdfBlob.size);
           if (pdfjsLib2) {
             try {
-              const previewTask = pdfjsLib2.getDocument({ data: unlockedBytes.slice(0) });
+              const previewTask = pdfjsLib2.getDocument({ data: unlockedBytes });
               const previewDoc = await previewTask.promise;
+              pageCount = previewDoc.numPages || pageCount;
+              metaPages.textContent = pageCount;
               const firstPage = await previewDoc.getPage(1);
               const stageViewport = firstPage.getViewport({ scale: 1 });
               const scale = Math.min(260 / stageViewport.width, 240 / stageViewport.height);
@@ -8491,6 +8559,9 @@ ${footerDelimiter}
           _setViewState("empty");
           if (err.message === "PASSWORD_REQUIRED") {
             alert("Este documento exige senha de abertura v\xE1lida. Por favor, insira a senha no campo correspondente.");
+          } else if (err.message === "OUT_OF_MEMORY" || err.message && err.message.toLowerCase().includes("memory") || err.name === "RangeError") {
+            const sizeStr = _currentFile2 ? _formatBytes(_currentFile2.size) : "";
+            alert(`Mem\xF3ria do navegador insuficiente para processar este PDF de ${sizeStr}. Recomendamos fechar outras abas para liberar mem\xF3ria.`);
           } else {
             alert("Erro ao desbloquear o PDF. Verifique se o arquivo est\xE1 corrompido ou se a senha est\xE1 correta.");
           }
@@ -8910,7 +8981,7 @@ ${pageStr}
         if (clearInputBtn) clearInputBtn.style.display = "none";
         _setViewState("empty");
       }
-      function _dataUrlToBytes2(dataUrl) {
+      function _dataUrlToBytes3(dataUrl) {
         const parts = dataUrl.split(",");
         const bin = atob(parts[1]);
         const bytes = new Uint8Array(bin.length);
@@ -8959,7 +9030,7 @@ ${pageStr}
             const ctx = canvas.getContext("2d");
             await page.render({ canvasContext: ctx, viewport }).promise;
             const imgDataUrl = canvas.toDataURL("image/jpeg", quality);
-            const imgBytes = _dataUrlToBytes2(imgDataUrl);
+            const imgBytes = _dataUrlToBytes3(imgDataUrl);
             const embeddedImg = await newPdfDoc.embedJpg(imgBytes);
             const newPage = newPdfDoc.addPage([baseViewport.width, baseViewport.height]);
             newPage.drawImage(embeddedImg, {
@@ -9708,40 +9779,40 @@ ${pageStr}
           </div>
 
           <!-- Estado Resultado -->
-          <div class="pdf-stage-result" id="s-result-view" style="display: none;">
+          <div class="pdf-result-view" id="s-result-view" style="display: none;">
             <div class="pdf-result-header">
-              <div class="pdf-badge pdf-badge--success" id="s-result-badge">Divis\xE3o Conclu\xEDda</div>
-              <span class="pdf-result-sub" id="s-result-summary">Arquivos gerados com sucesso</span>
+              <span class="pdf-badge pdf-badge--success" id="s-result-badge">\u2713 Divis\xE3o Conclu\xEDda</span>
+              <span class="pdf-result-summary" id="s-result-summary">Arquivos gerados com sucesso</span>
             </div>
 
-            <!-- Canvas com miniatura da primeira p\xE1gina gerada -->
-            <div class="pdf-canvas-wrap">
+            <!-- Palco de Renderiza\xE7\xE3o de P\xE1gina -->
+            <div class="pdf-stage" id="s-stage">
               <canvas id="s-preview-canvas" class="pdf-preview-canvas"></canvas>
             </div>
 
-            <!-- M\xE9tricas T\xE9cnicas -->
-            <div class="pdf-meta-grid">
+            <!-- Metadados T\xE9cnicos dos Arquivos Extra\xEDdos -->
+            <div class="pdf-meta-bar">
               <div class="pdf-meta-item">
-                <span class="pdf-meta-label">Arquivos Criados</span>
-                <span class="pdf-meta-val" id="s-meta-files">1</span>
+                <span class="pdf-meta-label">Arquivos:</span>
+                <strong id="s-meta-files" class="pdf-meta-val">1</strong>
               </div>
               <div class="pdf-meta-item">
-                <span class="pdf-meta-label">P\xE1ginas Extra\xEDdas</span>
-                <span class="pdf-meta-val" id="s-meta-pages">1</span>
+                <span class="pdf-meta-label">P\xE1ginas:</span>
+                <strong id="s-meta-pages" class="pdf-meta-val">1</strong>
               </div>
               <div class="pdf-meta-item">
-                <span class="pdf-meta-label">Tamanho do Pacote</span>
-                <span class="pdf-meta-val" id="s-meta-size">0 KB</span>
+                <span class="pdf-meta-label">Tamanho:</span>
+                <strong id="s-meta-size" class="pdf-meta-val">0 KB</strong>
               </div>
             </div>
 
             <!-- Download e Novo PDF -->
-            <div class="pdf-result-actions">
+            <div class="pdf-actions-bar">
               <button type="button" id="s-result-clear-btn" class="pdf-export-btn pdf-export-btn--secondary" title="Dividir outro documento PDF">
                 ${ICONS.refresh(15)}
                 <span>Novo PDF</span>
               </button>
-              <button type="button" id="s-download-btn" class="btn-primary pdf-download-btn">
+              <button type="button" id="s-download-btn" class="pdf-primary-btn pdf-download-btn">
                 ${ICONS.download(15)}
                 <span id="s-download-btn-text">Baixar Arquivos</span>
               </button>
@@ -9775,7 +9846,7 @@ ${pageStr}
     if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
     return (bytes / 1048576).toFixed(2) + " MB";
   }
-  function _dataUrlToBytes(dataUrl) {
+  function _dataUrlToBytes2(dataUrl) {
     const parts = dataUrl.split(",");
     const bin = atob(parts[1]);
     const len = bin.length;
@@ -10091,7 +10162,7 @@ ${pageStr}
                 const ctx = canvas.getContext("2d");
                 await page.render({ canvasContext: ctx, viewport }).promise;
                 const imgDataUrl = canvas.toDataURL("image/jpeg", 0.9);
-                const bytes = _dataUrlToBytes(imgDataUrl);
+                const bytes = _dataUrlToBytes2(imgDataUrl);
                 const embedded = await newDoc.embedJpg(bytes);
                 const newPage = newDoc.addPage([viewport.width, viewport.height]);
                 newPage.drawImage(embedded, {

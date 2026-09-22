@@ -176,40 +176,40 @@ export function getPdfSplitHTML() {
           </div>
 
           <!-- Estado Resultado -->
-          <div class="pdf-stage-result" id="s-result-view" style="display: none;">
+          <div class="pdf-result-view" id="s-result-view" style="display: none;">
             <div class="pdf-result-header">
-              <div class="pdf-badge pdf-badge--success" id="s-result-badge">Divisão Concluída</div>
-              <span class="pdf-result-sub" id="s-result-summary">Arquivos gerados com sucesso</span>
+              <span class="pdf-badge pdf-badge--success" id="s-result-badge">✓ Divisão Concluída</span>
+              <span class="pdf-result-summary" id="s-result-summary">Arquivos gerados com sucesso</span>
             </div>
 
-            <!-- Canvas com miniatura da primeira página gerada -->
-            <div class="pdf-canvas-wrap">
+            <!-- Palco de Renderização de Página -->
+            <div class="pdf-stage" id="s-stage">
               <canvas id="s-preview-canvas" class="pdf-preview-canvas"></canvas>
             </div>
 
-            <!-- Métricas Técnicas -->
-            <div class="pdf-meta-grid">
+            <!-- Metadados Técnicos dos Arquivos Extraídos -->
+            <div class="pdf-meta-bar">
               <div class="pdf-meta-item">
-                <span class="pdf-meta-label">Arquivos Criados</span>
-                <span class="pdf-meta-val" id="s-meta-files">1</span>
+                <span class="pdf-meta-label">Arquivos:</span>
+                <strong id="s-meta-files" class="pdf-meta-val">1</strong>
               </div>
               <div class="pdf-meta-item">
-                <span class="pdf-meta-label">Páginas Extraídas</span>
-                <span class="pdf-meta-val" id="s-meta-pages">1</span>
+                <span class="pdf-meta-label">Páginas:</span>
+                <strong id="s-meta-pages" class="pdf-meta-val">1</strong>
               </div>
               <div class="pdf-meta-item">
-                <span class="pdf-meta-label">Tamanho do Pacote</span>
-                <span class="pdf-meta-val" id="s-meta-size">0 KB</span>
+                <span class="pdf-meta-label">Tamanho:</span>
+                <strong id="s-meta-size" class="pdf-meta-val">0 KB</strong>
               </div>
             </div>
 
             <!-- Download e Novo PDF -->
-            <div class="pdf-result-actions">
+            <div class="pdf-actions-bar">
               <button type="button" id="s-result-clear-btn" class="pdf-export-btn pdf-export-btn--secondary" title="Dividir outro documento PDF">
                 ${ICONS.refresh(15)}
                 <span>Novo PDF</span>
               </button>
-              <button type="button" id="s-download-btn" class="btn-primary pdf-download-btn">
+              <button type="button" id="s-download-btn" class="pdf-primary-btn pdf-download-btn">
                 ${ICONS.download(15)}
                 <span id="s-download-btn-text">Baixar Arquivos</span>
               </button>

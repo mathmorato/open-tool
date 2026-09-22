@@ -374,7 +374,84 @@
   stroke: var(--error, #ef4444);
 }
 
-.pdf-split-root .pdf-result-actions {
+/* ── Result View (Painel Direito de Saída) ────────────────────────────────── */
+.pdf-split-root .pdf-result-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+}
+
+.pdf-split-root .pdf-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.pdf-split-root .pdf-result-summary {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.pdf-split-root .pdf-stage {
+  width: 100%;
+  flex: 1;
+  min-height: 200px;
+  max-height: 250px;
+  border-radius: 0.625rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-input, var(--bg-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  box-sizing: border-box;
+}
+
+.pdf-split-root .pdf-preview-canvas {
+  max-width: 100%;
+  max-height: 230px;
+  height: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 0.25rem;
+}
+
+.pdf-split-root .pdf-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0.4rem 0.65rem;
+  background: var(--surface-input, var(--bg-primary));
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+}
+
+.pdf-split-root .pdf-meta-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.pdf-split-root .pdf-meta-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.pdf-split-root .pdf-meta-val {
+  font-size: 0.8125rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.pdf-split-root .pdf-actions-bar {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -382,7 +459,7 @@
   margin-top: auto;
 }
 
-.pdf-split-root .pdf-result-actions button {
+.pdf-split-root .pdf-actions-bar button {
   flex: 1;
 }
 
@@ -406,6 +483,37 @@
   background: var(--surface-card);
   border-color: var(--blue-primary, #2563EB);
   color: var(--blue-primary, #2563EB);
+}
+
+.pdf-split-root .pdf-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 1rem;
+  background: var(--blue-primary, #2563EB);
+  color: #FFFFFF !important;
+  border: 1px solid var(--blue-primary, #2563EB);
+  border-radius: 0.5rem;
+  font-size: 0.84375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
+}
+
+.pdf-split-root .pdf-primary-btn svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+.pdf-split-root .pdf-primary-btn:hover {
+  background: var(--blue-hover, #1D4ED8);
+  border-color: var(--blue-hover, #1D4ED8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
 }
 
 @media (max-width: 768px) {

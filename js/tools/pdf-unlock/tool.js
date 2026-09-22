@@ -151,7 +151,7 @@ export default {
       }
 
       try {
-        const loadingTask = pdfjsLib.getDocument({ data: _currentArrayBuffer.slice(0) });
+        const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(_currentArrayBuffer) });
         loadingTask.onPassword = (callback, reason) => {
           _requiresPassword = true;
           lockBadge.textContent = 'Senha de Abertura';
@@ -226,77 +226,156 @@ export default {
       const createQpdf = (typeof window !== 'undefined' && window.createQpdfModule) || globalThis.createQpdfModule;
 
       const password = passwordInput.value.trim();
+      let stderr = '';
 
       try {
         let unlockedBytes = null;
         let pageCount = 1;
-        const copyBuf = _currentArrayBuffer.slice(0);
 
-        // 1. Motor Primário: QPDF WebAssembly (100% nativo, sem perda de texto vetorial, idêntico a iLovePDF)
+        // 1. Motor Primário: QPDF WebAssembly (100% nativo C++, preserva texto vetorial e OCR perfeitamente)
         if (createQpdf) {
           _updateProgress(35, 'Descriptografando fluxos e permissões...', 'Removendo travas de cópia, seleção e impressão (QPDF C++/Wasm)...', 'Etapa 2 / 3');
           await new Promise(r => setTimeout(r, 25));
 
-          const qpdf = await createQpdf({
-            locateFile: (file) => {
-              if (file.endsWith('.wasm')) return 'js/lib/qpdf.wasm';
-              return 'js/lib/' + file;
+          try {
+            const qpdf = await createQpdf({
+              locateFile: (file) => {
+                const rel = file.endsWith('.wasm') ? 'js/lib/qpdf.wasm' : 'js/lib/' + file;
+                if (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:') {
+                  return new URL(rel, window.location.href).href;
+                }
+                return rel;
+              }
+            });
+
+            const inPath = '/input.pdf';
+            const outPath = '/output.pdf';
+            
+            // Grava o buffer diretamente no MEMFS sem duplicar no heap JS
+            qpdf.FS.writeFile(inPath, new Uint8Array(_currentArrayBuffer));
+
+            qpdf.printErr = (t) => { stderr += t + '\n'; };
+
+            // Executa chamada do QPDF
+            const args = ['--warning-exit-0'];
+            if (password && password.length > 0) {
+              args.push(`--password=${password}`);
             }
-          });
+            args.push(inPath, '--decrypt', outPath);
 
-          const inPath = '/input.pdf';
-          const outPath = '/output.pdf';
-          qpdf.FS.writeFile(inPath, new Uint8Array(copyBuf));
+            try {
+              qpdf.callMain(args);
+            } catch (cErr) {
+              console.warn('QPDF callMain:', cErr);
+            }
 
-          const args = [];
-          if (password && password.length > 0) {
-            args.push(`--password=${password}`);
-          } else {
-            args.push('--password=');
-          }
-          args.push(inPath, '--decrypt', outPath);
+            // Tenta ler o arquivo de saída gerado
+            try {
+              const cand = qpdf.FS.readFile(outPath);
+              if (cand && cand.length > 100) {
+                unlockedBytes = cand;
+              }
+            } catch (_) {}
 
-          let stderr = '';
-          qpdf.printErr = (t) => { stderr += t + '\n'; };
+            // Se não gerou e nenhuma senha foi informada, tenta sintaxe alternativa com --password=
+            if (!unlockedBytes && (!password || password.length === 0)) {
+              try {
+                qpdf.callMain(['--warning-exit-0', '--password=', inPath, '--decrypt', outPath]);
+                const cand2 = qpdf.FS.readFile(outPath);
+                if (cand2 && cand2.length > 100) {
+                  unlockedBytes = cand2;
+                }
+              } catch (_) {}
+            }
 
-          const exitCode = qpdf.callMain(args);
-          if (exitCode === 0) {
-            unlockedBytes = qpdf.FS.readFile(outPath);
+            // Limpeza de buffers temporários no FS virtual
             try { qpdf.FS.unlink(inPath); } catch (_) {}
             try { qpdf.FS.unlink(outPath); } catch (_) {}
-          } else {
-            try { qpdf.FS.unlink(inPath); } catch (_) {}
-            try { qpdf.FS.unlink(outPath); } catch (_) {}
-            if (exitCode === 2 || stderr.toLowerCase().includes('invalid password') || stderr.toLowerCase().includes('password')) {
+
+            if (!unlockedBytes && (stderr.toLowerCase().includes('invalid password') || stderr.toLowerCase().includes('user password'))) {
               _requiresPassword = true;
               passwordGroup.style.display = 'flex';
               passwordInput.focus();
               throw new Error('PASSWORD_REQUIRED');
             }
-            console.warn('QPDF falhou com código', exitCode, stderr);
+
+          } catch (qErr) {
+            if (qErr.message === 'PASSWORD_REQUIRED') throw qErr;
+            const qMsg = (qErr && qErr.message) || String(qErr);
+            if (qMsg.includes('memory') || qMsg.includes('alloc') || qMsg.includes('Cannot enlarge')) {
+              throw new Error('OUT_OF_MEMORY');
+            }
+            console.warn('Motor QPDF falhou, tentando fallback:', qErr);
           }
         }
 
-        // 2. Fallback via PDF-Lib direto se QPDF não estiver disponível
-        if (!unlockedBytes && PDFLib) {
+        // 2. Fallback via PDF-Lib direto (sem perda de qualidade)
+        if (!unlockedBytes && PDFLib && _currentArrayBuffer.byteLength < 120 * 1024 * 1024) {
           _updateProgress(55, 'Processando via PDF-Lib...', 'Reconstruindo árvore de objetos sem flags de proteção...', 'Etapa 2 / 3');
           await new Promise(r => setTimeout(r, 20));
           try {
-            const srcDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+            const srcDoc = await PDFLib.PDFDocument.load(new Uint8Array(_currentArrayBuffer), { ignoreEncryption: true });
             unlockedBytes = await srcDoc.save();
           } catch (eLib) {
             console.warn('PDF-Lib direto falhou:', eLib);
           }
         }
 
+        // 3. Fallback Gráfico via PDF.js (à prova de falhas para PDFs com restrição de permissão)
+        if (!unlockedBytes && pdfjsLib && PDFLib && _currentArrayBuffer.byteLength < 120 * 1024 * 1024) {
+          _updateProgress(65, 'Liberando permissões via motor gráfico...', 'Reconstruindo páginas para documento 100% desbloqueado...', 'Etapa 2 / 3');
+          await new Promise(r => setTimeout(r, 20));
+          try {
+            const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(_currentArrayBuffer) });
+            if (password && password.length > 0) {
+              loadingTask.onPassword = (cb) => cb(password);
+            }
+            const jsDoc = await loadingTask.promise;
+            pageCount = jsDoc.numPages;
+
+            const newDoc = await PDFLib.PDFDocument.create();
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d', { alpha: false });
+
+            for (let p = 1; p <= pageCount; p++) {
+              const page = await jsDoc.getPage(p);
+              const vp = page.getViewport({ scale: 1.5 });
+              canvas.width = vp.width;
+              canvas.height = vp.height;
+              await page.render({ canvasContext: ctx, viewport: vp }).promise;
+
+              const imgDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+              const imgBytes = _dataUrlToBytes(imgDataUrl);
+              const embedded = await newDoc.embedJpg(imgBytes);
+
+              const newPage = newDoc.addPage([vp.width, vp.height]);
+              newPage.drawImage(embedded, { x: 0, y: 0, width: vp.width, height: vp.height });
+            }
+
+            unlockedBytes = await newDoc.save();
+          } catch (eFallback) {
+            console.warn('Fallback gráfico falhou:', eFallback);
+          }
+        }
+
         if (!unlockedBytes) {
+          if (stderr.toLowerCase().includes('invalid password') || stderr.toLowerCase().includes('password')) {
+            _requiresPassword = true;
+            passwordGroup.style.display = 'flex';
+            passwordInput.focus();
+            throw new Error('PASSWORD_REQUIRED');
+          }
+          if (stderr.toLowerCase().includes('memory') || stderr.toLowerCase().includes('alloc')) {
+            throw new Error('OUT_OF_MEMORY');
+          }
           throw new Error('Falha ao descriptografar documento.');
         }
 
         _updateProgress(85, 'Validando documento...', 'Confirmando texto selecionável e páginas...', 'Etapa 3 / 3');
         await new Promise(r => setTimeout(r, 20));
 
-        if (PDFLib) {
+        // Obter contagem de páginas levemente
+        if (PDFLib && unlockedBytes.byteLength < 100 * 1024 * 1024) {
           try {
             const checkDoc = await PDFLib.PDFDocument.load(unlockedBytes);
             pageCount = checkDoc.getPageCount();
@@ -311,11 +390,14 @@ export default {
         metaPages.textContent = pageCount;
         metaSize.textContent = _formatBytes(_unlockedPdfBlob.size);
 
-        // Renderiza thumbnail da primeira página no canvas
+        // Renderiza thumbnail da primeira página no canvas via PDF.js de modo streaming
         if (pdfjsLib) {
           try {
-            const previewTask = pdfjsLib.getDocument({ data: unlockedBytes.slice(0) });
+            const previewTask = pdfjsLib.getDocument({ data: unlockedBytes });
             const previewDoc = await previewTask.promise;
+            pageCount = previewDoc.numPages || pageCount;
+            metaPages.textContent = pageCount;
+
             const firstPage = await previewDoc.getPage(1);
             const stageViewport = firstPage.getViewport({ scale: 1 });
             const scale = Math.min(260 / stageViewport.width, 240 / stageViewport.height);
@@ -337,6 +419,9 @@ export default {
         _setViewState('empty');
         if (err.message === 'PASSWORD_REQUIRED') {
           alert('Este documento exige senha de abertura válida. Por favor, insira a senha no campo correspondente.');
+        } else if (err.message === 'OUT_OF_MEMORY' || (err.message && err.message.toLowerCase().includes('memory')) || err.name === 'RangeError') {
+          const sizeStr = _currentFile ? _formatBytes(_currentFile.size) : '';
+          alert(`Memória do navegador insuficiente para processar este PDF de ${sizeStr}. Recomendamos fechar outras abas para liberar memória.`);
         } else {
           alert('Erro ao desbloquear o PDF. Verifique se o arquivo está corrompido ou se a senha está correta.');
         }
