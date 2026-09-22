@@ -227,10 +227,14 @@ export const ICONS = {
 
   toolCompress: (size = 18, cls = '') => `
     <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
-      <polyline points="4 14 10 14 10 20"/>
-      <polyline points="20 10 14 10 14 4"/>
-      <line x1="14" y1="10" x2="21" y2="3"/>
-      <line x1="3" y1="21" x2="10" y2="14"/>
+      <path d="M13 2H7.5A1.5 1.5 0 0 0 6 3.5 C 6 8, 8 10, 8 12 C 8 14, 6 16, 6 20.5 A 1.5 1.5 0 0 0 7.5 22 h9 A 1.5 1.5 0 0 0 18 20.5 C 18 16, 16 14, 16 12 C 16 10, 18 8, 18 7 L13 2z"/>
+      <polyline points="13 2 13 7 18 7"/>
+      <line x1="9.5" y1="9.5" x2="12" y2="9.5"/>
+      <line x1="9.5" y1="15" x2="14.5" y2="15"/>
+      <line x1="1.5" y1="12" x2="6.8" y2="12"/>
+      <polyline points="4.8 9.5 6.8 12 4.8 14.5"/>
+      <line x1="22.5" y1="12" x2="17.2" y2="12"/>
+      <polyline points="19.2 9.5 17.2 12 19.2 14.5"/>
     </svg>`,
 
   toolMerge: (size = 18, cls = '') => `
