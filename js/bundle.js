@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.4.8",
+    VERSION: "v.2.4.9",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -3053,23 +3053,17 @@
     </svg>`,
     toolCompress: (size = 18, cls = "") => `
     <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
-      <path d="M13 2H7.5A1.5 1.5 0 0 0 6 3.5 C 6 8, 8 10, 8 12 C 8 14, 6 16, 6 20.5 A 1.5 1.5 0 0 0 7.5 22 h9 A 1.5 1.5 0 0 0 18 20.5 C 18 16, 16 14, 16 12 C 16 10, 18 8, 18 7 L13 2z"/>
-      <polyline points="13 2 13 7 18 7"/>
-      <line x1="9.5" y1="9.5" x2="12" y2="9.5"/>
-      <line x1="9.5" y1="15" x2="14.5" y2="15"/>
-      <line x1="1.5" y1="12" x2="6.8" y2="12"/>
-      <polyline points="4.8 9.5 6.8 12 4.8 14.5"/>
-      <line x1="22.5" y1="12" x2="17.2" y2="12"/>
-      <polyline points="19.2 9.5 17.2 12 19.2 14.5"/>
+      <path d="M8.5 3h7A1.5 1.5 0 0 1 17 4.5 C 17 8.5, 15.5 10.5, 15.5 12 C 15.5 13.5, 17 15.5, 17 19.5 A 1.5 1.5 0 0 1 15.5 21 h-7 A 1.5 1.5 0 0 1 7 19.5 C 7 15.5, 8.5 13.5, 8.5 12 C 8.5 10.5, 7 8.5, 7 4.5 A 1.5 1.5 0 0 1 8.5 3z"/>
+      <line x1="10" y1="9.5" x2="14" y2="9.5"/>
+      <line x1="10" y1="14" x2="12.5" y2="14"/>
+      <path d="M3.5 5.5 C 5.5 9, 5.5 15, 3.5 18.5" class="icon-accent"/>
+      <path d="M20.5 5.5 C 18.5 9, 18.5 15, 20.5 18.5" class="icon-accent"/>
     </svg>`,
     toolMerge: (size = 18, cls = "") => `
     <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">
-      <path d="M8 5V3.5A1.5 1.5 0 0 1 9.5 2h6l4.5 4.5v9.5a1.5 1.5 0 0 1-1.5 1.5H17"/>
-      <polyline points="15.5 2 15.5 6.5 20 6.5"/>
-      <path d="M4 7a2 2 0 0 1 2-2h6.5L17 9.5V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z"/>
-      <polyline points="12.5 5 12.5 9.5 17 9.5"/>
-      <path d="M7.5 15a2.2 2.2 0 0 0 3.1 0l1.4-1.4a2.2 2.2 0 0 0-3.1-3.1l-.7.7"/>
-      <path d="M12.5 11a2.2 2.2 0 0 0-3.1 0l-1.4 1.4a2.2 2.2 0 0 0 3.1 3.1l.7-.7"/>
+      <path d="M8 8V3.5A1.5 1.5 0 0 1 9.5 2h11A1.5 1.5 0 0 1 22 3.5v11a1.5 1.5 0 0 1-1.5 1.5H16"/>
+      <path d="M16 16v4.5A1.5 1.5 0 0 1 14.5 22h-11A1.5 1.5 0 0 1 2 20.5v-11A1.5 1.5 0 0 1 3.5 8H8"/>
+      <rect x="8" y="8" width="8" height="8" rx="2" class="icon-accent"/>
     </svg>`,
     toolSplit: (size = 18, cls = "") => `
     <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="${cls}">

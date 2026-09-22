@@ -2968,3 +2968,15 @@ body.dark-mode .consolidation-track,
   flex-shrink: 0;
 }
 
+/* Realce sutil em ícones lineares modulares */
+.icon-accent {
+  stroke: var(--blue-primary, #2563EB);
+  transition: stroke var(--transition-fast, 150ms ease);
+}
+
+.btn-primary .icon-accent,
+.tool-nav-btn.active .icon-accent {
+  stroke: currentColor;
+}
+
+
