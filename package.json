@@ -1,6 +1,6 @@
 {
   "name": "open-tool",
-  "version": "2.4.9",
+  "version": "2.5.0",
   "description": "Open Tool: Plataforma de ferramentas universais 100% client-side (doc2md, QR Code e mais)",
   "main": "index.html",
   "type": "module",

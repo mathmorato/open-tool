@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.4.9",
+    VERSION: "v.2.5.0",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -7006,32 +7006,24 @@ ${footerDelimiter}
         </p>
       </section>
 
-      <!-- Grade de Ferramentas (PDF24 Tools Style) -->
+      <!-- Grade de Ferramentas Compactas (Hub Grid) -->
       <div class="hub-grid" id="hub-tools-grid">
         ${tools.map((tool4) => {
-      let badge = "FERRAMENTA";
-      let features = ["Processamento 100% no navegador", "Zero telemetria de dados"];
+      let badge = "UTILIT\xC1RIO";
       if (tool4.id === "doc2md") {
         badge = "CONVERSOR";
-        features = ["Word (.docx), Excel (.xlsx), PDF, PPTX", "Extra\xE7\xE3o autom\xE1tica de pacotes .ZIP e .RAR", "Gera\xE7\xE3o de Markdown limpo e formatado"];
       } else if (tool4.id === "qrcode") {
         badge = "GERADOR";
-        features = ["Gera\xE7\xE3o imediata para Links e Textos", "Exporta\xE7\xE3o em PNG de alta resolu\xE7\xE3o e SVG", "Customiza\xE7\xE3o de cores, tamanho e margem"];
       } else if (tool4.id === "img2vector") {
         badge = "VETORIZADOR";
-        features = ["Raster para SVG vetorial (PNG, JPG, WEBP, BMP)", "Curvas B\xE9zier matem\xE1ticas e ajuste fino de cores", "Exporta\xE7\xE3o e c\xF3pia direta de c\xF3digo SVG"];
       } else if (tool4.id === "pdf-unlock") {
         badge = "DESBLOQUEADOR";
-        features = ["Remo\xE7\xE3o de senhas de leitura e restri\xE7\xF5es", "Desbloqueio de permiss\xF5es de c\xF3pia e impress\xE3o", "Descriptografia 100% local no navegador"];
       } else if (tool4.id === "pdf-compress") {
         badge = "COMPRESSOR";
-        features = ["Reamostragem inteligente de imagens", "Presets de 72, 100 e 150 DPI", "M\xE9tricas de redu\xE7\xE3o e economia de bytes"];
       } else if (tool4.id === "pdf-merge") {
         badge = "MESCLADOR";
-        features = ["Jun\xE7\xE3o de m\xFAltiplos PDFs em arquivo \xFAnico", "Reordena\xE7\xE3o sequencial de documentos", "Gera\xE7\xE3o instant\xE2nea e download \xFAnico"];
       } else if (tool4.id === "pdf-split") {
         badge = "DIVISOR";
-        features = ["Separa\xE7\xE3o por intervalos, p\xE1ginas ou blocos", "Desmembramento em 1 PDF por p\xE1gina em .ZIP", "Extra\xE7\xE3o cir\xFArgica de p\xE1ginas selecionadas"];
       }
       return `
             <article class="hub-card" data-tool-card="${tool4.id}" tabindex="0" role="button" aria-label="Abrir ferramenta ${tool4.label}">
@@ -7044,22 +7036,12 @@ ${footerDelimiter}
 
               <div class="hub-card-content">
                 <h2 class="hub-card-title">${tool4.label}</h2>
-                <p class="hub-card-desc">${tool4.description}</p>
-
-                <ul class="hub-card-features">
-                  ${features.map((f) => `
-                    <li>
-                      ${ICONS.check(14)}
-                      <span>${f}</span>
-                    </li>
-                  `).join("")}
-                </ul>
               </div>
 
               <div class="hub-card-action">
                 <button type="button" class="btn btn-primary hub-card-btn" data-open-tool="${tool4.id}">
                   <span>Abrir Ferramenta</span>
-                  ${ICONS.arrowRight(16)}
+                  ${ICONS.arrowRight(14)}
                 </button>
               </div>
             </article>
@@ -7070,18 +7052,18 @@ ${footerDelimiter}
         <article class="hub-card hub-card--extensible" title="Arquitetura modular aberta para novas ferramentas">
           <div class="hub-card-top">
             <div class="hub-card-icon-wrap hub-card-icon-wrap--dashed" aria-hidden="true">
-              ${ICONS.plus(20)}
+              ${ICONS.plus(18)}
             </div>
             <span class="hub-card-badge hub-card-badge--neutral">MODULAR</span>
           </div>
 
           <div class="hub-card-content">
             <h2 class="hub-card-title">Novas Ferramentas</h2>
-            <p class="hub-card-desc">
-              Estrutura modular plug\xE1vel pronta para receber novos utilit\xE1rios de produtividade, formata\xE7\xE3o e convers\xE3o local.
-            </p>
+          </div>
+
+          <div class="hub-card-action">
             <div class="hub-card-hint">
-              <span>Plug &amp; Play \u2022 100% Client-Side</span>
+              <span>Em breve novas adi\xE7\xF5es</span>
             </div>
           </div>
         </article>
