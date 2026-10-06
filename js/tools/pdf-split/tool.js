@@ -15,6 +15,7 @@ let _currentMode = 'ranges'; // 'ranges' | 'extract' | 'all' | 'every'
 let _outputBlob = null;
 let _isZip = false;
 let _downloadName = 'documentos_divididos.zip';
+let _busy = false; // impede divisões simultâneas (duplo clique)
 
 function _on(element, event, handler) {
   if (!element) return;
@@ -227,7 +228,7 @@ export default {
       sumOutCount.textContent = `${count} ${count === 1 ? 'arquivo' : 'arquivos'}`;
 
       if (_currentNumPages > 0 && count > 0) {
-        splitBtn.disabled = false;
+        splitBtn.disabled = _busy;
         splitBtnText.textContent = count === 1 ? 'Extrair PDF Agora' : `Dividir em ${count} PDFs`;
       } else {
         splitBtn.disabled = true;
@@ -250,8 +251,21 @@ export default {
     }
 
     async function _handleFile(file) {
-      _currentFile = file;
-      _currentArrayBuffer = await file.arrayBuffer();
+      if (_busy) return;
+      try {
+        _currentFile = file;
+        _currentArrayBuffer = await file.arrayBuffer();
+      } catch (err) {
+        console.error('Falha ao ler o arquivo:', err);
+        alert('Não foi possível ler o arquivo selecionado.');
+        _reset();
+        return;
+      }
+
+      // Um novo arquivo invalida qualquer resultado anterior
+      _outputBlob = null;
+      _isZip = false;
+      _setViewState('empty');
 
       filenameEl.textContent = file.name;
       filesizeEl.textContent = _formatBytes(file.size);
@@ -259,15 +273,15 @@ export default {
       fileLoadedBox.style.display = 'flex';
       if (clearInputBtn) clearInputBtn.style.display = 'inline-flex';
 
-      await _ensureLibs();
-      const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
-
+      let task = null;
       try {
+        await _ensureLibs();
+        const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
         const copyBuf = _currentArrayBuffer.slice(0);
         let numPgs = 1;
 
         if (pdfjsLib) {
-          const task = pdfjsLib.getDocument({ data: copyBuf });
+          task = pdfjsLib.getDocument({ data: copyBuf });
           const doc = await task.promise;
           numPgs = doc.numPages;
 
@@ -316,6 +330,8 @@ export default {
         console.error('Erro ao ler PDF:', err);
         alert('Não foi possível ler as páginas do documento. O arquivo pode estar protegido por senha.');
         _reset();
+      } finally {
+        if (task) task.destroy();
       }
     }
 
@@ -342,32 +358,39 @@ export default {
 
     async function _doSplit() {
       const partitions = _calcPartitions();
-      if (!_currentArrayBuffer || partitions.length === 0) return;
+      if (!_currentArrayBuffer || partitions.length === 0 || _busy) return;
+      _busy = true;
+      splitBtn.disabled = true;
 
       _setViewState('loading');
       _updateProgress(5, 'Iniciando divisão...', 'Carregando documento e estruturando partições...', `0 / ${partitions.length} partes`);
       await new Promise(r => setTimeout(r, 25));
 
-      await _ensureLibs();
-      const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
-      const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
-      const JSZip = (typeof window !== 'undefined' && window.JSZip) || globalThis.JSZip;
-
-      if (!PDFLib) {
-        alert('Biblioteca PDFLib não disponível.');
-        _setViewState('empty');
-        return;
-      }
-
+      let jsTask = null; // documento PDF.js compartilhado por todas as partições do fallback
       try {
+        await _ensureLibs();
+        const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
+        const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
+        const JSZip = (typeof window !== 'undefined' && window.JSZip) || globalThis.JSZip;
+        if (!PDFLib) throw new Error('Biblioteca PDFLib não disponível.');
+
         const copyBuf = _currentArrayBuffer.slice(0);
         let srcDoc = null;
         let usePdfJsFallback = false;
 
         try {
           srcDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+          // Fluxos ainda cifrados seriam copiados ilegíveis: usa a rota de rasterização
+          if (srcDoc.isEncrypted) usePdfJsFallback = true;
         } catch (loadErr) {
           usePdfJsFallback = true;
+        }
+
+        let jsDoc = null;
+        if (usePdfJsFallback) {
+          if (!pdfjsLib) throw new Error('Documento criptografado e PDF.js indisponível.');
+          jsTask = pdfjsLib.getDocument({ data: copyBuf.slice(0) });
+          jsDoc = await jsTask.promise;
         }
 
         const generatedFiles = [];
@@ -388,17 +411,15 @@ export default {
 
           const newDoc = await PDFLib.PDFDocument.create();
 
-          if (!usePdfJsFallback && srcDoc) {
+          if (!usePdfJsFallback) {
             const copiedPages = await newDoc.copyPages(srcDoc, part.indices);
             copiedPages.forEach(p => newDoc.addPage(p));
-          } else if (pdfjsLib) {
+          } else {
             // Fallback via PDF.js caso a criptografia do arquivo impeça cópia nativa
-            const loadingTask = pdfjsLib.getDocument({ data: copyBuf.slice(0) });
-            const jsDoc = await loadingTask.promise;
-
             for (const pageIdx of part.indices) {
               const page = await jsDoc.getPage(pageIdx + 1);
-              const viewport = page.getViewport({ scale: 1.5 });
+              const pageVp = page.getViewport({ scale: 1 });     // dimensões reais da página (pt)
+              const viewport = page.getViewport({ scale: 1.5 }); // resolução da rasterização
               const canvas = document.createElement('canvas');
               canvas.width = viewport.width;
               canvas.height = viewport.height;
@@ -409,12 +430,12 @@ export default {
               const bytes = _dataUrlToBytes(imgDataUrl);
               const embedded = await newDoc.embedJpg(bytes);
 
-              const newPage = newDoc.addPage([viewport.width, viewport.height]);
+              const newPage = newDoc.addPage([pageVp.width, pageVp.height]);
               newPage.drawImage(embedded, {
                 x: 0,
                 y: 0,
-                width: viewport.width,
-                height: viewport.height
+                width: pageVp.width,
+                height: pageVp.height
               });
             }
           }
@@ -465,8 +486,8 @@ export default {
 
         // Renderiza thumbnail da primeira página do primeiro arquivo gerado
         if (pdfjsLib && generatedFiles[0]) {
+          const previewTask = pdfjsLib.getDocument({ data: generatedFiles[0].bytes.slice(0) });
           try {
-            const previewTask = pdfjsLib.getDocument({ data: generatedFiles[0].bytes.slice(0) });
             const previewDoc = await previewTask.promise;
             const firstPage = await previewDoc.getPage(1);
             const stageVp = firstPage.getViewport({ scale: 1 });
@@ -479,6 +500,8 @@ export default {
             await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
           } catch (e) {
             console.warn('Erro ao renderizar thumbnail gerada:', e);
+          } finally {
+            previewTask.destroy();
           }
         }
 
@@ -488,6 +511,10 @@ export default {
         console.error('Falha ao dividir PDF:', err);
         _setViewState('empty');
         alert('Erro ao processar a divisão do PDF. Verifique os intervalos informados.');
+      } finally {
+        if (jsTask) jsTask.destroy();
+        _busy = false;
+        _updateSummary();
       }
     }
 
@@ -568,5 +595,7 @@ export default {
     _currentNumPages = 0;
     _outputBlob = null;
     _isZip = false;
+    _busy = false;
+    _downloadName = 'documentos_divididos.zip';
   }
 };

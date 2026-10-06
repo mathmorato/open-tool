@@ -21,7 +21,15 @@ export async function parsePdf(file, onProgress = null) {
   const arrayBuffer = await file.arrayBuffer();
   const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
   const pdfDoc = await loadingTask.promise;
+  try {
+    return await extractPdfMarkdown(pdfDoc, file, onProgress);
+  } finally {
+    // Libera o documento e o worker do PDF.js (evita acúmulo de threads em lotes grandes)
+    loadingTask.destroy();
+  }
+}
 
+async function extractPdfMarkdown(pdfDoc, file, onProgress) {
   const docTitle = file.name.replace(/\.pdf$/i, '');
   const pagesMarkdown = [`# ${docTitle}\n`];
 

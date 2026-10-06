@@ -179,7 +179,7 @@ export const MIME_TYPE_MAP = {
 };
 
 export const APP_CONFIG = {
-  VERSION: 'v.2.5.0',
+  VERSION: 'v.2.5.1',
   APP_NAME: 'Open Tool',
   TAGLINE: 'Open Tool • Ferramentas Universais 100% Client-Side',
   REPO_URL: 'https://github.com/mathmorato/open-tool',
@@ -209,11 +209,9 @@ export const APP_CONFIG = {
     TURNDOWN: 'https://cdnjs.cloudflare.com/ajax/libs/turndown/7.2.0/turndown.min.js',
     TURNDOWN_GFM: 'https://cdn.jsdelivr.net/npm/turndown-plugin-gfm@1.0.2/dist/turndown-plugin-gfm.min.js',
     SHEETJS: 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js',
-    JSZIP: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+    JSZIP: 'js/lib/jszip.min.js', // cópia local (sem dependência de rede)
     PDFJS: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
-    PDFJS_WORKER: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
-    MARKED: 'https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js',
-    DOMPURIFY: 'https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js'
+    PDFJS_WORKER: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
   },
 
   // Pacotes compactados suportados para extração automática client-side em memória
@@ -282,9 +280,21 @@ export const APP_CONFIG = {
 };
 
 /**
- * Utilitário para injeção dinâmica de scripts com caching de promessa
+ * Utilitário para injeção dinâmica de scripts com caching de promessa.
+ * Bibliotecas locais (js/lib/) são carregadas sob demanda tanto em HTTP(S) quanto em file://.
  */
 const loadedScripts = new Map();
+
+// Globais que indicam que a biblioteca já está disponível (casamento pelo nome exato do arquivo)
+const SCRIPT_GLOBALS = {
+  'pdf-lib.min.js': 'PDFLib',
+  'pdf.min.js': 'pdfjsLib',
+  'qrcodegen.js': 'qrcodegen',
+  'imagetracer.js': 'ImageTracer',
+  'jszip.min.js': 'JSZip',
+  'qpdf.js': 'createQpdfModule',
+  'qpdf-wasm-binary.js': '__QPDF_WASM_BYTES__'
+};
 
 export function loadScript(src) {
   if (typeof document === 'undefined') {
@@ -295,74 +305,28 @@ export function loadScript(src) {
     return loadedScripts.get(src);
   }
 
-  // Se o elemento já existe no DOM com dataset.loaded = true
-  const existing = typeof document !== 'undefined' ? document.querySelector(`script[src="${src}"]`) : null;
-  if (existing && existing.dataset.loaded === 'true') {
+  const fileName = src.split('?')[0].split('/').pop();
+  const globalName = SCRIPT_GLOBALS[fileName];
+  if (globalName && typeof window !== 'undefined' && typeof window[globalName] !== 'undefined') {
     return Promise.resolve();
   }
 
-  // Verifica se bibliotecas conhecidas já foram carregadas no escopo global
-  if (typeof window !== 'undefined') {
-    if ((src.includes('pdf-lib') || src.includes('pdf_lib')) && window.PDFLib) {
-      if (existing) existing.dataset.loaded = 'true';
-      return Promise.resolve();
-    }
-    if (src.includes('pdf.min.js') && window.pdfjsLib) {
-      if (existing) existing.dataset.loaded = 'true';
-      return Promise.resolve();
-    }
-    if (src.includes('qrcodegen') && window.qrcodegen) {
-      if (existing) existing.dataset.loaded = 'true';
-      return Promise.resolve();
-    }
-    if (src.includes('imagetracer') && window.ImageTracer) {
-      if (existing) existing.dataset.loaded = 'true';
-      return Promise.resolve();
-    }
-    if ((src.includes('jszip') || src.includes('JSZip')) && window.JSZip) {
-      if (existing) existing.dataset.loaded = 'true';
-      return Promise.resolve();
-    }
-    if (src.includes('qpdf') && window.createQpdfModule) {
-      if (existing) existing.dataset.loaded = 'true';
-      return Promise.resolve();
-    }
-  }
-
   const promise = new Promise((resolve, reject) => {
-    if (existing) {
-      if (existing.dataset.loaded === 'true') return resolve();
-
-      let settled = false;
-      const onDone = () => {
-        if (!settled) {
-          settled = true;
-          existing.dataset.loaded = 'true';
-          resolve();
-        }
-      };
-
-      existing.addEventListener('load', onDone);
-      existing.addEventListener('error', (err) => reject(err));
-
-      // Se o script já terminou de carregar no DOM (ou documento pronto)
-      if (existing.readyState === 'complete' || existing.readyState === 'loaded' || (document && document.readyState === 'complete')) {
-        setTimeout(onDone, 10);
-      }
-      return;
-    }
-
-    if (typeof document === 'undefined') return resolve();
-
     const script = document.createElement('script');
     script.src = src;
     script.async = true;
-    script.crossOrigin = 'anonymous';
+    // CORS só se aplica a origens remotas; em file:// o modo CORS bloquearia scripts locais
+    if (/^https?:/i.test(src)) script.crossOrigin = 'anonymous';
     script.onload = () => {
       script.dataset.loaded = 'true';
       resolve();
     };
-    script.onerror = (e) => reject(new Error(`Falha ao carregar biblioteca: ${src}`));
+    script.onerror = () => {
+      // Permite nova tentativa em vez de cachear a falha para sempre
+      loadedScripts.delete(src);
+      script.remove();
+      reject(new Error(`Falha ao carregar biblioteca: ${src}`));
+    };
     document.head.appendChild(script);
   });
 

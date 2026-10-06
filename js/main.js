@@ -17,31 +17,36 @@ function initTheme() {
   const iconSun    = document.getElementById('theme-icon-sun');
   const iconMoon   = document.getElementById('theme-icon-moon');
 
-  function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    const isDark = theme === 'dark' ||
-      (theme === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    if (iconSun)  iconSun.style.display  = isDark  ? 'none' : '';
-    if (iconMoon) iconMoon.style.display = isDark  ? '' : 'none';
+  const media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+  function readPreference() {
+    try { return localStorage.getItem(APP_CONFIG.STORAGE_KEYS.THEME) || 'system'; } catch { return 'system'; }
   }
 
-  const stored = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.THEME) || 'system';
-  applyTheme(stored);
+  // O atributo data-theme sempre recebe o tema efetivo (light/dark), pois o CSS
+  // só define tokens para [data-theme="dark"]; a preferência "system" fica no storage.
+  function applyTheme(preference) {
+    const isDark = preference === 'dark' || (preference !== 'light' && !!media && media.matches);
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    if (iconSun)  iconSun.style.display  = isDark ? 'none' : '';
+    if (iconMoon) iconMoon.style.display = isDark ? '' : 'none';
+  }
+
+  applyTheme(readPreference());
 
   if (toggleBtn) {
     toggleBtn.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme') || 'system';
-      const next = current === 'dark' ? 'light' : 'dark';
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       applyTheme(next);
-      localStorage.setItem(APP_CONFIG.STORAGE_KEYS.THEME, next);
+      try { localStorage.setItem(APP_CONFIG.STORAGE_KEYS.THEME, next); } catch { /* storage indisponível */ }
     });
   }
 
-  // Observa mudanças no sistema
-  if (window.matchMedia) {
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-      const stored = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.THEME) || 'system';
-      if (stored === 'system') applyTheme('system');
+  // Acompanha mudanças do sistema enquanto a preferência for "system"
+  if (media) {
+    media.addEventListener('change', () => {
+      if (readPreference() === 'system') applyTheme('system');
     });
   }
 }
@@ -57,9 +62,32 @@ function initVersion() {
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────
 
+// ── Drag & Drop global ────────────────────────────────────────────────────
+
+// Arquivo solto fora de uma dropzone não deve fazer o navegador abrir/navegar
+// para ele (o que descartaria o estado de qualquer ferramenta).
+function initDropGuard() {
+  window.addEventListener('dragover', e => e.preventDefault());
+  window.addEventListener('drop', e => e.preventDefault());
+}
+
+// ── Altura do topbar ──────────────────────────────────────────────────────
+
+// O navbar de ferramentas é sticky logo abaixo do topbar, cuja altura varia
+// (modo compacto em telas baixas, quebra de linha em telas estreitas).
+function initTopbarOffset() {
+  const topbar = document.querySelector('.topbar');
+  if (!topbar) return;
+  const sync = () => document.documentElement.style.setProperty('--topbar-height', `${topbar.offsetHeight}px`);
+  sync();
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(sync).observe(topbar);
+}
+
 async function boot() {
   initVersion();
   initTheme();
+  initDropGuard();
+  initTopbarOffset();
 
   // Renderiza a toolbar de navegação de ferramentas
   const navbarContainer = document.getElementById('tool-navbar-container');

@@ -19,6 +19,7 @@ let _currentZoom = 1;
 let _bgRemovalActive = false;
 let _cutoutDataUrl = null;
 let _tolTimeout = null;
+let _runId = 0; // descarta vetorizações obsoletas (ajustes rápidos ou troca de ferramenta)
 
 function _on(element, event, handler) {
   if (!element) return;
@@ -455,10 +456,13 @@ export default {
     // ── Vetorização do Imagem ────────────────────────────────────────────────
     async function _vectorize() {
       if (!_currentImageSrc) return;
+      const runId = ++_runId;
+      const stale = () => runId !== _runId;
 
       _setViewState('loading');
       _updateProgress(15, 'Preparando imagem...', 'Amostrando pixels e normalizando dimensões...', 'Etapa 1 / 4');
       await new Promise(r => setTimeout(r, 25));
+      if (stale()) return;
 
       const tracer = (typeof window !== 'undefined' && window.ImageTracer) ? window.ImageTracer : null;
       if (!tracer) {
@@ -489,6 +493,7 @@ export default {
         try {
           _updateProgress(35, 'Quantizando paleta...', `Agrupando em ${numColors} cores indexadas...`, 'Etapa 2 / 4');
           await new Promise(r => setTimeout(r, 20));
+          if (stale()) return;
 
           // Otimiza resolução máxima para processamento fluido no navegador
           let targetW = img.naturalWidth || img.width;
@@ -516,6 +521,8 @@ export default {
           if (_bgRemovalActive) {
             _updateProgress(50, 'Isolando plano de fundo...', 'Removendo fundo por inundação inteligente...', 'Etapa 2 / 4');
             await new Promise(r => setTimeout(r, 20));
+            if (stale()) return;
+          if (stale()) return;
 
             const tol = parseInt(bgTolRange.value, 10) || 32;
             imgData = removeBackgroundIntelligent(imgData, tol);
@@ -524,12 +531,14 @@ export default {
 
           _updateProgress(70, 'Traçando curvas Bézier...', 'Calculando splines cúbicas e nós vetoriais...', 'Etapa 3 / 4');
           await new Promise(r => setTimeout(r, 20));
+          if (stale()) return;
 
           const svgStr = tracer.imagedataToSVG(imgData, options);
           _currentSvgString = svgStr;
 
           _updateProgress(95, 'Otimizando nós e caminhos...', 'Formatando marcação SVG escalável...', 'Etapa 4 / 4');
           await new Promise(r => setTimeout(r, 20));
+          if (stale()) return;
 
           // Injeta SVG e assegura dimensões explícitas no elemento SVG
           svgOutput.innerHTML = svgStr;
@@ -556,10 +565,12 @@ export default {
 
           _updateProgress(100, 'Vetorização Concluída!', 'Renderizando SVG...', 'Pronto');
           await new Promise(r => setTimeout(r, 20));
+          if (stale()) return;
 
           _setViewState('result');
           _applyViewMode('vector');
         } catch (err) {
+          if (stale()) return;
           console.error('[img2vector] Erro ao processar:', err);
           alert('Erro ao vetorizar a imagem: ' + (err.message || err));
           _setViewState('empty');
@@ -567,6 +578,7 @@ export default {
       };
 
       img.onerror = () => {
+        if (stale()) return;
         alert('Falha ao decodificar os pixels da imagem.');
         _setViewState('empty');
       };
@@ -738,6 +750,7 @@ export default {
   },
 
   unmount() {
+    _runId++;
     if (_tolTimeout) {
       clearTimeout(_tolTimeout);
       _tolTimeout = null;

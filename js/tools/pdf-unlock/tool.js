@@ -12,6 +12,7 @@ let _currentFile = null;
 let _currentArrayBuffer = null;
 let _unlockedPdfBlob = null;
 let _requiresPassword = false;
+let _busy = false;
 
 function _on(element, event, handler) {
   if (!element) return;
@@ -73,6 +74,7 @@ export default {
     _currentArrayBuffer = null;
     _unlockedPdfBlob = null;
     _requiresPassword = false;
+    _busy = false;
 
     // Elementos DOM
     const dropzone        = container.querySelector('#u-dropzone');
@@ -128,8 +130,20 @@ export default {
     }
 
     async function _inspectPdf(file) {
-      _currentFile = file;
-      _currentArrayBuffer = await file.arrayBuffer();
+      const pdfjsData = () => new Uint8Array(_currentArrayBuffer.slice(0)); // pdf.js transfere o buffer ao worker
+      try {
+        _currentFile = file;
+        _currentArrayBuffer = await file.arrayBuffer();
+      } catch (err) {
+        console.error('Falha ao ler o arquivo:', err);
+        alert('Não foi possível ler o arquivo selecionado.');
+        _reset();
+        return;
+      }
+
+      // Um novo arquivo invalida qualquer resultado anterior
+      _unlockedPdfBlob = null;
+      _setViewState('empty');
 
       filenameEl.textContent = file.name;
       filesizeEl.textContent = _formatBytes(file.size);
@@ -141,54 +155,54 @@ export default {
       passwordGroup.style.display = 'none';
       passwordInput.value = '';
 
-      await _ensureLibs();
+      const showPasswordRequired = () => {
+        _requiresPassword = true;
+        lockBadge.textContent = 'Senha de Abertura';
+        lockBadge.className = 'pdf-badge pdf-badge--warning';
+        statusDesc.textContent = 'Este arquivo exige senha para ser aberto. Insira a senha abaixo para descriptografar.';
+        passwordGroup.style.display = 'flex';
+        unlockBtn.disabled = false;
+        unlockBtnText.textContent = 'Descriptografar com Senha';
+        passwordInput.focus();
+      };
+      const showReady = (badge, badgeClass, desc, btnText) => {
+        lockBadge.textContent = badge;
+        lockBadge.className = badgeClass;
+        statusDesc.textContent = desc;
+        unlockBtn.disabled = false;
+        unlockBtnText.textContent = btnText;
+      };
+
+      try {
+        await _ensureLibs();
+      } catch (err) {
+        console.warn('Bibliotecas PDF indisponíveis:', err);
+      }
       const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
 
       if (!pdfjsLib) {
-        lockBadge.textContent = 'PDF Carregado';
-        lockBadge.className = 'pdf-badge';
-        statusDesc.textContent = 'Pronto para remoção de restrições de impressão e edição.';
-        unlockBtn.disabled = false;
-        unlockBtnText.textContent = 'Desbloquear PDF';
+        showReady('PDF Carregado', 'pdf-badge', 'Pronto para remoção de restrições de impressão e edição.', 'Desbloquear PDF');
         return;
       }
 
+      const loadingTask = pdfjsLib.getDocument({ data: pdfjsData() });
+      // Sem senha não há como abrir: encerra a tarefa (rejeita a promise) e pede a senha
+      loadingTask.onPassword = () => {
+        showPasswordRequired();
+        loadingTask.destroy();
+      };
       try {
-        const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(_currentArrayBuffer) });
-        loadingTask.onPassword = (callback, reason) => {
-          _requiresPassword = true;
-          lockBadge.textContent = 'Senha de Abertura';
-          lockBadge.className = 'pdf-badge pdf-badge--warning';
-          statusDesc.textContent = 'Este arquivo possui uma senha de leitura. Digite a senha abaixo para descriptografar.';
-          passwordGroup.style.display = 'flex';
-          unlockBtn.disabled = false;
-          unlockBtnText.textContent = 'Descriptografar com Senha';
-          passwordInput.focus();
-        };
-
-        const doc = await loadingTask.promise;
-        lockBadge.textContent = 'Restrição de Permissões';
-        lockBadge.className = 'pdf-badge pdf-badge--info';
-        statusDesc.textContent = 'Documento protegido contra cópia/edição ou sem restrição de leitura. Pronto para desbloqueio.';
-        unlockBtn.disabled = false;
-        unlockBtnText.textContent = 'Desbloquear PDF Agora';
-
+        await loadingTask.promise;
+        showReady('Restrição de Permissões', 'pdf-badge pdf-badge--info',
+          'Documento protegido contra cópia/edição ou sem restrição de leitura. Pronto para desbloqueio.', 'Desbloquear PDF Agora');
       } catch (err) {
         if (err.name === 'PasswordException' || _requiresPassword) {
-          _requiresPassword = true;
-          lockBadge.textContent = 'Senha de Abertura';
-          lockBadge.className = 'pdf-badge pdf-badge--warning';
-          statusDesc.textContent = 'Este arquivo exige senha para ser aberto. Insira a senha abaixo.';
-          passwordGroup.style.display = 'flex';
-          unlockBtn.disabled = false;
-          unlockBtnText.textContent = 'Descriptografar com Senha';
+          showPasswordRequired();
         } else {
-          lockBadge.textContent = 'PDF Carregado';
-          lockBadge.className = 'pdf-badge';
-          statusDesc.textContent = 'Pronto para remoção de restrições de impressão e edição.';
-          unlockBtn.disabled = false;
-          unlockBtnText.textContent = 'Desbloquear PDF';
+          showReady('PDF Carregado', 'pdf-badge', 'Pronto para remoção de restrições de impressão e edição.', 'Desbloquear PDF');
         }
+      } finally {
+        loadingTask.destroy();
       }
     }
 
@@ -217,21 +231,25 @@ export default {
 
     // Processo de Desbloqueio
     async function _doUnlock() {
-      if (!_currentArrayBuffer) return;
+      if (!_currentArrayBuffer || _busy) return;
+      _busy = true;
+      unlockBtn.disabled = true;
+      const pdfjsData = () => new Uint8Array(_currentArrayBuffer.slice(0)); // pdf.js transfere o buffer ao worker
 
       _setViewState('loading');
       _updateProgress(10, 'Iniciando desbloqueio criptográfico...', 'Carregando motor nativo WebAssembly...', 'Etapa 1 / 3');
       await new Promise(r => setTimeout(r, 20));
 
-      await _ensureLibs();
-      const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
-      const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
-      const createQpdf = (typeof window !== 'undefined' && window.createQpdfModule) || globalThis.createQpdfModule;
-
-      const password = passwordInput.value.trim();
-      let stderr = '';
+      // Espaços são caracteres válidos de senha; apenas um campo vazio significa "sem senha"
+      const password = passwordInput.value;
+      let passwordRejected = false;
 
       try {
+        await _ensureLibs();
+        const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
+        const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
+        const createQpdf = (typeof window !== 'undefined' && window.createQpdfModule) || globalThis.createQpdfModule;
+
         let unlockedBytes = null;
         let pageCount = 1;
 
@@ -249,59 +267,27 @@ export default {
 
             const inPath = '/input.pdf';
             const outPath = '/output.pdf';
-            
-            // Grava o buffer diretamente no MEMFS sem duplicar no heap JS
+            const pwdArg = `--password=${password}`;
             qpdf.FS.writeFile(inPath, new Uint8Array(_currentArrayBuffer));
 
-            qpdf.printErr = (t) => { stderr += t + '\n'; };
-
-            // Executa chamada do QPDF com --warning-exit-0
-            const args = ['--warning-exit-0'];
-            if (password && password.length > 0) {
-              args.push(`--password=${password}`);
-            } else {
-              args.push('--password=');
-            }
-            args.push(inPath, '--decrypt', outPath);
-
+            // Código de saída: 0 = ok, 3 = ok com avisos, 2 = erro (inclui senha ausente/incorreta)
+            let rc = 2;
             try {
-              qpdf.callMain(args);
+              rc = qpdf.callMain(['--warning-exit-0', pwdArg, inPath, '--decrypt', outPath]);
             } catch (cErr) {
               console.warn('QPDF callMain:', cErr);
             }
-
-            // Tenta ler o arquivo de saída gerado
-            try {
-              const cand = qpdf.FS.readFile(outPath);
-              if (cand && cand.length > 100) {
-                unlockedBytes = cand;
-              }
-            } catch (_) {}
-
-            // Se não gerou e nenhuma senha foi informada, tenta sintaxe alternativa com --password=
-            if (!unlockedBytes && (!password || password.length === 0)) {
+            if (rc === 0 || rc === 3) {
               try {
-                qpdf.callMain(['--warning-exit-0', '--password=', inPath, '--decrypt', outPath]);
-                const cand2 = qpdf.FS.readFile(outPath);
-                if (cand2 && cand2.length > 100) {
-                  unlockedBytes = cand2;
-                }
+                const cand = qpdf.FS.readFile(outPath);
+                if (cand && cand.length > 100) unlockedBytes = cand;
               } catch (_) {}
             }
 
             // Limpeza de buffers temporários no FS virtual
             try { qpdf.FS.unlink(inPath); } catch (_) {}
             try { qpdf.FS.unlink(outPath); } catch (_) {}
-
-            if (!unlockedBytes && (stderr.toLowerCase().includes('invalid password') || stderr.toLowerCase().includes('user password'))) {
-              _requiresPassword = true;
-              passwordGroup.style.display = 'flex';
-              passwordInput.focus();
-              throw new Error('PASSWORD_REQUIRED');
-            }
-
           } catch (qErr) {
-            if (qErr.message === 'PASSWORD_REQUIRED') throw qErr;
             const qMsg = (qErr && qErr.message) || String(qErr);
             if (qMsg.includes('memory') || qMsg.includes('alloc') || qMsg.includes('Cannot enlarge')) {
               throw new Error('OUT_OF_MEMORY');
@@ -310,27 +296,34 @@ export default {
           }
         }
 
-        // 2. Fallback via PDF-Lib direto (sem perda de qualidade)
+        // 2. Fallback via PDF-Lib direto (sem perda de qualidade) — só vale para PDFs sem criptografia,
+        //    pois com ignoreEncryption o PDF-Lib regravaria os fluxos ainda cifrados
         if (!unlockedBytes && PDFLib && _currentArrayBuffer.byteLength < 120 * 1024 * 1024) {
           _updateProgress(55, 'Processando via PDF-Lib...', 'Reconstruindo árvore de objetos sem flags de proteção...', 'Etapa 2 / 3');
           await new Promise(r => setTimeout(r, 20));
           try {
             const srcDoc = await PDFLib.PDFDocument.load(new Uint8Array(_currentArrayBuffer), { ignoreEncryption: true });
-            unlockedBytes = await srcDoc.save();
+            if (!srcDoc.isEncrypted) {
+              unlockedBytes = await srcDoc.save();
+            } else if (createQpdf && _requiresPassword) {
+              // O QPDF descriptografa qualquer PDF que abra; se falhou num arquivo com senha de
+              // abertura, a senha está ausente ou incorreta
+              passwordRejected = true;
+            }
           } catch (eLib) {
             console.warn('PDF-Lib direto falhou:', eLib);
           }
         }
 
+        if (passwordRejected) throw new Error('PASSWORD_REQUIRED');
+
         // 3. Fallback Gráfico via PDF.js (para arquivos pequenos < 30 MB com restrição de permissão)
         if (!unlockedBytes && pdfjsLib && PDFLib && _currentArrayBuffer.byteLength < 30 * 1024 * 1024) {
           _updateProgress(65, 'Liberando permissões via motor gráfico...', 'Reconstruindo páginas para documento 100% desbloqueado...', 'Etapa 2 / 3');
           await new Promise(r => setTimeout(r, 20));
+          const loadingTask = pdfjsLib.getDocument({ data: pdfjsData(), password: password || undefined });
+          loadingTask.onPassword = () => { passwordRejected = true; loadingTask.destroy(); };
           try {
-            const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(_currentArrayBuffer) });
-            if (password && password.length > 0) {
-              loadingTask.onPassword = (cb) => cb(password);
-            }
             const jsDoc = await loadingTask.promise;
             pageCount = jsDoc.numPages;
 
@@ -341,36 +334,30 @@ export default {
 
               for (let p = 1; p <= pageCount; p++) {
                 const page = await jsDoc.getPage(p);
-                const vp = page.getViewport({ scale: 1.2 });
-                canvas.width = vp.width;
-                canvas.height = vp.height;
-                await page.render({ canvasContext: ctx, viewport: vp }).promise;
+                const pageVp = page.getViewport({ scale: 1 });   // dimensões reais da página (pt)
+                const renderVp = page.getViewport({ scale: 1.5 }); // resolução da rasterização
+                canvas.width = renderVp.width;
+                canvas.height = renderVp.height;
+                await page.render({ canvasContext: ctx, viewport: renderVp }).promise;
 
-                const imgDataUrl = canvas.toDataURL('image/jpeg', 0.88);
-                const imgBytes = _dataUrlToBytes(imgDataUrl);
+                const imgBytes = _dataUrlToBytes(canvas.toDataURL('image/jpeg', 0.88));
                 const embedded = await newDoc.embedJpg(imgBytes);
 
-                const newPage = newDoc.addPage([vp.width, vp.height]);
-                newPage.drawImage(embedded, { x: 0, y: 0, width: vp.width, height: vp.height });
+                const newPage = newDoc.addPage([pageVp.width, pageVp.height]);
+                newPage.drawImage(embedded, { x: 0, y: 0, width: pageVp.width, height: pageVp.height });
               }
 
               unlockedBytes = await newDoc.save();
             }
           } catch (eFallback) {
             console.warn('Fallback gráfico falhou:', eFallback);
+          } finally {
+            loadingTask.destroy();
           }
         }
 
         if (!unlockedBytes) {
-          if (stderr.toLowerCase().includes('invalid password') || stderr.toLowerCase().includes('password')) {
-            _requiresPassword = true;
-            passwordGroup.style.display = 'flex';
-            passwordInput.focus();
-            throw new Error('PASSWORD_REQUIRED');
-          }
-          if (stderr.toLowerCase().includes('memory') || stderr.toLowerCase().includes('alloc')) {
-            throw new Error('OUT_OF_MEMORY');
-          }
+          if (passwordRejected || _requiresPassword) throw new Error('PASSWORD_REQUIRED');
           throw new Error('Falha ao descriptografar documento.');
         }
 
@@ -393,10 +380,10 @@ export default {
         metaPages.textContent = pageCount;
         metaSize.textContent = _formatBytes(_unlockedPdfBlob.size);
 
-        // Renderiza thumbnail da primeira página no canvas via PDF.js de modo streaming
+        // Renderiza thumbnail da primeira página no canvas via PDF.js
         if (pdfjsLib) {
+          const previewTask = pdfjsLib.getDocument({ data: unlockedBytes.slice(0) });
           try {
-            const previewTask = pdfjsLib.getDocument({ data: unlockedBytes });
             const previewDoc = await previewTask.promise;
             pageCount = previewDoc.numPages || pageCount;
             metaPages.textContent = pageCount;
@@ -412,22 +399,35 @@ export default {
             await firstPage.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
           } catch (e) {
             console.warn('Miniatura preview não disponível:', e);
+          } finally {
+            previewTask.destroy();
           }
         }
 
         _setViewState('result');
 
       } catch (err) {
-        console.error('Falha ao desbloquear PDF:', err);
         _setViewState('empty');
         if (err.message === 'PASSWORD_REQUIRED') {
-          alert('Este documento exige senha de abertura válida. Por favor, insira a senha no campo correspondente.');
+          console.warn('Desbloqueio: senha de abertura ausente ou incorreta.');
+          _requiresPassword = true;
+          passwordGroup.style.display = 'flex';
+          unlockBtnText.textContent = 'Descriptografar com Senha';
+          passwordInput.focus();
+          alert(password
+            ? 'Senha incorreta. Verifique a senha de abertura do documento e tente novamente.'
+            : 'Este documento exige senha de abertura. Por favor, insira a senha no campo correspondente.');
         } else if (err.message === 'OUT_OF_MEMORY' || (err.message && err.message.toLowerCase().includes('memory')) || err.name === 'RangeError') {
+          console.error('Falha ao desbloquear PDF:', err);
           const sizeStr = _currentFile ? _formatBytes(_currentFile.size) : '';
           alert(`Memória do navegador insuficiente para processar este PDF de ${sizeStr}. Recomendamos fechar outras abas para liberar memória.`);
         } else {
+          console.error('Falha ao desbloquear PDF:', err);
           alert('Erro ao desbloquear o PDF. Verifique se o arquivo está corrompido ou se a senha está correta.');
         }
+      } finally {
+        _busy = false;
+        unlockBtn.disabled = !_currentArrayBuffer;
       }
     }
 
@@ -473,12 +473,15 @@ export default {
     _on(unlockBtn, 'click', _doUnlock);
 
     _on(copyTextBtn, 'click', async () => {
+      const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
       if (!_unlockedPdfBlob || !pdfjsLib) return;
       const originalText = copyBtnText ? copyBtnText.textContent : 'Copiar Texto';
+      let task = null;
       try {
         if (copyBtnText) copyBtnText.textContent = 'Copiando...';
         const arr = await _unlockedPdfBlob.arrayBuffer();
-        const doc = await pdfjsLib.getDocument({ data: new Uint8Array(arr) }).promise;
+        task = pdfjsLib.getDocument({ data: new Uint8Array(arr) });
+        const doc = await task.promise;
         let allText = '';
         for (let i = 1; i <= doc.numPages; i++) {
           const page = await doc.getPage(i);
@@ -495,6 +498,8 @@ export default {
         console.error('Erro ao copiar texto:', err);
         if (copyBtnText) copyBtnText.textContent = originalText;
         alert('Falha ao extrair texto para a área de transferência.');
+      } finally {
+        if (task) task.destroy();
       }
     });
 

@@ -2643,7 +2643,7 @@
     "application/x-rar-compressed": "rar"
   };
   var APP_CONFIG = {
-    VERSION: "v.2.5.0",
+    VERSION: "v.2.5.1",
     APP_NAME: "Open Tool",
     TAGLINE: "Open Tool \u2022 Ferramentas Universais 100% Client-Side",
     REPO_URL: "https://github.com/mathmorato/open-tool",
@@ -2676,11 +2676,10 @@
       TURNDOWN: "https://cdnjs.cloudflare.com/ajax/libs/turndown/7.2.0/turndown.min.js",
       TURNDOWN_GFM: "https://cdn.jsdelivr.net/npm/turndown-plugin-gfm@1.0.2/dist/turndown-plugin-gfm.min.js",
       SHEETJS: "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js",
-      JSZIP: "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+      JSZIP: "js/lib/jszip.min.js",
+      // cópia local (sem dependência de rede)
       PDFJS: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
-      PDFJS_WORKER: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
-      MARKED: "https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js",
-      DOMPURIFY: "https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.5/purify.min.js"
+      PDFJS_WORKER: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
     },
     // Pacotes compactados suportados para extração automática client-side em memória
     ARCHIVE_EXTENSIONS: [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"],
@@ -2774,6 +2773,15 @@
     }
   };
   var loadedScripts = /* @__PURE__ */ new Map();
+  var SCRIPT_GLOBALS = {
+    "pdf-lib.min.js": "PDFLib",
+    "pdf.min.js": "pdfjsLib",
+    "qrcodegen.js": "qrcodegen",
+    "imagetracer.js": "ImageTracer",
+    "jszip.min.js": "JSZip",
+    "qpdf.js": "createQpdfModule",
+    "qpdf-wasm-binary.js": "__QPDF_WASM_BYTES__"
+  };
   function loadScript(src) {
     if (typeof document === "undefined") {
       return Promise.resolve();
@@ -2781,64 +2789,25 @@
     if (loadedScripts.has(src)) {
       return loadedScripts.get(src);
     }
-    const existing = typeof document !== "undefined" ? document.querySelector(`script[src="${src}"]`) : null;
-    if (existing && existing.dataset.loaded === "true") {
+    const fileName = src.split("?")[0].split("/").pop();
+    const globalName = SCRIPT_GLOBALS[fileName];
+    if (globalName && typeof window !== "undefined" && typeof window[globalName] !== "undefined") {
       return Promise.resolve();
     }
-    if (typeof window !== "undefined") {
-      if ((src.includes("pdf-lib") || src.includes("pdf_lib")) && window.PDFLib) {
-        if (existing) existing.dataset.loaded = "true";
-        return Promise.resolve();
-      }
-      if (src.includes("pdf.min.js") && window.pdfjsLib) {
-        if (existing) existing.dataset.loaded = "true";
-        return Promise.resolve();
-      }
-      if (src.includes("qrcodegen") && window.qrcodegen) {
-        if (existing) existing.dataset.loaded = "true";
-        return Promise.resolve();
-      }
-      if (src.includes("imagetracer") && window.ImageTracer) {
-        if (existing) existing.dataset.loaded = "true";
-        return Promise.resolve();
-      }
-      if ((src.includes("jszip") || src.includes("JSZip")) && window.JSZip) {
-        if (existing) existing.dataset.loaded = "true";
-        return Promise.resolve();
-      }
-      if (src.includes("qpdf") && window.createQpdfModule) {
-        if (existing) existing.dataset.loaded = "true";
-        return Promise.resolve();
-      }
-    }
     const promise = new Promise((resolve, reject) => {
-      if (existing) {
-        if (existing.dataset.loaded === "true") return resolve();
-        let settled = false;
-        const onDone = () => {
-          if (!settled) {
-            settled = true;
-            existing.dataset.loaded = "true";
-            resolve();
-          }
-        };
-        existing.addEventListener("load", onDone);
-        existing.addEventListener("error", (err) => reject(err));
-        if (existing.readyState === "complete" || existing.readyState === "loaded" || document && document.readyState === "complete") {
-          setTimeout(onDone, 10);
-        }
-        return;
-      }
-      if (typeof document === "undefined") return resolve();
       const script = document.createElement("script");
       script.src = src;
       script.async = true;
-      script.crossOrigin = "anonymous";
+      if (/^https?:/i.test(src)) script.crossOrigin = "anonymous";
       script.onload = () => {
         script.dataset.loaded = "true";
         resolve();
       };
-      script.onerror = (e) => reject(new Error(`Falha ao carregar biblioteca: ${src}`));
+      script.onerror = () => {
+        loadedScripts.delete(src);
+        script.remove();
+        reject(new Error(`Falha ao carregar biblioteca: ${src}`));
+      };
       document.head.appendChild(script);
     });
     loadedScripts.set(src, promise);
@@ -3579,16 +3548,23 @@ ${markdown}`;
   // js/parsers/pdf-parser.js
   async function parsePdf(file, onProgress = null) {
     await loadScript(APP_CONFIG.CDN.PDFJS);
-    const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-    if (!pdfjsLib2) {
+    const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+    if (!pdfjsLib) {
       throw new Error("N\xE3o foi poss\xEDvel carregar a biblioteca PDF.js.");
     }
-    if (pdfjsLib2.GlobalWorkerOptions && !pdfjsLib2.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib2.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+    if (pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
     }
     const arrayBuffer = await file.arrayBuffer();
-    const loadingTask = pdfjsLib2.getDocument({ data: arrayBuffer });
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
     const pdfDoc = await loadingTask.promise;
+    try {
+      return await extractPdfMarkdown(pdfDoc, file, onProgress);
+    } finally {
+      loadingTask.destroy();
+    }
+  }
+  async function extractPdfMarkdown(pdfDoc, file, onProgress) {
     const docTitle = file.name.replace(/\.pdf$/i, "");
     const pagesMarkdown = [`# ${docTitle}
 `];
@@ -4034,7 +4010,7 @@ ${textContent}
 
   // js/app.js
   if (typeof window !== "undefined") {
-    window.onerror = function(message, source, lineno, colno, error) {
+    window.addEventListener("error", function({ message, filename: source, lineno, colno, error }) {
       const debugEl = typeof document !== "undefined" ? document.getElementById("debug-status") : null;
       const sourceFile = source ? source.split("/").pop() : "script";
       const errText = `[Erro Fatal/Script]: ${message} (${sourceFile}:${lineno})`;
@@ -4044,9 +4020,8 @@ ${textContent}
         debugEl.className = "debug-status error";
       }
       console.error("[doc2md Runtime Error]", { message, source, lineno, colno, error });
-      return false;
-    };
-    window.onunhandledrejection = function(event) {
+    });
+    window.addEventListener("unhandledrejection", function(event) {
       const debugEl = typeof document !== "undefined" ? document.getElementById("debug-status") : null;
       const reason = event.reason ? event.reason.message || String(event.reason) : "Falha ass\xEDncrona";
       const errText = `[Erro Ass\xEDncrono/CDN]: ${reason}`;
@@ -4056,7 +4031,10 @@ ${textContent}
         debugEl.className = "debug-status error";
       }
       console.error("[doc2md Unhandled Rejection]", event.reason);
-    };
+    });
+  }
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   }
   var state = {
     theme: "system",
@@ -5001,11 +4979,11 @@ ${textContent}
       const completedClass = isCompleted ? "completed is-completed" : "";
       const hasErrorClass = isError ? "has-error" : "";
       return `
-      <div class="file-queue-item queue-item ${statusClass} ${hasErrorClass} ${completedClass} ${readingClass} ${uploadDoneClass} ${convertDoneClass}" data-id="${item.id}" role="listitem" aria-label="${item.file.name}">
+      <div class="file-queue-item queue-item ${statusClass} ${hasErrorClass} ${completedClass} ${readingClass} ${uploadDoneClass} ${convertDoneClass}" data-id="${item.id}" role="listitem" aria-label="${escapeHtml(item.file.name)}">
         <!-- BLOCO 1: IDENTIFICA\xC7\xC3O DO ARQUIVO (\xCDcone + Nome + Peso Original) -->
         <div class="item-block item-info queue-item-info">
           ${formatIcon}
-          <span class="file-name queue-item-name" title="${item.file.name}">${item.file.name}</span>
+          <span class="file-name queue-item-name" title="${escapeHtml(item.file.name)}">${escapeHtml(item.file.name)}</span>
           <span class="badge-file-size queue-item-size file-meta queue-item-meta">${formatBytes(item.file.size)}</span>
         </div>
 
@@ -5039,7 +5017,7 @@ ${textContent}
 
         <!-- BLOCO DE ERRO: Substitui as barras em caso de falha -->
         <div class="item-block item-error-container" style="${isError ? "display: flex;" : "display: none;"}">
-          <div class="item-error-badge" title="${item.errorMessage || "Erro de convers\xE3o"}">
+          <div class="item-error-badge" title="${escapeHtml(item.errorMessage || "Erro de convers\xE3o")}">
             <span class="icon-error-circle" aria-hidden="true">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/>
@@ -5076,7 +5054,7 @@ ${textContent}
               </svg>
             </span>
             <!-- Estado Erro -->
-            <span class="status-icon icon-error" title="${item.errorMessage || item.statusText || "Erro"}" style="${isError ? "display: inline-flex;" : "display: none;"}">
+            <span class="status-icon icon-error" title="${escapeHtml(item.errorMessage || item.statusText || "Erro")}" style="${isError ? "display: inline-flex;" : "display: none;"}">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="15" y1="9" x2="9" y2="15"/>
@@ -5101,7 +5079,7 @@ ${textContent}
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
           </button>
-          <button type="button" class="btn-item-action btn-remove btn-queue-item-remove btn-remove-item" data-id="${item.id}" title="Remover ${item.file.name}" aria-label="Remover item">
+          <button type="button" class="btn-item-action btn-remove btn-queue-item-remove btn-remove-item" data-id="${item.id}" title="Remover ${escapeHtml(item.file.name)}" aria-label="Remover item">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 6h18"/>
               <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
@@ -5740,8 +5718,7 @@ ${textContent}
     if (total === 1) {
       try {
         const item = completed[0];
-        const baseName = (item.file ? item.file.name : item.name || "documento").replace(/\.[^/.]+$/, "");
-        return triggerDownload(getOutputFileName(baseName), item.markdownOutput || item.markdown);
+        return triggerDownload(getOutputFileName(item.file ? item.file.name : item.name || "documento"), item.markdownOutput || item.markdown);
       } finally {
         state.isExportingZip = false;
         state.isExporting = false;
@@ -6354,10 +6331,16 @@ ${footerDelimiter}
   }
   function boot() {
     reinitElements();
-    initVersion();
-    initTheme();
+    if (typeof window === "undefined" || typeof window.__openToolRegistryActive === "undefined") {
+      initVersion();
+      initTheme();
+    }
     initDropzone();
     initQueueEvents();
+    if (state.queue && state.queue.length > 0) {
+      renderQueue();
+      updateGlobalActionButtonsState();
+    }
   }
   if (typeof document !== "undefined") {
     const isSubModule = typeof window.__openToolRegistryActive !== "undefined";
@@ -6371,6 +6354,7 @@ ${footerDelimiter}
     if (!document.__openMarkGlobalClickAttached) {
       document.__openMarkGlobalClickAttached = true;
       document.addEventListener("click", (e) => {
+        if (!e.target || typeof e.target.closest !== "function" || !e.target.closest(".doc2md-tool-root")) return;
         const btnUnified = e.target && typeof e.target.closest === "function" ? e.target.closest("#btn-download-unified, .btn-download-unified, .btn-queue-download-merged") : null;
         if (btnUnified) {
           if (typeof e.preventDefault === "function") e.preventDefault();
@@ -6694,6 +6678,7 @@ ${footerDelimiter}
   }
   function _drawQrOnCanvas(qr, canvas, canvasSize, fgColor, bgColor, border = 4) {
     const n = qr.size;
+    canvasSize = Math.max(canvasSize, n + border * 2);
     const scale = Math.floor(canvasSize / (n + border * 2));
     const off = Math.floor((canvasSize - scale * n) / 2);
     canvas.width = canvasSize;
@@ -6829,10 +6814,10 @@ ${footerDelimiter}
         const size = parseInt(sizeRangeEl.value, 10);
         const fgColor = colorFgEl.value;
         const bgColor = colorBgEl.value;
-        const ecl = _getEcc(_activeEcl);
         _setState("loading");
         await new Promise((r) => setTimeout(r, 10));
         try {
+          const ecl = _getEcc(_activeEcl);
           const qr = qrcodegen.QrCode.encodeText(text, ecl);
           _lastQr = qr;
           _lastFg = fgColor;
@@ -6947,6 +6932,7 @@ ${footerDelimiter}
             (b) => b.classList.toggle("qrcode-ecl-btn--active", b === btn)
           );
           eclHint.textContent = ECL_DESCRIPTIONS[_activeEcl];
+          if (_lastQr) _generate();
         });
       });
       _on(colorFgEl, "input", () => _syncColorFromPicker(colorFgEl, colorFgHexEl, colorFgPrev));
@@ -6959,7 +6945,8 @@ ${footerDelimiter}
         _on(clearBtn, "click", () => {
           inputEl.value = "";
           charCountEl.textContent = "0";
-          urlFeedbackEl.textContent = "";
+          urlFeedback.textContent = "";
+          urlFeedback.className = "qrcode-url-feedback";
           generateBtn.disabled = true;
           _lastQr = null;
           _setState("empty");
@@ -6975,6 +6962,8 @@ ${footerDelimiter}
       _on(sizeRangeEl, "change", _regenerateIfActive);
       _on(colorFgEl, "change", _regenerateIfActive);
       _on(colorBgEl, "change", _regenerateIfActive);
+      _on(colorFgHexEl, "change", _regenerateIfActive);
+      _on(colorBgHexEl, "change", _regenerateIfActive);
     },
     unmount() {
       _listeners.forEach(({ el, type, fn }) => {
@@ -7415,6 +7404,7 @@ ${footerDelimiter}
   var _bgRemovalActive = false;
   var _cutoutDataUrl = null;
   var _tolTimeout = null;
+  var _runId = 0;
   function _on2(element, event, handler) {
     if (!element) return;
     element.addEventListener(event, handler);
@@ -7785,9 +7775,12 @@ ${footerDelimiter}
       }
       async function _vectorize() {
         if (!_currentImageSrc) return;
+        const runId = ++_runId;
+        const stale = () => runId !== _runId;
         _setViewState("loading");
         _updateProgress(15, "Preparando imagem...", "Amostrando pixels e normalizando dimens\xF5es...", "Etapa 1 / 4");
         await new Promise((r) => setTimeout(r, 25));
+        if (stale()) return;
         const tracer = typeof window !== "undefined" && window.ImageTracer ? window.ImageTracer : null;
         if (!tracer) {
           alert("Biblioteca de vetoriza\xE7\xE3o n\xE3o inicializada. Tente recarregar a p\xE1gina.");
@@ -7812,6 +7805,7 @@ ${footerDelimiter}
           try {
             _updateProgress(35, "Quantizando paleta...", `Agrupando em ${numColors} cores indexadas...`, "Etapa 2 / 4");
             await new Promise((r) => setTimeout(r, 20));
+            if (stale()) return;
             let targetW = img.naturalWidth || img.width;
             let targetH = img.naturalHeight || img.height;
             const maxDim = 1200;
@@ -7833,16 +7827,20 @@ ${footerDelimiter}
             if (_bgRemovalActive) {
               _updateProgress(50, "Isolando plano de fundo...", "Removendo fundo por inunda\xE7\xE3o inteligente...", "Etapa 2 / 4");
               await new Promise((r) => setTimeout(r, 20));
+              if (stale()) return;
+              if (stale()) return;
               const tol = parseInt(bgTolRange.value, 10) || 32;
               imgData = removeBackgroundIntelligent(imgData, tol);
               ctx.putImageData(imgData, 0, 0);
             }
             _updateProgress(70, "Tra\xE7ando curvas B\xE9zier...", "Calculando splines c\xFAbicas e n\xF3s vetoriais...", "Etapa 3 / 4");
             await new Promise((r) => setTimeout(r, 20));
+            if (stale()) return;
             const svgStr = tracer.imagedataToSVG(imgData, options);
             _currentSvgString = svgStr;
             _updateProgress(95, "Otimizando n\xF3s e caminhos...", "Formatando marca\xE7\xE3o SVG escal\xE1vel...", "Etapa 4 / 4");
             await new Promise((r) => setTimeout(r, 20));
+            if (stale()) return;
             svgOutput.innerHTML = svgStr;
             const svgEl = svgOutput.querySelector("svg");
             if (svgEl) {
@@ -7863,15 +7861,18 @@ ${footerDelimiter}
             metaSize.textContent = _formatBytes5(svgBytes);
             _updateProgress(100, "Vetoriza\xE7\xE3o Conclu\xEDda!", "Renderizando SVG...", "Pronto");
             await new Promise((r) => setTimeout(r, 20));
+            if (stale()) return;
             _setViewState("result");
             _applyViewMode("vector");
           } catch (err) {
+            if (stale()) return;
             console.error("[img2vector] Erro ao processar:", err);
             alert("Erro ao vetorizar a imagem: " + (err.message || err));
             _setViewState("empty");
           }
         };
         img.onerror = () => {
+          if (stale()) return;
           alert("Falha ao decodificar os pixels da imagem.");
           _setViewState("empty");
         };
@@ -8014,6 +8015,7 @@ ${footerDelimiter}
       _syncPresetControls("bw");
     },
     unmount() {
+      _runId++;
       if (_tolTimeout) {
         clearTimeout(_tolTimeout);
         _tolTimeout = null;
@@ -8217,6 +8219,7 @@ ${footerDelimiter}
   var _currentArrayBuffer = null;
   var _unlockedPdfBlob = null;
   var _requiresPassword = false;
+  var _busy = false;
   function _on3(element, event, handler) {
     if (!element) return;
     element.addEventListener(event, handler);
@@ -8254,9 +8257,9 @@ ${footerDelimiter}
     if (promises.length > 0) {
       await Promise.all(promises);
     }
-    const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-    if (pdfjsLib2 && pdfjsLib2.GlobalWorkerOptions && !pdfjsLib2.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib2.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+    const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
     }
   }
   var tool_default5 = {
@@ -8271,6 +8274,7 @@ ${footerDelimiter}
       _currentArrayBuffer = null;
       _unlockedPdfBlob = null;
       _requiresPassword = false;
+      _busy = false;
       const dropzone = container.querySelector("#u-dropzone");
       const fileInput = container.querySelector("#u-file-input");
       const dropPrompt = container.querySelector("#u-dropzone-prompt");
@@ -8315,8 +8319,18 @@ ${footerDelimiter}
         if (counter && progressCounter) progressCounter.textContent = counter;
       }
       async function _inspectPdf(file) {
-        _currentFile2 = file;
-        _currentArrayBuffer = await file.arrayBuffer();
+        const pdfjsData = () => new Uint8Array(_currentArrayBuffer.slice(0));
+        try {
+          _currentFile2 = file;
+          _currentArrayBuffer = await file.arrayBuffer();
+        } catch (err) {
+          console.error("Falha ao ler o arquivo:", err);
+          alert("N\xE3o foi poss\xEDvel ler o arquivo selecionado.");
+          _reset();
+          return;
+        }
+        _unlockedPdfBlob = null;
+        _setViewState("empty");
         filenameEl.textContent = file.name;
         filesizeEl.textContent = _formatBytes(file.size);
         dropPrompt.style.display = "none";
@@ -8325,50 +8339,54 @@ ${footerDelimiter}
         _requiresPassword = false;
         passwordGroup.style.display = "none";
         passwordInput.value = "";
-        await _ensureLibs();
-        const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-        if (!pdfjsLib2) {
-          lockBadge.textContent = "PDF Carregado";
-          lockBadge.className = "pdf-badge";
-          statusDesc.textContent = "Pronto para remo\xE7\xE3o de restri\xE7\xF5es de impress\xE3o e edi\xE7\xE3o.";
+        const showPasswordRequired = () => {
+          _requiresPassword = true;
+          lockBadge.textContent = "Senha de Abertura";
+          lockBadge.className = "pdf-badge pdf-badge--warning";
+          statusDesc.textContent = "Este arquivo exige senha para ser aberto. Insira a senha abaixo para descriptografar.";
+          passwordGroup.style.display = "flex";
           unlockBtn.disabled = false;
-          unlockBtnText.textContent = "Desbloquear PDF";
+          unlockBtnText.textContent = "Descriptografar com Senha";
+          passwordInput.focus();
+        };
+        const showReady = (badge, badgeClass, desc, btnText) => {
+          lockBadge.textContent = badge;
+          lockBadge.className = badgeClass;
+          statusDesc.textContent = desc;
+          unlockBtn.disabled = false;
+          unlockBtnText.textContent = btnText;
+        };
+        try {
+          await _ensureLibs();
+        } catch (err) {
+          console.warn("Bibliotecas PDF indispon\xEDveis:", err);
+        }
+        const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+        if (!pdfjsLib) {
+          showReady("PDF Carregado", "pdf-badge", "Pronto para remo\xE7\xE3o de restri\xE7\xF5es de impress\xE3o e edi\xE7\xE3o.", "Desbloquear PDF");
           return;
         }
+        const loadingTask = pdfjsLib.getDocument({ data: pdfjsData() });
+        loadingTask.onPassword = () => {
+          showPasswordRequired();
+          loadingTask.destroy();
+        };
         try {
-          const loadingTask = pdfjsLib2.getDocument({ data: new Uint8Array(_currentArrayBuffer) });
-          loadingTask.onPassword = (callback, reason) => {
-            _requiresPassword = true;
-            lockBadge.textContent = "Senha de Abertura";
-            lockBadge.className = "pdf-badge pdf-badge--warning";
-            statusDesc.textContent = "Este arquivo possui uma senha de leitura. Digite a senha abaixo para descriptografar.";
-            passwordGroup.style.display = "flex";
-            unlockBtn.disabled = false;
-            unlockBtnText.textContent = "Descriptografar com Senha";
-            passwordInput.focus();
-          };
-          const doc = await loadingTask.promise;
-          lockBadge.textContent = "Restri\xE7\xE3o de Permiss\xF5es";
-          lockBadge.className = "pdf-badge pdf-badge--info";
-          statusDesc.textContent = "Documento protegido contra c\xF3pia/edi\xE7\xE3o ou sem restri\xE7\xE3o de leitura. Pronto para desbloqueio.";
-          unlockBtn.disabled = false;
-          unlockBtnText.textContent = "Desbloquear PDF Agora";
+          await loadingTask.promise;
+          showReady(
+            "Restri\xE7\xE3o de Permiss\xF5es",
+            "pdf-badge pdf-badge--info",
+            "Documento protegido contra c\xF3pia/edi\xE7\xE3o ou sem restri\xE7\xE3o de leitura. Pronto para desbloqueio.",
+            "Desbloquear PDF Agora"
+          );
         } catch (err) {
           if (err.name === "PasswordException" || _requiresPassword) {
-            _requiresPassword = true;
-            lockBadge.textContent = "Senha de Abertura";
-            lockBadge.className = "pdf-badge pdf-badge--warning";
-            statusDesc.textContent = "Este arquivo exige senha para ser aberto. Insira a senha abaixo.";
-            passwordGroup.style.display = "flex";
-            unlockBtn.disabled = false;
-            unlockBtnText.textContent = "Descriptografar com Senha";
+            showPasswordRequired();
           } else {
-            lockBadge.textContent = "PDF Carregado";
-            lockBadge.className = "pdf-badge";
-            statusDesc.textContent = "Pronto para remo\xE7\xE3o de restri\xE7\xF5es de impress\xE3o e edi\xE7\xE3o.";
-            unlockBtn.disabled = false;
-            unlockBtnText.textContent = "Desbloquear PDF";
+            showReady("PDF Carregado", "pdf-badge", "Pronto para remo\xE7\xE3o de restri\xE7\xF5es de impress\xE3o e edi\xE7\xE3o.", "Desbloquear PDF");
           }
+        } finally {
+          loadingTask.destroy();
         }
       }
       function _reset() {
@@ -8390,17 +8408,20 @@ ${footerDelimiter}
         _setViewState("empty");
       }
       async function _doUnlock() {
-        if (!_currentArrayBuffer) return;
+        if (!_currentArrayBuffer || _busy) return;
+        _busy = true;
+        unlockBtn.disabled = true;
+        const pdfjsData = () => new Uint8Array(_currentArrayBuffer.slice(0));
         _setViewState("loading");
         _updateProgress(10, "Iniciando desbloqueio criptogr\xE1fico...", "Carregando motor nativo WebAssembly...", "Etapa 1 / 3");
         await new Promise((r) => setTimeout(r, 20));
-        await _ensureLibs();
-        const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
-        const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-        const createQpdf = typeof window !== "undefined" && window.createQpdfModule || globalThis.createQpdfModule;
-        const password = passwordInput.value.trim();
-        let stderr = "";
+        const password = passwordInput.value;
+        let passwordRejected = false;
         try {
+          await _ensureLibs();
+          const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
+          const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+          const createQpdf = typeof window !== "undefined" && window.createQpdfModule || globalThis.createQpdfModule;
           let unlockedBytes = null;
           let pageCount = 1;
           if (createQpdf) {
@@ -8414,36 +8435,18 @@ ${footerDelimiter}
               });
               const inPath = "/input.pdf";
               const outPath = "/output.pdf";
+              const pwdArg = `--password=${password}`;
               qpdf.FS.writeFile(inPath, new Uint8Array(_currentArrayBuffer));
-              qpdf.printErr = (t) => {
-                stderr += t + "\n";
-              };
-              const args = ["--warning-exit-0"];
-              if (password && password.length > 0) {
-                args.push(`--password=${password}`);
-              } else {
-                args.push("--password=");
-              }
-              args.push(inPath, "--decrypt", outPath);
+              let rc = 2;
               try {
-                qpdf.callMain(args);
+                rc = qpdf.callMain(["--warning-exit-0", pwdArg, inPath, "--decrypt", outPath]);
               } catch (cErr) {
                 console.warn("QPDF callMain:", cErr);
               }
-              try {
-                const cand = qpdf.FS.readFile(outPath);
-                if (cand && cand.length > 100) {
-                  unlockedBytes = cand;
-                }
-              } catch (_) {
-              }
-              if (!unlockedBytes && (!password || password.length === 0)) {
+              if (rc === 0 || rc === 3) {
                 try {
-                  qpdf.callMain(["--warning-exit-0", "--password=", inPath, "--decrypt", outPath]);
-                  const cand2 = qpdf.FS.readFile(outPath);
-                  if (cand2 && cand2.length > 100) {
-                    unlockedBytes = cand2;
-                  }
+                  const cand = qpdf.FS.readFile(outPath);
+                  if (cand && cand.length > 100) unlockedBytes = cand;
                 } catch (_) {
                 }
               }
@@ -8455,14 +8458,7 @@ ${footerDelimiter}
                 qpdf.FS.unlink(outPath);
               } catch (_) {
               }
-              if (!unlockedBytes && (stderr.toLowerCase().includes("invalid password") || stderr.toLowerCase().includes("user password"))) {
-                _requiresPassword = true;
-                passwordGroup.style.display = "flex";
-                passwordInput.focus();
-                throw new Error("PASSWORD_REQUIRED");
-              }
             } catch (qErr) {
-              if (qErr.message === "PASSWORD_REQUIRED") throw qErr;
               const qMsg = qErr && qErr.message || String(qErr);
               if (qMsg.includes("memory") || qMsg.includes("alloc") || qMsg.includes("Cannot enlarge")) {
                 throw new Error("OUT_OF_MEMORY");
@@ -8475,19 +8471,25 @@ ${footerDelimiter}
             await new Promise((r) => setTimeout(r, 20));
             try {
               const srcDoc = await PDFLib.PDFDocument.load(new Uint8Array(_currentArrayBuffer), { ignoreEncryption: true });
-              unlockedBytes = await srcDoc.save();
+              if (!srcDoc.isEncrypted) {
+                unlockedBytes = await srcDoc.save();
+              } else if (createQpdf && _requiresPassword) {
+                passwordRejected = true;
+              }
             } catch (eLib) {
               console.warn("PDF-Lib direto falhou:", eLib);
             }
           }
-          if (!unlockedBytes && pdfjsLib2 && PDFLib && _currentArrayBuffer.byteLength < 30 * 1024 * 1024) {
+          if (passwordRejected) throw new Error("PASSWORD_REQUIRED");
+          if (!unlockedBytes && pdfjsLib && PDFLib && _currentArrayBuffer.byteLength < 30 * 1024 * 1024) {
             _updateProgress(65, "Liberando permiss\xF5es via motor gr\xE1fico...", "Reconstruindo p\xE1ginas para documento 100% desbloqueado...", "Etapa 2 / 3");
             await new Promise((r) => setTimeout(r, 20));
+            const loadingTask = pdfjsLib.getDocument({ data: pdfjsData(), password: password || void 0 });
+            loadingTask.onPassword = () => {
+              passwordRejected = true;
+              loadingTask.destroy();
+            };
             try {
-              const loadingTask = pdfjsLib2.getDocument({ data: new Uint8Array(_currentArrayBuffer) });
-              if (password && password.length > 0) {
-                loadingTask.onPassword = (cb) => cb(password);
-              }
               const jsDoc = await loadingTask.promise;
               pageCount = jsDoc.numPages;
               if (pageCount <= 30) {
@@ -8496,32 +8498,26 @@ ${footerDelimiter}
                 const ctx = canvas.getContext("2d", { alpha: false });
                 for (let p = 1; p <= pageCount; p++) {
                   const page = await jsDoc.getPage(p);
-                  const vp = page.getViewport({ scale: 1.2 });
-                  canvas.width = vp.width;
-                  canvas.height = vp.height;
-                  await page.render({ canvasContext: ctx, viewport: vp }).promise;
-                  const imgDataUrl = canvas.toDataURL("image/jpeg", 0.88);
-                  const imgBytes = _dataUrlToBytes(imgDataUrl);
+                  const pageVp = page.getViewport({ scale: 1 });
+                  const renderVp = page.getViewport({ scale: 1.5 });
+                  canvas.width = renderVp.width;
+                  canvas.height = renderVp.height;
+                  await page.render({ canvasContext: ctx, viewport: renderVp }).promise;
+                  const imgBytes = _dataUrlToBytes(canvas.toDataURL("image/jpeg", 0.88));
                   const embedded = await newDoc.embedJpg(imgBytes);
-                  const newPage = newDoc.addPage([vp.width, vp.height]);
-                  newPage.drawImage(embedded, { x: 0, y: 0, width: vp.width, height: vp.height });
+                  const newPage = newDoc.addPage([pageVp.width, pageVp.height]);
+                  newPage.drawImage(embedded, { x: 0, y: 0, width: pageVp.width, height: pageVp.height });
                 }
                 unlockedBytes = await newDoc.save();
               }
             } catch (eFallback) {
               console.warn("Fallback gr\xE1fico falhou:", eFallback);
+            } finally {
+              loadingTask.destroy();
             }
           }
           if (!unlockedBytes) {
-            if (stderr.toLowerCase().includes("invalid password") || stderr.toLowerCase().includes("password")) {
-              _requiresPassword = true;
-              passwordGroup.style.display = "flex";
-              passwordInput.focus();
-              throw new Error("PASSWORD_REQUIRED");
-            }
-            if (stderr.toLowerCase().includes("memory") || stderr.toLowerCase().includes("alloc")) {
-              throw new Error("OUT_OF_MEMORY");
-            }
+            if (passwordRejected || _requiresPassword) throw new Error("PASSWORD_REQUIRED");
             throw new Error("Falha ao descriptografar documento.");
           }
           _updateProgress(85, "Validando documento...", "Confirmando texto selecion\xE1vel e p\xE1ginas...", "Etapa 3 / 3");
@@ -8538,9 +8534,9 @@ ${footerDelimiter}
           _unlockedPdfBlob = new Blob([unlockedBytes], { type: "application/pdf" });
           metaPages.textContent = pageCount;
           metaSize.textContent = _formatBytes(_unlockedPdfBlob.size);
-          if (pdfjsLib2) {
+          if (pdfjsLib) {
+            const previewTask = pdfjsLib.getDocument({ data: unlockedBytes.slice(0) });
             try {
-              const previewTask = pdfjsLib2.getDocument({ data: unlockedBytes });
               const previewDoc = await previewTask.promise;
               pageCount = previewDoc.numPages || pageCount;
               metaPages.textContent = pageCount;
@@ -8554,20 +8550,31 @@ ${footerDelimiter}
               await firstPage.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
             } catch (e) {
               console.warn("Miniatura preview n\xE3o dispon\xEDvel:", e);
+            } finally {
+              previewTask.destroy();
             }
           }
           _setViewState("result");
         } catch (err) {
-          console.error("Falha ao desbloquear PDF:", err);
           _setViewState("empty");
           if (err.message === "PASSWORD_REQUIRED") {
-            alert("Este documento exige senha de abertura v\xE1lida. Por favor, insira a senha no campo correspondente.");
+            console.warn("Desbloqueio: senha de abertura ausente ou incorreta.");
+            _requiresPassword = true;
+            passwordGroup.style.display = "flex";
+            unlockBtnText.textContent = "Descriptografar com Senha";
+            passwordInput.focus();
+            alert(password ? "Senha incorreta. Verifique a senha de abertura do documento e tente novamente." : "Este documento exige senha de abertura. Por favor, insira a senha no campo correspondente.");
           } else if (err.message === "OUT_OF_MEMORY" || err.message && err.message.toLowerCase().includes("memory") || err.name === "RangeError") {
+            console.error("Falha ao desbloquear PDF:", err);
             const sizeStr = _currentFile2 ? _formatBytes(_currentFile2.size) : "";
             alert(`Mem\xF3ria do navegador insuficiente para processar este PDF de ${sizeStr}. Recomendamos fechar outras abas para liberar mem\xF3ria.`);
           } else {
+            console.error("Falha ao desbloquear PDF:", err);
             alert("Erro ao desbloquear o PDF. Verifique se o arquivo est\xE1 corrompido ou se a senha est\xE1 correta.");
           }
+        } finally {
+          _busy = false;
+          unlockBtn.disabled = !_currentArrayBuffer;
         }
       }
       _on3(dropzone, "click", (e) => {
@@ -8603,12 +8610,15 @@ ${footerDelimiter}
       });
       _on3(unlockBtn, "click", _doUnlock);
       _on3(copyTextBtn, "click", async () => {
+        const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
         if (!_unlockedPdfBlob || !pdfjsLib) return;
         const originalText = copyBtnText ? copyBtnText.textContent : "Copiar Texto";
+        let task = null;
         try {
           if (copyBtnText) copyBtnText.textContent = "Copiando...";
           const arr = await _unlockedPdfBlob.arrayBuffer();
-          const doc = await pdfjsLib.getDocument({ data: new Uint8Array(arr) }).promise;
+          task = pdfjsLib.getDocument({ data: new Uint8Array(arr) });
+          const doc = await task.promise;
           let allText = "";
           for (let i = 1; i <= doc.numPages; i++) {
             const page = await doc.getPage(i);
@@ -8628,6 +8638,8 @@ ${pageStr}
           console.error("Erro ao copiar texto:", err);
           if (copyBtnText) copyBtnText.textContent = originalText;
           alert("Falha ao extrair texto para a \xE1rea de transfer\xEAncia.");
+        } finally {
+          if (task) task.destroy();
         }
       });
       _on3(downloadBtn, "click", () => {
@@ -8869,6 +8881,7 @@ ${pageStr}
   var _currentFile3 = null;
   var _currentArrayBuffer2 = null;
   var _compressedPdfBlob = null;
+  var _busy2 = false;
   var _currentPreset = "balanced";
   function _on4(element, event, handler) {
     if (!element) return;
@@ -8891,9 +8904,9 @@ ${pageStr}
     if (promises.length > 0) {
       await Promise.all(promises);
     }
-    const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-    if (pdfjsLib2 && pdfjsLib2.GlobalWorkerOptions && !pdfjsLib2.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib2.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+    const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
     }
   }
   var PRESETS = {
@@ -8964,8 +8977,18 @@ ${pageStr}
         qualityVal.textContent = Math.round(cfg.quality * 100) + "%";
       }
       async function _handleFile(file) {
-        _currentFile3 = file;
-        _currentArrayBuffer2 = await file.arrayBuffer();
+        if (_busy2) return;
+        try {
+          _currentFile3 = file;
+          _currentArrayBuffer2 = await file.arrayBuffer();
+        } catch (err) {
+          console.error("Falha ao ler o arquivo:", err);
+          alert("N\xE3o foi poss\xEDvel ler o arquivo selecionado.");
+          _reset();
+          return;
+        }
+        _compressedPdfBlob = null;
+        _setViewState("empty");
         filenameEl.textContent = file.name;
         filesizeEl.textContent = _formatBytes2(file.size);
         dropPrompt.style.display = "none";
@@ -8994,24 +9017,23 @@ ${pageStr}
         return bytes;
       }
       async function _doCompress() {
-        if (!_currentArrayBuffer2) return;
+        if (!_currentArrayBuffer2 || _busy2) return;
+        _busy2 = true;
+        compressBtn.disabled = true;
         _setViewState("loading");
         _updateProgress(5, "Iniciando otimiza\xE7\xE3o...", "Carregando estrutura e decodificando p\xE1ginas...", "0 / 0 p\xE1gs");
         await new Promise((r) => setTimeout(r, 25));
-        await _ensureLibs2();
-        const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
-        const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-        if (!PDFLib || !pdfjsLib2) {
-          alert("Bibliotecas de processamento de PDF indispon\xEDveis.");
-          _setViewState("empty");
-          return;
-        }
         const dpi = parseInt(dpiRange.value, 10) || 100;
         const quality = (parseInt(qualityRange.value, 10) || 70) / 100;
         const renderScale = dpi / 72;
+        let loadingTask = null;
         try {
+          await _ensureLibs2();
+          const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
+          const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+          if (!PDFLib || !pdfjsLib) throw new Error("Bibliotecas de processamento de PDF indispon\xEDveis.");
           const copyBuf = _currentArrayBuffer2.slice(0);
-          const loadingTask = pdfjsLib2.getDocument({ data: copyBuf });
+          loadingTask = pdfjsLib.getDocument({ data: copyBuf });
           const jsDoc = await loadingTask.promise;
           const numPages = jsDoc.numPages;
           const newPdfDoc = await PDFLib.PDFDocument.create();
@@ -9046,7 +9068,8 @@ ${pageStr}
           _updateProgress(95, "Gerando arquivo PDF comprimido...", "Reconstruindo fluxos e \xE1rvore de objetos...", `${numPages} / ${numPages} p\xE1gs`);
           await new Promise((r) => setTimeout(r, 20));
           const compressedBytes = await newPdfDoc.save();
-          _compressedPdfBlob = new Blob([compressedBytes], { type: "application/pdf" });
+          const keptOriginal = compressedBytes.byteLength >= _currentArrayBuffer2.byteLength;
+          _compressedPdfBlob = new Blob([keptOriginal ? _currentArrayBuffer2 : compressedBytes], { type: "application/pdf" });
           _updateProgress(100, "Compress\xE3o conclu\xEDda com sucesso!", "Preparando visualiza\xE7\xE3o...", `${numPages} / ${numPages} p\xE1gs`);
           await new Promise((r) => setTimeout(r, 20));
           const origSize = _currentFile3.size;
@@ -9055,20 +9078,23 @@ ${pageStr}
           const pct = origSize > 0 ? Math.round(diff / origSize * 100) : 0;
           statOrig.textContent = _formatBytes2(origSize);
           statNew.textContent = _formatBytes2(newSize);
-          if (pct >= 0) {
+          if (!keptOriginal) {
             statPct.textContent = `-${pct}%`;
+            statPct.title = "";
             statPct.style.background = "color-mix(in srgb, #10b981 18%, transparent)";
             statPct.style.color = "#10b981";
             metaSaved.textContent = _formatBytes2(Math.max(0, diff));
           } else {
-            statPct.textContent = `+${Math.abs(pct)}%`;
+            statPct.textContent = "0% \xB7 j\xE1 otimizado";
+            statPct.title = "A vers\xE3o comprimida ficaria maior que o original; o arquivo original foi mantido.";
             statPct.style.background = "color-mix(in srgb, #f59e0b 18%, transparent)";
             statPct.style.color = "#f59e0b";
             metaSaved.textContent = "0 B";
           }
           metaPages.textContent = numPages;
+          const previewTask = pdfjsLib.getDocument({ data: compressedBytes.slice(0) });
           try {
-            const previewDoc = await pdfjsLib2.getDocument({ data: compressedBytes.slice(0) }).promise;
+            const previewDoc = await previewTask.promise;
             const firstPage = await previewDoc.getPage(1);
             const stageVp = firstPage.getViewport({ scale: 1 });
             const scale = Math.min(260 / stageVp.width, 230 / stageVp.height);
@@ -9079,12 +9105,18 @@ ${pageStr}
             await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
           } catch (e) {
             console.warn("Erro ao renderizar miniatura comprimida:", e);
+          } finally {
+            previewTask.destroy();
           }
           _setViewState("result");
         } catch (err) {
           console.error("Falha ao comprimir PDF:", err);
           _setViewState("empty");
           alert("Erro ao comprimir o PDF. O arquivo pode estar corrompido ou protegido por senha.");
+        } finally {
+          if (loadingTask) loadingTask.destroy();
+          _busy2 = false;
+          compressBtn.disabled = !_currentArrayBuffer2;
         }
       }
       _on4(dropzone, "click", (e) => {
@@ -9157,6 +9189,7 @@ ${pageStr}
       _currentFile3 = null;
       _currentArrayBuffer2 = null;
       _compressedPdfBlob = null;
+      _busy2 = false;
     }
   };
 
@@ -9309,6 +9342,7 @@ ${pageStr}
   var _listeners6 = [];
   var _filesQueue = [];
   var _mergedPdfBlob = null;
+  var _busy3 = false;
   function _on5(element, event, handler) {
     if (!element) return;
     element.addEventListener(event, handler);
@@ -9330,9 +9364,9 @@ ${pageStr}
     if (promises.length > 0) {
       await Promise.all(promises);
     }
-    const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-    if (pdfjsLib2 && pdfjsLib2.GlobalWorkerOptions && !pdfjsLib2.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib2.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+    const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
     }
   }
   var tool_default7 = {
@@ -9381,7 +9415,7 @@ ${pageStr}
       function _renderList() {
         countBadge.textContent = _filesQueue.length;
         clearBtn.style.display = _filesQueue.length > 0 ? "inline-block" : "none";
-        mergeBtn.disabled = _filesQueue.length < 2;
+        mergeBtn.disabled = _busy3 || _filesQueue.length < 2;
         if (_filesQueue.length === 0) {
           fileList.innerHTML = "";
           fileList.appendChild(listEmpty);
@@ -9396,7 +9430,7 @@ ${pageStr}
           row.innerHTML = `
           <div class="pdf-merge-item-order">${index + 1}</div>
           <div class="pdf-merge-item-info">
-            <span class="pdf-merge-item-name" title="${item.file.name}">${item.file.name}</span>
+            <span class="pdf-merge-item-name"></span>
             <span class="pdf-merge-item-size">${_formatBytes3(item.file.size)}</span>
           </div>
           <div class="pdf-merge-item-actions">
@@ -9405,11 +9439,16 @@ ${pageStr}
             <button type="button" class="pdf-item-ctrl-btn btn-del" data-idx="${index}" title="Remover">${ICONS.x(13)}</button>
           </div>
         `;
+          const nameEl = row.querySelector(".pdf-merge-item-name");
+          nameEl.textContent = item.file.name;
+          nameEl.title = item.file.name;
           fileList.appendChild(row);
         });
         fileList.querySelectorAll(".btn-up").forEach((btn) => {
+          btn.disabled = btn.disabled || _busy3;
           btn.addEventListener("click", (e) => {
             e.stopPropagation();
+            if (_busy3) return;
             const idx = parseInt(btn.dataset.idx, 10);
             if (idx > 0) {
               const temp = _filesQueue[idx];
@@ -9420,8 +9459,10 @@ ${pageStr}
           });
         });
         fileList.querySelectorAll(".btn-down").forEach((btn) => {
+          btn.disabled = btn.disabled || _busy3;
           btn.addEventListener("click", (e) => {
             e.stopPropagation();
+            if (_busy3) return;
             const idx = parseInt(btn.dataset.idx, 10);
             if (idx < _filesQueue.length - 1) {
               const temp = _filesQueue[idx];
@@ -9432,42 +9473,52 @@ ${pageStr}
           });
         });
         fileList.querySelectorAll(".btn-del").forEach((btn) => {
+          btn.disabled = btn.disabled || _busy3;
           btn.addEventListener("click", (e) => {
             e.stopPropagation();
+            if (_busy3) return;
             const idx = parseInt(btn.dataset.idx, 10);
             _filesQueue.splice(idx, 1);
+            _mergedPdfBlob = null;
+            _setViewState("empty");
             _renderList();
           });
         });
       }
       async function _addFiles(files) {
+        if (_busy3) return;
         for (const file of files) {
           if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
-            const buffer = await file.arrayBuffer();
-            _filesQueue.push({ file, buffer });
+            try {
+              const buffer = await file.arrayBuffer();
+              _filesQueue.push({ file, buffer });
+            } catch (err) {
+              console.warn("Falha ao ler arquivo:", file.name, err);
+            }
           }
         }
+        _mergedPdfBlob = null;
+        _setViewState("empty");
         _renderList();
       }
       async function _doMerge() {
-        if (_filesQueue.length < 2) return;
+        if (_filesQueue.length < 2 || _busy3) return;
+        _busy3 = true;
+        _renderList();
+        const queue = _filesQueue.slice();
         _setViewState("loading");
-        _updateProgress(5, "Iniciando mesclagem...", "Carregando bibliotecas na mem\xF3ria local...", `0 / ${_filesQueue.length} arquivos`);
+        _updateProgress(5, "Iniciando mesclagem...", "Carregando bibliotecas na mem\xF3ria local...", `0 / ${queue.length} arquivos`);
         await new Promise((r) => setTimeout(r, 25));
-        await _ensureLibs3();
-        const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
-        const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-        if (!PDFLib) {
-          alert("Biblioteca PDFLib n\xE3o dispon\xEDvel.");
-          _setViewState("empty");
-          return;
-        }
         try {
+          await _ensureLibs3();
+          const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
+          const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+          if (!PDFLib) throw new Error("Biblioteca PDFLib n\xE3o dispon\xEDvel.");
           const mergedDoc = await PDFLib.PDFDocument.create();
           let totalPages = 0;
-          const totalDocs = _filesQueue.length;
+          const totalDocs = queue.length;
           for (let i = 0; i < totalDocs; i++) {
-            const item = _filesQueue[i];
+            const item = queue[i];
             const docIdx = i + 1;
             const currentPct = Math.round(5 + i / totalDocs * 85);
             _updateProgress(
@@ -9479,39 +9530,45 @@ ${pageStr}
             await new Promise((r) => setTimeout(r, 20));
             try {
               const srcDoc = await PDFLib.PDFDocument.load(item.buffer.slice(0), { ignoreEncryption: true });
+              if (srcDoc.isEncrypted) throw new Error("ENCRYPTED");
               const pageIndices = srcDoc.getPageIndices();
               const copiedPages = await mergedDoc.copyPages(srcDoc, pageIndices);
               copiedPages.forEach((page) => mergedDoc.addPage(page));
               totalPages += pageIndices.length;
             } catch (loadErr) {
-              if (pdfjsLib2) {
-                const loadingTask = pdfjsLib2.getDocument({ data: item.buffer.slice(0) });
-                const jsDoc = await loadingTask.promise;
-                const numPgs = jsDoc.numPages;
-                for (let p = 1; p <= numPgs; p++) {
-                  _updateProgress(
-                    currentPct,
-                    `Processando p\xE1gina ${p}/${numPgs} do doc ${docIdx}...`,
-                    `${item.file.name} (extra\xE7\xE3o rasterizada)`,
-                    `${docIdx} / ${totalDocs} arquivos`
-                  );
-                  await new Promise((r) => setTimeout(r, 10));
-                  const page = await jsDoc.getPage(p);
-                  const vp = page.getViewport({ scale: 1.5 });
-                  const canvas = document.createElement("canvas");
-                  canvas.width = vp.width;
-                  canvas.height = vp.height;
-                  const ctx = canvas.getContext("2d");
-                  await page.render({ canvasContext: ctx, viewport: vp }).promise;
-                  const imgDataUrl = canvas.toDataURL("image/jpeg", 0.9);
-                  const parts = imgDataUrl.split(",");
-                  const bin = atob(parts[1]);
-                  const bytes = new Uint8Array(bin.length);
-                  for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
-                  const embedded = await mergedDoc.embedJpg(bytes);
-                  const newPg = mergedDoc.addPage([vp.width, vp.height]);
-                  newPg.drawImage(embedded, { x: 0, y: 0, width: vp.width, height: vp.height });
-                  totalPages++;
+              if (pdfjsLib) {
+                const loadingTask = pdfjsLib.getDocument({ data: item.buffer.slice(0) });
+                try {
+                  const jsDoc = await loadingTask.promise;
+                  const numPgs = jsDoc.numPages;
+                  for (let p = 1; p <= numPgs; p++) {
+                    _updateProgress(
+                      currentPct,
+                      `Processando p\xE1gina ${p}/${numPgs} do doc ${docIdx}...`,
+                      `${item.file.name} (extra\xE7\xE3o rasterizada)`,
+                      `${docIdx} / ${totalDocs} arquivos`
+                    );
+                    await new Promise((r) => setTimeout(r, 10));
+                    const page = await jsDoc.getPage(p);
+                    const pageVp = page.getViewport({ scale: 1 });
+                    const vp = page.getViewport({ scale: 1.5 });
+                    const canvas = document.createElement("canvas");
+                    canvas.width = vp.width;
+                    canvas.height = vp.height;
+                    const ctx = canvas.getContext("2d");
+                    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+                    const imgDataUrl = canvas.toDataURL("image/jpeg", 0.9);
+                    const parts = imgDataUrl.split(",");
+                    const bin = atob(parts[1]);
+                    const bytes = new Uint8Array(bin.length);
+                    for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
+                    const embedded = await mergedDoc.embedJpg(bytes);
+                    const newPg = mergedDoc.addPage([pageVp.width, pageVp.height]);
+                    newPg.drawImage(embedded, { x: 0, y: 0, width: pageVp.width, height: pageVp.height });
+                    totalPages++;
+                  }
+                } finally {
+                  loadingTask.destroy();
                 }
               } else {
                 throw loadErr;
@@ -9522,14 +9579,15 @@ ${pageStr}
           await new Promise((r) => setTimeout(r, 20));
           const mergedBytes = await mergedDoc.save();
           _mergedPdfBlob = new Blob([mergedBytes], { type: "application/pdf" });
-          metaDocs.textContent = _filesQueue.length;
+          metaDocs.textContent = totalDocs;
           metaPages.textContent = totalPages;
           metaSize.textContent = _formatBytes3(_mergedPdfBlob.size);
           _updateProgress(100, "Mesclagem conclu\xEDda!", "Renderizando miniatura de confirma\xE7\xE3o...", `${totalDocs} / ${totalDocs} arquivos`);
           await new Promise((r) => setTimeout(r, 20));
-          if (pdfjsLib2) {
+          if (pdfjsLib) {
+            const previewTask = pdfjsLib.getDocument({ data: mergedBytes.slice(0) });
             try {
-              const previewDoc = await pdfjsLib2.getDocument({ data: mergedBytes.slice(0) }).promise;
+              const previewDoc = await previewTask.promise;
               const firstPage = await previewDoc.getPage(1);
               const stageVp = firstPage.getViewport({ scale: 1 });
               const scale = Math.min(260 / stageVp.width, 230 / stageVp.height);
@@ -9540,6 +9598,8 @@ ${pageStr}
               await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
             } catch (e) {
               console.warn("Erro ao renderizar miniatura mesclada:", e);
+            } finally {
+              previewTask.destroy();
             }
           }
           _setViewState("result");
@@ -9547,6 +9607,9 @@ ${pageStr}
           console.error("Falha ao mesclar PDFs:", err);
           _setViewState("empty");
           alert("Erro ao mesclar documentos. Um dos arquivos pode ter criptografia pesada.");
+        } finally {
+          _busy3 = false;
+          _renderList();
         }
       }
       _on5(dropzone, "click", () => {
@@ -9578,7 +9641,9 @@ ${pageStr}
         }
       });
       const _resetQueue = () => {
+        if (_busy3) return;
         _filesQueue = [];
+        _mergedPdfBlob = null;
         _renderList();
         _setViewState("empty");
       };
@@ -9608,6 +9673,7 @@ ${pageStr}
       _listeners6 = [];
       _filesQueue = [];
       _mergedPdfBlob = null;
+      _busy3 = false;
     }
   };
 
@@ -9839,6 +9905,7 @@ ${pageStr}
   var _outputBlob = null;
   var _isZip = false;
   var _downloadName = "documentos_divididos.zip";
+  var _busy4 = false;
   function _on6(element, event, handler) {
     if (!element) return;
     element.addEventListener(event, handler);
@@ -9873,9 +9940,9 @@ ${pageStr}
     if (promises.length > 0) {
       await Promise.all(promises);
     }
-    const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-    if (pdfjsLib2 && pdfjsLib2.GlobalWorkerOptions && !pdfjsLib2.GlobalWorkerOptions.workerSrc) {
-      pdfjsLib2.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
+    const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = APP_CONFIG.CDN.PDFJS_WORKER;
     }
   }
   var tool_default8 = {
@@ -10020,7 +10087,7 @@ ${pageStr}
         const count = parts.length;
         sumOutCount.textContent = `${count} ${count === 1 ? "arquivo" : "arquivos"}`;
         if (_currentNumPages > 0 && count > 0) {
-          splitBtn.disabled = false;
+          splitBtn.disabled = _busy4;
           splitBtnText.textContent = count === 1 ? "Extrair PDF Agora" : `Dividir em ${count} PDFs`;
         } else {
           splitBtn.disabled = true;
@@ -10039,20 +10106,32 @@ ${pageStr}
         _updateSummary();
       }
       async function _handleFile(file) {
-        _currentFile4 = file;
-        _currentArrayBuffer3 = await file.arrayBuffer();
+        if (_busy4) return;
+        try {
+          _currentFile4 = file;
+          _currentArrayBuffer3 = await file.arrayBuffer();
+        } catch (err) {
+          console.error("Falha ao ler o arquivo:", err);
+          alert("N\xE3o foi poss\xEDvel ler o arquivo selecionado.");
+          _reset();
+          return;
+        }
+        _outputBlob = null;
+        _isZip = false;
+        _setViewState("empty");
         filenameEl.textContent = file.name;
         filesizeEl.textContent = _formatBytes4(file.size);
         dropPrompt.style.display = "none";
         fileLoadedBox.style.display = "flex";
         if (clearInputBtn) clearInputBtn.style.display = "inline-flex";
-        await _ensureLibs4();
-        const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+        let task = null;
         try {
+          await _ensureLibs4();
+          const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
           const copyBuf = _currentArrayBuffer3.slice(0);
           let numPgs = 1;
-          if (pdfjsLib2) {
-            const task = pdfjsLib2.getDocument({ data: copyBuf });
+          if (pdfjsLib) {
+            task = pdfjsLib.getDocument({ data: copyBuf });
             const doc = await task.promise;
             numPgs = doc.numPages;
             try {
@@ -10093,6 +10172,8 @@ ${pageStr}
           console.error("Erro ao ler PDF:", err);
           alert("N\xE3o foi poss\xEDvel ler as p\xE1ginas do documento. O arquivo pode estar protegido por senha.");
           _reset();
+        } finally {
+          if (task) task.destroy();
         }
       }
       function _reset() {
@@ -10114,27 +10195,33 @@ ${pageStr}
       }
       async function _doSplit() {
         const partitions = _calcPartitions();
-        if (!_currentArrayBuffer3 || partitions.length === 0) return;
+        if (!_currentArrayBuffer3 || partitions.length === 0 || _busy4) return;
+        _busy4 = true;
+        splitBtn.disabled = true;
         _setViewState("loading");
         _updateProgress(5, "Iniciando divis\xE3o...", "Carregando documento e estruturando parti\xE7\xF5es...", `0 / ${partitions.length} partes`);
         await new Promise((r) => setTimeout(r, 25));
-        await _ensureLibs4();
-        const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
-        const pdfjsLib2 = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
-        const JSZip = typeof window !== "undefined" && window.JSZip || globalThis.JSZip;
-        if (!PDFLib) {
-          alert("Biblioteca PDFLib n\xE3o dispon\xEDvel.");
-          _setViewState("empty");
-          return;
-        }
+        let jsTask = null;
         try {
+          await _ensureLibs4();
+          const PDFLib = typeof window !== "undefined" && window.PDFLib || globalThis.PDFLib;
+          const pdfjsLib = typeof window !== "undefined" && window.pdfjsLib || globalThis.pdfjsLib;
+          const JSZip = typeof window !== "undefined" && window.JSZip || globalThis.JSZip;
+          if (!PDFLib) throw new Error("Biblioteca PDFLib n\xE3o dispon\xEDvel.");
           const copyBuf = _currentArrayBuffer3.slice(0);
           let srcDoc = null;
           let usePdfJsFallback = false;
           try {
             srcDoc = await PDFLib.PDFDocument.load(copyBuf, { ignoreEncryption: true });
+            if (srcDoc.isEncrypted) usePdfJsFallback = true;
           } catch (loadErr) {
             usePdfJsFallback = true;
+          }
+          let jsDoc = null;
+          if (usePdfJsFallback) {
+            if (!pdfjsLib) throw new Error("Documento criptografado e PDF.js indispon\xEDvel.");
+            jsTask = pdfjsLib.getDocument({ data: copyBuf.slice(0) });
+            jsDoc = await jsTask.promise;
           }
           const generatedFiles = [];
           let totalPagesExtracted = 0;
@@ -10150,14 +10237,13 @@ ${pageStr}
             );
             await new Promise((r) => setTimeout(r, 15));
             const newDoc = await PDFLib.PDFDocument.create();
-            if (!usePdfJsFallback && srcDoc) {
+            if (!usePdfJsFallback) {
               const copiedPages = await newDoc.copyPages(srcDoc, part.indices);
               copiedPages.forEach((p) => newDoc.addPage(p));
-            } else if (pdfjsLib2) {
-              const loadingTask = pdfjsLib2.getDocument({ data: copyBuf.slice(0) });
-              const jsDoc = await loadingTask.promise;
+            } else {
               for (const pageIdx of part.indices) {
                 const page = await jsDoc.getPage(pageIdx + 1);
+                const pageVp = page.getViewport({ scale: 1 });
                 const viewport = page.getViewport({ scale: 1.5 });
                 const canvas = document.createElement("canvas");
                 canvas.width = viewport.width;
@@ -10167,12 +10253,12 @@ ${pageStr}
                 const imgDataUrl = canvas.toDataURL("image/jpeg", 0.9);
                 const bytes = _dataUrlToBytes2(imgDataUrl);
                 const embedded = await newDoc.embedJpg(bytes);
-                const newPage = newDoc.addPage([viewport.width, viewport.height]);
+                const newPage = newDoc.addPage([pageVp.width, pageVp.height]);
                 newPage.drawImage(embedded, {
                   x: 0,
                   y: 0,
-                  width: viewport.width,
-                  height: viewport.height
+                  width: pageVp.width,
+                  height: pageVp.height
                 });
               }
             }
@@ -10211,9 +10297,9 @@ ${pageStr}
           metaFiles.textContent = generatedFiles.length;
           metaPages.textContent = totalPagesExtracted;
           metaSize.textContent = _formatBytes4(_outputBlob.size);
-          if (pdfjsLib2 && generatedFiles[0]) {
+          if (pdfjsLib && generatedFiles[0]) {
+            const previewTask = pdfjsLib.getDocument({ data: generatedFiles[0].bytes.slice(0) });
             try {
-              const previewTask = pdfjsLib2.getDocument({ data: generatedFiles[0].bytes.slice(0) });
               const previewDoc = await previewTask.promise;
               const firstPage = await previewDoc.getPage(1);
               const stageVp = firstPage.getViewport({ scale: 1 });
@@ -10225,6 +10311,8 @@ ${pageStr}
               await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
             } catch (e) {
               console.warn("Erro ao renderizar thumbnail gerada:", e);
+            } finally {
+              previewTask.destroy();
             }
           }
           _setViewState("result");
@@ -10232,6 +10320,10 @@ ${pageStr}
           console.error("Falha ao dividir PDF:", err);
           _setViewState("empty");
           alert("Erro ao processar a divis\xE3o do PDF. Verifique os intervalos informados.");
+        } finally {
+          if (jsTask) jsTask.destroy();
+          _busy4 = false;
+          _updateSummary();
         }
       }
       _on6(dropzone, "click", (e) => {
@@ -10298,6 +10390,8 @@ ${pageStr}
       _currentNumPages = 0;
       _outputBlob = null;
       _isZip = false;
+      _busy4 = false;
+      _downloadName = "documentos_divididos.zip";
     }
   };
 
@@ -10367,9 +10461,14 @@ ${pageStr}
   var _activeModule = null;
   var _activeToolId = null;
   var _viewport = null;
+  var _navToken = 0;
   async function initRegistry(viewport) {
     _viewport = viewport;
-    const savedTool = localStorage.getItem(STORAGE_KEY_ACTIVE_TOOL);
+    let savedTool = null;
+    try {
+      savedTool = localStorage.getItem(STORAGE_KEY_ACTIVE_TOOL);
+    } catch (e) {
+    }
     const initialTool = TOOL_CATALOG.find((t) => t.id === savedTool) || TOOL_CATALOG.find((t) => t.id === "doc2md") || TOOL_CATALOG[0];
     await activateTool(initialTool.id);
   }
@@ -10380,12 +10479,16 @@ ${pageStr}
       console.error(`[ToolRegistry] Ferramenta desconhecida: ${toolId}`);
       return;
     }
+    const token = ++_navToken;
+    const isStale = () => token !== _navToken;
     if (_activeModule && typeof _activeModule.unmount === "function") {
       try {
         _activeModule.unmount();
       } catch (e) {
       }
     }
+    _activeModule = null;
+    _activeToolId = null;
     if (!_viewport && typeof document !== "undefined") {
       _viewport = document.getElementById("toolViewport");
     }
@@ -10403,6 +10506,7 @@ ${pageStr}
         mod = { default: window.__OPEN_TOOL_MODULES__[toolId] };
       } else if (toolMeta.modulePath) {
         mod = await import(toolMeta.modulePath);
+        if (isStale()) return;
       }
       _activeModule = mod.default;
       _activeToolId = toolId;
@@ -10411,16 +10515,22 @@ ${pageStr}
       }
       _viewport.style.minHeight = "";
       await new Promise((r) => setTimeout(r, 20));
+      if (isStale()) return;
       if (typeof _activeModule.mount === "function") {
         await _activeModule.mount(_viewport);
       }
-      localStorage.setItem(STORAGE_KEY_ACTIVE_TOOL, toolId);
+      if (isStale()) return;
+      try {
+        localStorage.setItem(STORAGE_KEY_ACTIVE_TOOL, toolId);
+      } catch (e) {
+      }
       _updateNavbar(toolId);
       const raf = typeof requestAnimationFrame !== "undefined" ? requestAnimationFrame : (cb) => setTimeout(cb, 16);
       raf(() => {
         _viewport.classList.remove("tool-viewport--transitioning");
       });
     } catch (err) {
+      if (isStale()) return;
       console.error(`[ToolRegistry] Falha ao carregar ferramenta "${toolId}":`, err);
       _viewport.classList.remove("tool-viewport--transitioning");
       _viewport.style.minHeight = "";
@@ -10429,7 +10539,7 @@ ${pageStr}
         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
       </svg>
       <p>Falha ao carregar <strong>${toolMeta.label}</strong></p>
-      <p class="tool-error-detail">${err.message}</p>
+      <p class="tool-error-detail">${String(err && err.message || err).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c])}</p>
     </div>`;
     }
   }
@@ -10472,26 +10582,35 @@ ${pageStr}
     const toggleBtn = document.getElementById("theme-toggle");
     const iconSun = document.getElementById("theme-icon-sun");
     const iconMoon = document.getElementById("theme-icon-moon");
-    function applyTheme2(theme) {
-      document.documentElement.setAttribute("data-theme", theme);
-      const isDark = theme === "dark" || theme === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const media = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+    function readPreference() {
+      try {
+        return localStorage.getItem(APP_CONFIG.STORAGE_KEYS.THEME) || "system";
+      } catch {
+        return "system";
+      }
+    }
+    function applyTheme2(preference) {
+      const isDark = preference === "dark" || preference !== "light" && !!media && media.matches;
+      document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+      document.documentElement.style.colorScheme = isDark ? "dark" : "light";
       if (iconSun) iconSun.style.display = isDark ? "none" : "";
       if (iconMoon) iconMoon.style.display = isDark ? "" : "none";
     }
-    const stored = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.THEME) || "system";
-    applyTheme2(stored);
+    applyTheme2(readPreference());
     if (toggleBtn) {
       toggleBtn.addEventListener("click", () => {
-        const current = document.documentElement.getAttribute("data-theme") || "system";
-        const next = current === "dark" ? "light" : "dark";
+        const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
         applyTheme2(next);
-        localStorage.setItem(APP_CONFIG.STORAGE_KEYS.THEME, next);
+        try {
+          localStorage.setItem(APP_CONFIG.STORAGE_KEYS.THEME, next);
+        } catch {
+        }
       });
     }
-    if (window.matchMedia) {
-      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-        const stored2 = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.THEME) || "system";
-        if (stored2 === "system") applyTheme2("system");
+    if (media) {
+      media.addEventListener("change", () => {
+        if (readPreference() === "system") applyTheme2("system");
       });
     }
   }
@@ -10501,9 +10620,22 @@ ${pageStr}
     if (headerVersion) headerVersion.textContent = APP_CONFIG.VERSION;
     if (footerVersion) footerVersion.textContent = APP_CONFIG.VERSION;
   }
+  function initDropGuard() {
+    window.addEventListener("dragover", (e) => e.preventDefault());
+    window.addEventListener("drop", (e) => e.preventDefault());
+  }
+  function initTopbarOffset() {
+    const topbar = document.querySelector(".topbar");
+    if (!topbar) return;
+    const sync = () => document.documentElement.style.setProperty("--topbar-height", `${topbar.offsetHeight}px`);
+    sync();
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(sync).observe(topbar);
+  }
   async function boot2() {
     initVersion2();
     initTheme2();
+    initDropGuard();
+    initTopbarOffset();
     const navbarContainer = document.getElementById("tool-navbar-container");
     if (navbarContainer) {
       renderToolbar(navbarContainer);

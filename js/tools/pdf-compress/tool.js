@@ -11,6 +11,7 @@ let _listeners = [];
 let _currentFile = null;
 let _currentArrayBuffer = null;
 let _compressedPdfBlob = null;
+let _busy = false; // impede compressões simultâneas (duplo clique)
 let _currentPreset = 'balanced';
 
 function _on(element, event, handler) {
@@ -134,8 +135,20 @@ export default {
     }
 
     async function _handleFile(file) {
-      _currentFile = file;
-      _currentArrayBuffer = await file.arrayBuffer();
+      if (_busy) return;
+      try {
+        _currentFile = file;
+        _currentArrayBuffer = await file.arrayBuffer();
+      } catch (err) {
+        console.error('Falha ao ler o arquivo:', err);
+        alert('Não foi possível ler o arquivo selecionado.');
+        _reset();
+        return;
+      }
+
+      // Um novo arquivo invalida qualquer resultado anterior
+      _compressedPdfBlob = null;
+      _setViewState('empty');
 
       filenameEl.textContent = file.name;
       filesizeEl.textContent = _formatBytes(file.size);
@@ -170,29 +183,27 @@ export default {
     }
 
     async function _doCompress() {
-      if (!_currentArrayBuffer) return;
+      if (!_currentArrayBuffer || _busy) return;
+      _busy = true;
+      compressBtn.disabled = true;
 
       _setViewState('loading');
       _updateProgress(5, 'Iniciando otimização...', 'Carregando estrutura e decodificando páginas...', '0 / 0 págs');
       await new Promise(r => setTimeout(r, 25));
 
-      await _ensureLibs();
-      const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
-      const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
-
-      if (!PDFLib || !pdfjsLib) {
-        alert('Bibliotecas de processamento de PDF indisponíveis.');
-        _setViewState('empty');
-        return;
-      }
-
       const dpi = parseInt(dpiRange.value, 10) || 100;
       const quality = (parseInt(qualityRange.value, 10) || 70) / 100;
       const renderScale = dpi / 72; // 72 DPI é a escala base do PDF
 
+      let loadingTask = null;
       try {
+        await _ensureLibs();
+        const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
+        const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
+        if (!PDFLib || !pdfjsLib) throw new Error('Bibliotecas de processamento de PDF indisponíveis.');
+
         const copyBuf = _currentArrayBuffer.slice(0);
-        const loadingTask = pdfjsLib.getDocument({ data: copyBuf });
+        loadingTask = pdfjsLib.getDocument({ data: copyBuf });
         const jsDoc = await loadingTask.promise;
         const numPages = jsDoc.numPages;
 
@@ -235,7 +246,9 @@ export default {
         await new Promise(r => setTimeout(r, 20));
 
         const compressedBytes = await newPdfDoc.save();
-        _compressedPdfBlob = new Blob([compressedBytes], { type: 'application/pdf' });
+        // Documentos já otimizados (texto vetorial) podem crescer ao rasterizar: mantém o original
+        const keptOriginal = compressedBytes.byteLength >= _currentArrayBuffer.byteLength;
+        _compressedPdfBlob = new Blob([keptOriginal ? _currentArrayBuffer : compressedBytes], { type: 'application/pdf' });
 
         _updateProgress(100, 'Compressão concluída com sucesso!', 'Preparando visualização...', `${numPages} / ${numPages} págs`);
         await new Promise(r => setTimeout(r, 20));
@@ -249,13 +262,15 @@ export default {
         statOrig.textContent = _formatBytes(origSize);
         statNew.textContent = _formatBytes(newSize);
 
-        if (pct >= 0) {
+        if (!keptOriginal) {
           statPct.textContent = `-${pct}%`;
+          statPct.title = "";
           statPct.style.background = 'color-mix(in srgb, #10b981 18%, transparent)';
           statPct.style.color = '#10b981';
           metaSaved.textContent = _formatBytes(Math.max(0, diff));
         } else {
-          statPct.textContent = `+${Math.abs(pct)}%`;
+          statPct.textContent = '0% · já otimizado';
+          statPct.title = 'A versão comprimida ficaria maior que o original; o arquivo original foi mantido.';
           statPct.style.background = 'color-mix(in srgb, #f59e0b 18%, transparent)';
           statPct.style.color = '#f59e0b';
           metaSaved.textContent = '0 B';
@@ -264,8 +279,9 @@ export default {
         metaPages.textContent = numPages;
 
         // Renderiza thumbnail da primeira página comprimida
+        const previewTask = pdfjsLib.getDocument({ data: compressedBytes.slice(0) });
         try {
-          const previewDoc = await pdfjsLib.getDocument({ data: compressedBytes.slice(0) }).promise;
+          const previewDoc = await previewTask.promise;
           const firstPage = await previewDoc.getPage(1);
           const stageVp = firstPage.getViewport({ scale: 1 });
           const scale = Math.min(260 / stageVp.width, 230 / stageVp.height);
@@ -277,6 +293,8 @@ export default {
           await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
         } catch (e) {
           console.warn('Erro ao renderizar miniatura comprimida:', e);
+        } finally {
+          previewTask.destroy();
         }
 
         _setViewState('result');
@@ -285,6 +303,10 @@ export default {
         console.error('Falha ao comprimir PDF:', err);
         _setViewState('empty');
         alert('Erro ao comprimir o PDF. O arquivo pode estar corrompido ou protegido por senha.');
+      } finally {
+        if (loadingTask) loadingTask.destroy();
+        _busy = false;
+        compressBtn.disabled = !_currentArrayBuffer;
       }
     }
 
@@ -373,5 +395,6 @@ export default {
     _currentFile = null;
     _currentArrayBuffer = null;
     _compressedPdfBlob = null;
+    _busy = false;
   }
 };

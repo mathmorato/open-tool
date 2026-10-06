@@ -1,52 +1,74 @@
-import fs from 'fs';
+/**
+ * Teste de ponta a ponta do motor de desbloqueio (QPDF WebAssembly).
+ * Gera os próprios PDFs criptografados (senha de abertura e restrição de proprietário)
+ * e valida o contrato de códigos de saída usado em js/tools/pdf-unlock/tool.js:
+ * 0/3 = descriptografado, 2 = falha (inclui senha ausente/incorreta).
+ */
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
 const createQpdfModule = require('../node_modules/@neslinesli93/qpdf-wasm');
-const { PDFDocument } = require('pdf-lib');
+const { PDFDocument, StandardFonts } = require('pdf-lib');
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
+
+const MARKER = 'Texto selecionavel Open Tool';
+
+function assert(cond, msg) {
+  if (!cond) throw new Error(msg);
+  console.log(`[OK] ${msg}`);
+}
+
+async function extractText(bytes) {
+  const task = pdfjs.getDocument({ data: new Uint8Array(bytes) });
+  try {
+    const doc = await task.promise;
+    let text = '';
+    for (let i = 1; i <= doc.numPages; i++) {
+      const content = await (await doc.getPage(i)).getTextContent();
+      text += content.items.map(it => it.str).join(' ') + '\n';
+    }
+    return text;
+  } finally {
+    await task.destroy();
+  }
+}
 
 async function runTest() {
   console.log('--- Testando fluxo de ponta a ponta do Desbloqueador de PDF ---');
-  
-  const lockedPdfPath = 'C:/Users/mathe/.gemini/antigravity-ide/brain/3d0a5b49-2d77-44cd-852f-d3f3f7840095/.user_uploaded/media_1790021993794.pdf';
-  const inputBytes = fs.readFileSync(lockedPdfPath);
-  console.log('Arquivo original carregado, tamanho:', inputBytes.length);
+
+  const doc = await PDFDocument.create();
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+  doc.addPage([595, 842]).drawText(MARKER, { x: 60, y: 760, size: 18, font });
+  const plain = await doc.save();
 
   const qpdf = await createQpdfModule();
-  qpdf.FS.writeFile('/input.pdf', inputBytes);
-  const exitCode = qpdf.callMain(['--password=', '/input.pdf', '--decrypt', '/output.pdf']);
-  if (exitCode !== 0) throw new Error('QPDF falhou com código ' + exitCode);
+  qpdf.FS.writeFile('/plain.pdf', plain);
+  assert(qpdf.callMain(['--encrypt', 'user1', 'owner1', '256', '--', '/plain.pdf', '/user.pdf']) === 0, 'PDF com senha de abertura gerado');
+  assert(qpdf.callMain(['--encrypt', '', 'owner1', '256', '--print=none', '--modify=none', '--', '/plain.pdf', '/owner.pdf']) === 0, 'PDF com restrição de proprietário gerado');
 
-  const unlockedBytes = qpdf.FS.readFile('/output.pdf');
-  console.log('Arquivo desbloqueado com sucesso! Tamanho:', unlockedBytes.length);
+  const decrypt = (file, password) => {
+    try { qpdf.FS.unlink('/out.pdf'); } catch (_) {}
+    const rc = qpdf.callMain(['--warning-exit-0', `--password=${password}`, file, '--decrypt', '/out.pdf']);
+    return { rc, ok: rc === 0 || rc === 3 };
+  };
 
-  // 1. Valida com PDFLib
-  const pdfDoc = await PDFDocument.load(unlockedBytes);
-  console.log('[OK] PDFDoc carregado via PDFLib! Total de Páginas:', pdfDoc.getPageCount());
+  assert(!decrypt('/user.pdf', '').ok, 'Senha ausente é rejeitada');
+  assert(!decrypt('/user.pdf', 'errada').ok, 'Senha incorreta é rejeitada');
 
-  // 2. Valida com PDFJS
-  const jsDoc = await pdfjs.getDocument({ data: unlockedBytes }).promise;
-  console.log('[OK] PDFJS doc carregado! Total de Páginas:', jsDoc.numPages);
-  
-  let fullText = '';
-  for (let i = 1; i <= jsDoc.numPages; i++) {
-    const page = await jsDoc.getPage(i);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items.map(it => it.str).join(' ');
-    fullText += pageText + '\n';
+  for (const [file, password] of [['/user.pdf', 'user1'], ['/owner.pdf', '']]) {
+    const { ok } = decrypt(file, password);
+    assert(ok, `${file} descriptografado`);
+    const bytes = qpdf.FS.readFile('/out.pdf');
+    const out = await PDFDocument.load(bytes);
+    assert(!out.isEncrypted && out.getPageCount() === 1, `${file}: saída sem criptografia e com 1 página`);
+    assert((await extractText(bytes)).includes(MARKER), `${file}: texto continua selecionável`);
   }
 
-  console.log('[OK] Total de caracteres de texto extraídos:', fullText.length);
-  console.log('Snippet do texto extraído:\n', fullText.slice(0, 300));
-  const expectedKeywords = ['Catalyzing Breakthroughs', 'Lucian Lucia', 'Imagination', 'Star Trek'];
-  for (const kw of expectedKeywords) {
-    const found = fullText.includes(kw);
-    console.log(`[OK] Palavra-chave "${kw}" encontrada:`, found);
-    if (!found) throw new Error('Palavra-chave não encontrada: ' + kw);
-  }
+  // O fallback PDF-Lib da ferramenta só pode aceitar documentos realmente sem criptografia
+  const encrypted = await PDFDocument.load(qpdf.FS.readFile('/user.pdf'), { ignoreEncryption: true });
+  assert(encrypted.isEncrypted, 'PDF-Lib sinaliza isEncrypted (fallback não aceita saída ainda cifrada)');
 
-  console.log('--- SUCESSO TOTAL: Documento desbloqueado com 100% de texto selecionável e copiável! ---');
+  console.log('--- SUCESSO TOTAL: desbloqueio validado com senha, sem senha e com senha incorreta ---');
 }
 
 runTest().catch(e => {

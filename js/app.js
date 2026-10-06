@@ -6,7 +6,7 @@
 
 // Telemetria Global de Erros de Runtime e Falhas de Carregamento de CDN
 if (typeof window !== 'undefined') {
-  window.onerror = function(message, source, lineno, colno, error) {
+  window.addEventListener('error', function({ message, filename: source, lineno, colno, error }) {
     const debugEl = typeof document !== 'undefined' ? document.getElementById('debug-status') : null;
     const sourceFile = source ? source.split('/').pop() : 'script';
     const errText = `[Erro Fatal/Script]: ${message} (${sourceFile}:${lineno})`;
@@ -16,10 +16,9 @@ if (typeof window !== 'undefined') {
       debugEl.className = 'debug-status error';
     }
     console.error('[doc2md Runtime Error]', { message, source, lineno, colno, error });
-    return false;
-  };
+  });
 
-  window.onunhandledrejection = function(event) {
+  window.addEventListener('unhandledrejection', function(event) {
     const debugEl = typeof document !== 'undefined' ? document.getElementById('debug-status') : null;
     const reason = event.reason ? (event.reason.message || String(event.reason)) : 'Falha assíncrona';
     const errText = `[Erro Assíncrono/CDN]: ${reason}`;
@@ -29,7 +28,12 @@ if (typeof window !== 'undefined') {
       debugEl.className = 'debug-status error';
     }
     console.error('[doc2md Unhandled Rejection]', event.reason);
-  };
+  });
+}
+
+/** Escapa texto para interpolação segura em HTML/atributos (nomes de arquivo, mensagens de erro). */
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 import { APP_CONFIG, loadScript, ERROR_CATALOG, CODE_EXTENSIONS_MAP, SUPPORTED_EXTENSIONS, MIME_TYPE_MAP, getDynamicConcurrency } from './config.js';
@@ -1246,11 +1250,11 @@ function renderQueue() {
     const hasErrorClass = isError ? 'has-error' : '';
 
     return `
-      <div class="file-queue-item queue-item ${statusClass} ${hasErrorClass} ${completedClass} ${readingClass} ${uploadDoneClass} ${convertDoneClass}" data-id="${item.id}" role="listitem" aria-label="${item.file.name}">
+      <div class="file-queue-item queue-item ${statusClass} ${hasErrorClass} ${completedClass} ${readingClass} ${uploadDoneClass} ${convertDoneClass}" data-id="${item.id}" role="listitem" aria-label="${escapeHtml(item.file.name)}">
         <!-- BLOCO 1: IDENTIFICAÇÃO DO ARQUIVO (Ícone + Nome + Peso Original) -->
         <div class="item-block item-info queue-item-info">
           ${formatIcon}
-          <span class="file-name queue-item-name" title="${item.file.name}">${item.file.name}</span>
+          <span class="file-name queue-item-name" title="${escapeHtml(item.file.name)}">${escapeHtml(item.file.name)}</span>
           <span class="badge-file-size queue-item-size file-meta queue-item-meta">${formatBytes(item.file.size)}</span>
         </div>
 
@@ -1284,7 +1288,7 @@ function renderQueue() {
 
         <!-- BLOCO DE ERRO: Substitui as barras em caso de falha -->
         <div class="item-block item-error-container" style="${isError ? 'display: flex;' : 'display: none;'}">
-          <div class="item-error-badge" title="${item.errorMessage || 'Erro de conversão'}">
+          <div class="item-error-badge" title="${escapeHtml(item.errorMessage || 'Erro de conversão')}">
             <span class="icon-error-circle" aria-hidden="true">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/>
@@ -1321,7 +1325,7 @@ function renderQueue() {
               </svg>
             </span>
             <!-- Estado Erro -->
-            <span class="status-icon icon-error" title="${item.errorMessage || item.statusText || 'Erro'}" style="${isError ? 'display: inline-flex;' : 'display: none;'}">
+            <span class="status-icon icon-error" title="${escapeHtml(item.errorMessage || item.statusText || 'Erro')}" style="${isError ? 'display: inline-flex;' : 'display: none;'}">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="15" y1="9" x2="9" y2="15"/>
@@ -1346,7 +1350,7 @@ function renderQueue() {
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
           </button>
-          <button type="button" class="btn-item-action btn-remove btn-queue-item-remove btn-remove-item" data-id="${item.id}" title="Remover ${item.file.name}" aria-label="Remover item">
+          <button type="button" class="btn-item-action btn-remove btn-queue-item-remove btn-remove-item" data-id="${item.id}" title="Remover ${escapeHtml(item.file.name)}" aria-label="Remover item">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 6h18"/>
               <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
@@ -2199,8 +2203,7 @@ export async function downloadAllZip() {
   if (total === 1) {
     try {
       const item = completed[0];
-      const baseName = (item.file ? item.file.name : (item.name || 'documento')).replace(/\.[^/.]+$/, '');
-      return triggerDownload(getOutputFileName(baseName), item.markdownOutput || item.markdown);
+      return triggerDownload(getOutputFileName(item.file ? item.file.name : (item.name || 'documento')), item.markdownOutput || item.markdown);
     } finally {
       state.isExportingZip = false;
       state.isExporting = false;
@@ -2992,10 +2995,19 @@ export function showToast() {
    ========================================================================== */
 export function boot() {
   reinitElements();
-  initVersion();
-  initTheme();
+  // Sob o tool registry, tema e versão pertencem ao shell (main.js); reinicializá-los
+  // a cada montagem empilharia listeners no botão de tema e anularia a alternância.
+  if (typeof window === 'undefined' || typeof window.__openToolRegistryActive === 'undefined') {
+    initVersion();
+    initTheme();
+  }
   initDropzone();
   initQueueEvents();
+  // Ao remontar a ferramenta, a fila em memória (state.queue) é redesenhada no novo DOM
+  if (state.queue && state.queue.length > 0) {
+    renderQueue();
+    updateGlobalActionButtonsState();
+  }
 }
 
 if (typeof document !== 'undefined') {
@@ -3017,6 +3029,9 @@ if (typeof document !== 'undefined') {
   if (!document.__openMarkGlobalClickAttached) {
     document.__openMarkGlobalClickAttached = true;
     document.addEventListener('click', (e) => {
+      // Restringe a interceptação aos botões do próprio doc2md (não afeta outras ferramentas)
+      if (!e.target || typeof e.target.closest !== 'function' || !e.target.closest('.doc2md-tool-root')) return;
+
       // 1. Download Unificado (.md)
       const btnUnified = (e.target && typeof e.target.closest === 'function')
         ? e.target.closest('#btn-download-unified, .btn-download-unified, .btn-queue-download-merged')

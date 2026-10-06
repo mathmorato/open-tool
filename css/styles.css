@@ -2334,7 +2334,6 @@ body {
   box-sizing: border-box;
 }
 
-body.dark-mode .batch-global-progress,
 [data-theme="dark"] .batch-global-progress {
   background: #1E293B;
   border-color: #334155;
@@ -2350,7 +2349,6 @@ body.dark-mode .batch-global-progress,
   margin-bottom: 0.4rem;
 }
 
-body.dark-mode .global-progress-header,
 [data-theme="dark"] .global-progress-header {
   color: #94A3B8;
 }
@@ -2385,7 +2383,6 @@ body.dark-mode .global-progress-header,
   contain: layout paint;
 }
 
-body.dark-mode .global-progress-track,
 [data-theme="dark"] .global-progress-track {
   background: #334155;
 }
@@ -2474,7 +2471,6 @@ body.dark-mode .global-progress-track,
   flex-shrink: 0;
 }
 
-body.dark-mode .queue-total-bytes-card,
 [data-theme="dark"] .queue-total-bytes-card {
   background: #1E293B;
   border-color: #334155;
@@ -2486,7 +2482,6 @@ body.dark-mode .queue-total-bytes-card,
   color: #2563EB;
 }
 
-body.dark-mode .total-bytes-icon,
 [data-theme="dark"] .total-bytes-icon {
   color: #60A5FA;
 }
@@ -2497,7 +2492,6 @@ body.dark-mode .total-bytes-icon,
   white-space: nowrap;
 }
 
-body.dark-mode .total-bytes-label,
 [data-theme="dark"] .total-bytes-label {
   color: #94A3B8;
 }
@@ -2514,7 +2508,6 @@ body.dark-mode .total-bytes-label,
   color: #0F172A;
 }
 
-body.dark-mode .live-total-bytes-counter,
 [data-theme="dark"] .live-total-bytes-counter {
   color: #F8FAFC;
 }
@@ -2531,7 +2524,6 @@ body.dark-mode .live-total-bytes-counter,
   margin-left: 0.15rem;
 }
 
-body.dark-mode .live-total-formatted-unit,
 [data-theme="dark"] .live-total-formatted-unit {
   color: #F8FAFC;
 }
@@ -2548,7 +2540,6 @@ body.dark-mode .live-total-formatted-unit,
   animation: fadeInConsolidation 0.25s ease-out;
 }
 
-body.dark-mode .consolidation-progress-bar,
 [data-theme="dark"] .consolidation-progress-bar {
   background: #1E293B;
   border-color: #334155;
@@ -2574,7 +2565,6 @@ body.dark-mode .consolidation-progress-bar,
   color: #475569;
 }
 
-body.dark-mode .consolidation-header,
 [data-theme="dark"] .consolidation-header {
   color: #94A3B8;
 }
@@ -2592,7 +2582,6 @@ body.dark-mode .consolidation-header,
   color: #0F172A;
 }
 
-body.dark-mode .consolidation-counter,
 [data-theme="dark"] .consolidation-counter {
   color: #F8FAFC;
 }
@@ -2606,7 +2595,6 @@ body.dark-mode .consolidation-counter,
   position: relative;
 }
 
-body.dark-mode .consolidation-track,
 [data-theme="dark"] .consolidation-track {
   background: #334155;
 }
@@ -2684,7 +2672,7 @@ body.dark-mode .consolidation-track,
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
-  top: 57px; /* altura do topbar */
+  top: var(--topbar-height, 63px); /* altura real do topbar (medida em main.js) */
   z-index: 40;
   transition: background-color var(--transition-normal), border-color var(--transition-normal);
 }
@@ -2980,3 +2968,31 @@ body.dark-mode .consolidation-track,
 }
 
 
+
+/* ==========================================================================
+   Single-Viewport em telas baixas (notebooks 1366x768 e similares)
+   Compacta o chrome (topbar, navbar, rodapé) e os heroes das ferramentas
+   para que cada ferramenta caiba sem rolagem vertical. O prefixo "body"
+   eleva a especificidade acima das folhas por ferramenta (css/tools/*).
+   ========================================================================== */
+@media (max-height: 920px) and (min-width: 769px) {
+  body .topbar { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+  body .tool-nav-btn { padding-top: 0.55rem; padding-bottom: 0.55rem; }
+  body .main-content { padding: 0.75rem 0; }
+  body .app-main-container { gap: 0.75rem; }
+  body .footer { padding-top: 0.45rem; padding-bottom: 0.45rem; font-size: 0.8rem; }
+
+  body .hero-header .hero-title,
+  body .hub-hero-title { font-size: 1.4rem; margin-bottom: 0.2rem; }
+  body .hero-header .hero-subtitle,
+  body .hub-hero-subtitle { font-size: 0.85rem; margin-bottom: 0; line-height: 1.4; }
+  body .pdf-tool-badge,
+  body .img2vector-badge,
+  body .hub-hero-badge { display: none; }
+
+  body .pdf-tool-hero,
+  body .img2vector-hero,
+  body .hub-hero { margin-bottom: 0.75rem; }
+  body .qrcode-hero { margin-bottom: 1rem; }
+  body .pdf-workspace { padding-bottom: 0.5rem; }
+}

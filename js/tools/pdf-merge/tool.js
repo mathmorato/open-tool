@@ -11,6 +11,7 @@ import { APP_CONFIG, loadScript } from '../../config.js';
 let _listeners = [];
 let _filesQueue = [];
 let _mergedPdfBlob = null;
+let _busy = false; // bloqueia a fila enquanto a mesclagem roda
 
 function _on(element, event, handler) {
   if (!element) return;
@@ -96,7 +97,7 @@ export default {
     function _renderList() {
       countBadge.textContent = _filesQueue.length;
       clearBtn.style.display = _filesQueue.length > 0 ? 'inline-block' : 'none';
-      mergeBtn.disabled = _filesQueue.length < 2;
+      mergeBtn.disabled = _busy || _filesQueue.length < 2;
 
       if (_filesQueue.length === 0) {
         fileList.innerHTML = '';
@@ -114,7 +115,7 @@ export default {
         row.innerHTML = `
           <div class="pdf-merge-item-order">${index + 1}</div>
           <div class="pdf-merge-item-info">
-            <span class="pdf-merge-item-name" title="${item.file.name}">${item.file.name}</span>
+            <span class="pdf-merge-item-name"></span>
             <span class="pdf-merge-item-size">${_formatBytes(item.file.size)}</span>
           </div>
           <div class="pdf-merge-item-actions">
@@ -123,13 +124,18 @@ export default {
             <button type="button" class="pdf-item-ctrl-btn btn-del" data-idx="${index}" title="Remover">${ICONS.x(13)}</button>
           </div>
         `;
+        const nameEl = row.querySelector('.pdf-merge-item-name');
+        nameEl.textContent = item.file.name;
+        nameEl.title = item.file.name;
         fileList.appendChild(row);
       });
 
       // Listeners nos botões de controle
       fileList.querySelectorAll('.btn-up').forEach(btn => {
+        btn.disabled = btn.disabled || _busy;
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
+          if (_busy) return;
           const idx = parseInt(btn.dataset.idx, 10);
           if (idx > 0) {
             const temp = _filesQueue[idx];
@@ -141,8 +147,10 @@ export default {
       });
 
       fileList.querySelectorAll('.btn-down').forEach(btn => {
+        btn.disabled = btn.disabled || _busy;
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
+          if (_busy) return;
           const idx = parseInt(btn.dataset.idx, 10);
           if (idx < _filesQueue.length - 1) {
             const temp = _filesQueue[idx];
@@ -154,49 +162,58 @@ export default {
       });
 
       fileList.querySelectorAll('.btn-del').forEach(btn => {
+        btn.disabled = btn.disabled || _busy;
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
+          if (_busy) return;
           const idx = parseInt(btn.dataset.idx, 10);
           _filesQueue.splice(idx, 1);
+          _mergedPdfBlob = null;
+          _setViewState('empty');
           _renderList();
         });
       });
     }
 
     async function _addFiles(files) {
+      if (_busy) return;
       for (const file of files) {
         if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-          const buffer = await file.arrayBuffer();
-          _filesQueue.push({ file, buffer });
+          try {
+            const buffer = await file.arrayBuffer();
+            _filesQueue.push({ file, buffer });
+          } catch (err) {
+            console.warn('Falha ao ler arquivo:', file.name, err);
+          }
         }
       }
+      _mergedPdfBlob = null;
+      _setViewState('empty');
       _renderList();
     }
 
     async function _doMerge() {
-      if (_filesQueue.length < 2) return;
+      if (_filesQueue.length < 2 || _busy) return;
+      _busy = true;
+      _renderList();
+      const queue = _filesQueue.slice(); // instantâneo imutável da ordem atual
 
       _setViewState('loading');
-      _updateProgress(5, 'Iniciando mesclagem...', 'Carregando bibliotecas na memória local...', `0 / ${_filesQueue.length} arquivos`);
+      _updateProgress(5, 'Iniciando mesclagem...', 'Carregando bibliotecas na memória local...', `0 / ${queue.length} arquivos`);
       await new Promise(r => setTimeout(r, 25));
 
-      await _ensureLibs();
-      const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
-      const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
-
-      if (!PDFLib) {
-        alert('Biblioteca PDFLib não disponível.');
-        _setViewState('empty');
-        return;
-      }
-
       try {
+        await _ensureLibs();
+        const PDFLib = (typeof window !== 'undefined' && window.PDFLib) || globalThis.PDFLib;
+        const pdfjsLib = (typeof window !== 'undefined' && window.pdfjsLib) || globalThis.pdfjsLib;
+        if (!PDFLib) throw new Error('Biblioteca PDFLib não disponível.');
+
         const mergedDoc = await PDFLib.PDFDocument.create();
         let totalPages = 0;
-        const totalDocs = _filesQueue.length;
+        const totalDocs = queue.length;
 
         for (let i = 0; i < totalDocs; i++) {
-          const item = _filesQueue[i];
+          const item = queue[i];
           const docIdx = i + 1;
           const currentPct = Math.round(5 + ((i / totalDocs) * 85));
           _updateProgress(
@@ -209,6 +226,8 @@ export default {
 
           try {
             const srcDoc = await PDFLib.PDFDocument.load(item.buffer.slice(0), { ignoreEncryption: true });
+            // Fluxos ainda cifrados seriam copiados ilegíveis: força a rota de rasterização
+            if (srcDoc.isEncrypted) throw new Error('ENCRYPTED');
             const pageIndices = srcDoc.getPageIndices();
             const copiedPages = await mergedDoc.copyPages(srcDoc, pageIndices);
             copiedPages.forEach(page => mergedDoc.addPage(page));
@@ -217,6 +236,7 @@ export default {
             // Se falhar no pdf-lib direto (ex: criptografia forte), tenta com pdf.js
             if (pdfjsLib) {
               const loadingTask = pdfjsLib.getDocument({ data: item.buffer.slice(0) });
+              try {
               const jsDoc = await loadingTask.promise;
               const numPgs = jsDoc.numPages;
               for (let p = 1; p <= numPgs; p++) {
@@ -229,7 +249,8 @@ export default {
                 await new Promise(r => setTimeout(r, 10));
 
                 const page = await jsDoc.getPage(p);
-                const vp = page.getViewport({ scale: 1.5 });
+                const pageVp = page.getViewport({ scale: 1 });  // dimensões reais da página (pt)
+                const vp = page.getViewport({ scale: 1.5 });     // resolução da rasterização
                 const canvas = document.createElement('canvas');
                 canvas.width = vp.width;
                 canvas.height = vp.height;
@@ -243,9 +264,12 @@ export default {
                 for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
 
                 const embedded = await mergedDoc.embedJpg(bytes);
-                const newPg = mergedDoc.addPage([vp.width, vp.height]);
-                newPg.drawImage(embedded, { x: 0, y: 0, width: vp.width, height: vp.height });
+                const newPg = mergedDoc.addPage([pageVp.width, pageVp.height]);
+                newPg.drawImage(embedded, { x: 0, y: 0, width: pageVp.width, height: pageVp.height });
                 totalPages++;
+              }
+              } finally {
+                loadingTask.destroy();
               }
             } else {
               throw loadErr;
@@ -259,7 +283,7 @@ export default {
         const mergedBytes = await mergedDoc.save();
         _mergedPdfBlob = new Blob([mergedBytes], { type: 'application/pdf' });
 
-        metaDocs.textContent = _filesQueue.length;
+        metaDocs.textContent = totalDocs;
         metaPages.textContent = totalPages;
         metaSize.textContent = _formatBytes(_mergedPdfBlob.size);
 
@@ -268,8 +292,9 @@ export default {
 
         // Renderiza thumbnail da primeira página no canvas
         if (pdfjsLib) {
+          const previewTask = pdfjsLib.getDocument({ data: mergedBytes.slice(0) });
           try {
-            const previewDoc = await pdfjsLib.getDocument({ data: mergedBytes.slice(0) }).promise;
+            const previewDoc = await previewTask.promise;
             const firstPage = await previewDoc.getPage(1);
             const stageVp = firstPage.getViewport({ scale: 1 });
             const scale = Math.min(260 / stageVp.width, 230 / stageVp.height);
@@ -281,6 +306,8 @@ export default {
             await firstPage.render({ canvasContext: ctx, viewport: scaledVp }).promise;
           } catch (e) {
             console.warn('Erro ao renderizar miniatura mesclada:', e);
+          } finally {
+            previewTask.destroy();
           }
         }
 
@@ -290,6 +317,9 @@ export default {
         console.error('Falha ao mesclar PDFs:', err);
         _setViewState('empty');
         alert('Erro ao mesclar documentos. Um dos arquivos pode ter criptografia pesada.');
+      } finally {
+        _busy = false;
+        _renderList();
       }
     }
 
@@ -328,7 +358,9 @@ export default {
     });
 
     const _resetQueue = () => {
+      if (_busy) return;
       _filesQueue = [];
+      _mergedPdfBlob = null;
       _renderList();
       _setViewState('empty');
     };
@@ -364,5 +396,6 @@ export default {
     _listeners = [];
     _filesQueue = [];
     _mergedPdfBlob = null;
+    _busy = false;
   }
 };

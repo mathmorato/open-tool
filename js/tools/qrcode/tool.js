@@ -60,6 +60,8 @@ function _getEcc(key) {
  */
 function _drawQrOnCanvas(qr, canvas, canvasSize, fgColor, bgColor, border = 4) {
   const n     = qr.size;
+  // Textos longos geram matrizes maiores que o canvas pequeno: garante ao menos 1px por módulo
+  canvasSize  = Math.max(canvasSize, n + border * 2);
   const scale = Math.floor(canvasSize / (n + border * 2));
   const off   = Math.floor((canvasSize - scale * n) / 2);
 
@@ -225,7 +227,6 @@ const tool = {
       const size    = parseInt(sizeRangeEl.value, 10);
       const fgColor = colorFgEl.value;
       const bgColor = colorBgEl.value;
-      const ecl     = _getEcc(_activeEcl);
 
       _setState('loading');
 
@@ -234,6 +235,7 @@ const tool = {
 
       try {
         // Gera o QR Code com a API do nayuki
+        const ecl = _getEcc(_activeEcl);
         const qr = qrcodegen.QrCode.encodeText(text, ecl);
         _lastQr = qr;
         _lastFg = fgColor;
@@ -372,6 +374,7 @@ const tool = {
           b.classList.toggle('qrcode-ecl-btn--active', b === btn)
         );
         eclHint.textContent = ECL_DESCRIPTIONS[_activeEcl];
+        if (_lastQr) _generate();
       });
     });
 
@@ -390,7 +393,8 @@ const tool = {
       _on(clearBtn, 'click', () => {
         inputEl.value = '';
         charCountEl.textContent = '0';
-        urlFeedbackEl.textContent = '';
+        urlFeedback.textContent = '';
+        urlFeedback.className = 'qrcode-url-feedback';
         generateBtn.disabled = true;
         _lastQr = null;
         _setState('empty');
@@ -407,6 +411,8 @@ const tool = {
     _on(sizeRangeEl, 'change', _regenerateIfActive);
     _on(colorFgEl,   'change', _regenerateIfActive);
     _on(colorBgEl,   'change', _regenerateIfActive);
+    _on(colorFgHexEl, 'change', _regenerateIfActive);
+    _on(colorBgHexEl, 'change', _regenerateIfActive);
   },
 
   unmount() {

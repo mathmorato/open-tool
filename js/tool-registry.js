@@ -103,6 +103,7 @@ export const TOOL_CATALOG = [
 let _activeModule = null;
 let _activeToolId = null;
 let _viewport = null;
+let _navToken = 0; // invalida ativações concorrentes (cliques rápidos entre abas)
 
 /**
  * Inicializa o registry. Deve ser chamado uma vez no bootstrap.
@@ -110,7 +111,8 @@ let _viewport = null;
  */
 export async function initRegistry(viewport) {
   _viewport = viewport;
-  const savedTool = localStorage.getItem(STORAGE_KEY_ACTIVE_TOOL);
+  let savedTool = null;
+  try { savedTool = localStorage.getItem(STORAGE_KEY_ACTIVE_TOOL); } catch (e) { /* storage indisponível */ }
   const initialTool = TOOL_CATALOG.find(t => t.id === savedTool) || TOOL_CATALOG.find(t => t.id === 'doc2md') || TOOL_CATALOG[0];
   await activateTool(initialTool.id);
 }
@@ -128,10 +130,15 @@ export async function activateTool(toolId) {
     return;
   }
 
+  const token = ++_navToken;
+  const isStale = () => token !== _navToken;
+
   // Unmount da ferramenta anterior
   if (_activeModule && typeof _activeModule.unmount === 'function') {
     try { _activeModule.unmount(); } catch (e) { /* ignore */ }
   }
+  _activeModule = null;
+  _activeToolId = null;
 
   if (!_viewport && typeof document !== 'undefined') {
     _viewport = document.getElementById('toolViewport');
@@ -153,6 +160,7 @@ export async function activateTool(toolId) {
       mod = { default: window.__OPEN_TOOL_MODULES__[toolId] };
     } else if (toolMeta.modulePath) {
       mod = await import(toolMeta.modulePath);
+      if (isStale()) return;
     }
     _activeModule = mod.default;
     _activeToolId = toolId;
@@ -167,13 +175,15 @@ export async function activateTool(toolId) {
 
     // Pequeno delay para o browser processar o novo HTML antes de montar
     await new Promise(r => setTimeout(r, 20));
+    if (isStale()) return;
 
     // Monta a lógica e os event listeners
     if (typeof _activeModule.mount === 'function') {
       await _activeModule.mount(_viewport);
     }
+    if (isStale()) return;
 
-    localStorage.setItem(STORAGE_KEY_ACTIVE_TOOL, toolId);
+    try { localStorage.setItem(STORAGE_KEY_ACTIVE_TOOL, toolId); } catch (e) { /* storage indisponível */ }
     _updateNavbar(toolId);
 
     const raf = typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame : (cb) => setTimeout(cb, 16);
@@ -182,6 +192,7 @@ export async function activateTool(toolId) {
     });
 
   } catch (err) {
+    if (isStale()) return; // falha de uma ativação já substituída por outra
     console.error(`[ToolRegistry] Falha ao carregar ferramenta "${toolId}":`, err);
     _viewport.classList.remove('tool-viewport--transitioning');
     _viewport.style.minHeight = '';
@@ -190,7 +201,7 @@ export async function activateTool(toolId) {
         <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
       </svg>
       <p>Falha ao carregar <strong>${toolMeta.label}</strong></p>
-      <p class="tool-error-detail">${err.message}</p>
+      <p class="tool-error-detail">${String(err && err.message || err).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))}</p>
     </div>`;
   }
 }

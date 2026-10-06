@@ -1,6 +1,6 @@
 {
   "name": "open-tool",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Open Tool: Plataforma de ferramentas universais 100% client-side (doc2md, QR Code e mais)",
   "main": "index.html",
   "type": "module",
@@ -8,7 +8,7 @@
     "start": "npx serve . -l 3000",
     "dev": "npx serve . -l 3000",
     "build": "npx esbuild js/bundle-entry.js --bundle --outfile=js/bundle.js --format=iife --target=es2020",
-    "test": "node test/validate-parsers.js"
+    "test": "node test/validate-parsers.js && node test/test-dropzone-logic.js && node test/test-universal-parsers.js && node test/test-batch-queue.js && node test/test-real-examples.js && node test/test-pdf-tools.js && node test/test-unlock-e2e.mjs"
   },
   "keywords": [
     "markdown",
