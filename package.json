@@ -1,13 +1,13 @@
 {
   "name": "open-tool",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "Open Tool: Plataforma de ferramentas universais 100% client-side (doc2md, QR Code e mais)",
   "main": "index.html",
   "type": "module",
   "scripts": {
-    "start": "npx serve . -l 3000",
-    "dev": "npx serve . -l 3000",
-    "build": "npx esbuild js/bundle-entry.js --bundle --outfile=js/bundle.js --format=iife --target=es2020",
+    "start": "serve -s .",
+    "dev": "serve . -l 3000",
+    "build": "esbuild js/bundle-entry.js --bundle --outfile=js/bundle.js --format=iife --target=es2020",
     "test": "node test/validate-parsers.js && node test/test-dropzone-logic.js && node test/test-universal-parsers.js && node test/test-batch-queue.js && node test/test-real-examples.js && node test/test-pdf-tools.js && node test/test-unlock-e2e.mjs"
   },
   "keywords": [
@@ -25,10 +25,10 @@
   "license": "MIT",
   "devDependencies": {
     "@xmldom/xmldom": "^0.9.12",
+    "esbuild": "^0.25.0",
     "jszip": "^3.10.2",
     "mammoth": "^1.12.2",
     "pdfjs-dist": "^6.3.289",
-    "serve": "^14.2.4",
     "turndown": "^7.2.4",
     "xlsx": "^0.18.5"
   },
@@ -36,6 +36,7 @@
     "@neslinesli93/qpdf-wasm": "^0.3.0",
     "@pdfsmaller/pdf-decrypt": "^1.0.1",
     "imagetracerjs": "^1.2.6",
-    "pdf-lib": "^1.17.1"
+    "pdf-lib": "^1.17.1",
+    "serve": "^14.2.4"
   }
 }
